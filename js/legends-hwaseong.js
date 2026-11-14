@@ -198,7 +198,7 @@ LEGENDS.push(
   ru:"Очертания горы напоминают танцующего феникса, поэтому её назвали Мубонсан — «Гора танцующего феникса».",
   en:"The mountain's outline looks like a dancing phoenix, so it was named Mubongsan, “Mountain of the Dancing Phoenix.”"}},
 
-{id:"chilbosan", region:"hs", lat:null, lng:null,
+{id:"chilbosan", region:"hs", lat:37.2606811, lng:126.9322936,
  name:{ko:"칠보산", ru:"Гора Чхильбосан", en:"Chilbosan"},
  place:{ko:"화성시 · 수원시 경계", ru:"Граница Хвасона и Сувона", en:"Hwaseong–Suwon border"},
  legend:{
@@ -224,5 +224,40 @@ LEGENDS.push(
  fact:{
   ko:"이곤(1601~?)은 1737년 나라로부터 효행을 인정받아 효자문을 받았습니다.",
   ru:"И Гон (родился в 1601 году) в 1737 году посмертно получил от государства награду за сыновнюю почтительность — эти ворота.",
-  en:"Yi Gon (born 1601) was honored by the state for filial piety in 1737 with this gate."}}
+  en:"Yi Gon (born 1601) was honored by the state for filial piety in 1737 with this gate."}},
+
+// ---- Добавлено 13.11.2026. Координаты примерные (approx) — уточнить на месте в режиме разметки ----
+// Источники: Википедия «최루백 효자각», Хвасон Синмун (hsj.co.kr, «孝의 고장 화성시»)
+{id:"choerubaek", region:"hs", lat:37.199377, lng:126.969273, approx:true,
+ name:{ko:"최루백 효자각", ru:"Павильон Чхве Рубэка", en:"Choe Ru-baek Filial Shrine"},
+ place:{ko:"화성시 봉담읍 분천리", ru:"Хвасон, Пондам, Пунчхон-ри", en:"Buncheon-ri, Bongdam, Hwaseong"},
+ legend:{
+  ko:"고려 때, 수원 고을에 살던 열다섯 살 소년 최루백의 아버지가 사냥을 나갔다가 호랑이에게 목숨을 잃었습니다. 루백은 도끼를 메고 호랑이의 자취를 쫓았습니다.\n\n배불리 먹고 누워 있던 호랑이를 찾아낸 그는 “네가 내 아버지를 해쳤으니 이제 내가 너를 먹겠다!” 하고 꾸짖었고, 호랑이는 꼬리를 내리고 엎드렸다고 합니다. 루백은 호랑이를 베고 배를 갈라 아버지의 유골을 거두어 장사 지냈습니다. 그리고 삼 년 동안 무덤 곁에서 시묘살이를 했습니다. 상을 마친 뒤에는 항아리에 묻어 두었던 호랑이 고기를 모두 먹었다고 전해집니다.",
+  ru:"Во времена Корё у пятнадцатилетнего Чхве Рубэка из округа Сувон отец ушёл на охоту и погиб от тигра. Рубэк взял топор и пошёл по следу зверя.\n\nОн нашёл тигра, сытого и развалившегося на земле, и крикнул: «Ты погубил моего отца — теперь я съем тебя!» Говорят, тигр поджал хвост и припал к земле. Рубэк зарубил его, вспорол брюхо, достал останки отца и похоронил их. Три года он жил у могилы в трауре. А когда траур закончился, съел мясо тигра, которое всё это время хранил в зарытом кувшине.",
+  en:"In the Goryeo era, the father of fifteen-year-old Choe Ru-baek of Suwon went hunting and was killed by a tiger. Ru-baek shouldered an axe and tracked the beast.\n\nHe found the tiger lying full-bellied and shouted, “You killed my father, so now I will eat you!” The tiger, it is said, lowered its tail and crouched. Ru-baek slew it, cut it open, recovered his father's remains and buried them. He then mourned beside the grave for three years. When mourning ended, he ate the tiger meat he had kept buried in a jar."},
+ fact:{
+  ko:"최루백의 효행은 『고려사』와 세종 때 펴낸 『삼강행실도』에 실려 있습니다. 그는 훗날 높은 벼슬에 올랐고, 먼저 세상을 떠난 아내 염경애를 위해 쓴 묘지명도 전해집니다. 효자각은 원래 봉담 수기리 ‘효자문골’에 있다가 분천리로 옮겨졌고, 1986년 화성시 향토유적 제2호가 되었습니다.",
+  ru:"Подвиг Чхве Рубэка записан в «Истории Корё» и в «Троесвязии в рисунках», изданной при короле Седжоне. Позже он стал крупным чиновником; сохранилась и эпитафия, которую он написал своей рано умершей жене Ём Гёнэ. Павильон стоял в долине «Ворота почтительного сына» в Суги-ри, затем его перенесли в Пунчхон-ри. С 1986 года это памятник наследия Хвасона № 2.",
+  en:"Choe Ru-baek's deed is recorded in the History of Goryeo and in the Samgang Haengsildo compiled under King Sejong. He later became a high official, and the epitaph he wrote for his late wife Yeom Gyeong-ae survives. The shrine first stood in Sugi-ri's “Filial Gate Valley” and was moved to Buncheon-ri; in 1986 it became Hwaseong Heritage No. 2."},
+ find:{
+  ko:"비각 안의 효자비를 찾아 보세요. 조선 숙종 때 세운 비석입니다.",
+  ru:"Найдите в павильоне каменную стелу почтительному сыну. Её поставили при чосонском короле Сукчоне.",
+  en:"Look for the filial-son stele inside the pavilion. It was erected under Joseon's King Sukjong."}},
+
+// Источник: Кёнгидоский культурный фонд, «화성시 남양 홍씨 문희공파 홍언필 가문» (ggc.ggcf.kr)
+{id:"hongnang", region:"hs", lat:37.175151, lng:126.721090, approx:true,
+ name:{ko:"홍법사 홍랑각시", ru:"Хонран из храма Хонбопса", en:"Lady Hongnang of Hongbeopsa"},
+ place:{ko:"화성시 서신면 홍법리", ru:"Хвасон, Сосин, Хонбоп-ри", en:"Hongbeop-ri, Seosin, Hwaseong"},
+ legend:{
+  ko:"1610년, 명나라 황제에게 바칠 여인을 찾는 사신들이 홍법리 마을까지 들이닥쳤습니다. 마을이 화를 입을까 걱정한 홍만석의 딸 홍랑은 스스로 가겠다고 나섰습니다. 그녀가 가져간 것은 고향의 모래와 대추, 그리고 물뿐이었습니다.\n\n명나라 궁궐에서 홍랑은 대추와 고향 물로만 버티다가, 백 일 동안 음식을 거부한 끝에 숨을 거두었습니다. 그 뒤 병이 든 황제의 꿈에 홍랑이 나타나, 보살상과 무쇠 사공 열두 명을 돌배에 실어 고향으로 보내라고 했습니다. 같은 무렵 마을 어른 세 사람도 홍랑의 꿈을 꾸었고, 바다에서 보살상과 무쇠 사공 둘을 건져 올렸습니다. 나머지 사공들과 돌배는 바다에 가라앉았다고 합니다.",
+  ru:"В 1610 году послы, искавшие девушек для двора минского императора, добрались до деревни Хонбоп-ри. Чтобы беда не обрушилась на деревню, дочь Хон Мансока, красавица Хонран, сама вызвалась ехать. С собой она взяла лишь родной песок, финики-тэчху и воду.\n\nВо дворце она жила только финиками и водой из дома, сто дней отказывалась от еды и умерла. Потом заболевшему императору приснилась Хонран и велела отправить на её родину статую бодхисаттвы и двенадцать железных лодочников в каменной лодке. Император послушался. В те же дни Хонран приснилась трём старейшинам деревни, и они вытащили из моря статую и двух железных лодочников. Остальные лодочники и каменная лодка, говорят, ушли на дно.",
+  en:"In 1610, envoys seeking women for the Ming emperor's court reached Hongbeop-ri. To spare the village, Hongnang, the beautiful daughter of Hong Man-seok, volunteered to go. She took only sand, jujubes and water from home.\n\nAt the Ming palace she lived on nothing but jujubes and home water, refused food for a hundred days and died. The emperor fell ill and dreamed of her: she told him to send a Bodhisattva statue and twelve iron boatmen to her village in a stone boat. He did. At the same time three village elders dreamed of her and pulled the statue and two iron boatmen from the sea. The other boatmen and the stone boat are said to have sunk."},
+ fact:{
+  ko:"남양 홍씨 문중은 1611년(광해군 3년) 서신 앞바다가 내려다보이는 마을 뒷산에 홍랑보살과 무쇠 사공을 모신 절을 세웠다고 전해지며, 이것이 홍법사입니다. 2026년 10월 화성시 역사박물관은 이 이야기를 전통연희극 「홍랑각시」로 무대에 올렸습니다.",
+  ru:"По преданию, в 1611 году род Намъян Хон построил на холме за деревней, откуда видно море у Сосина, храм для «бодхисаттвы Хонран» и железных лодочников — это и есть Хонбопса. В октябре 2026 года Исторический музей Хвасона поставил по этой истории традиционный спектакль «Хонран-какси».",
+  en:"Tradition says that in 1611 the Namyang Hong clan built a temple for the “Bodhisattva Hongnang” and the iron boatmen on the hill behind the village overlooking the Seosin sea — today's Hongbeopsa. In October 2026 the Hwaseong History Museum staged the tale as the traditional play “Hongnang Gaksi.”"},
+ find:{
+  ko:"절 마당에서 서신 앞바다 쪽을 바라보세요. 홍랑이 그리워하던 고향 바다입니다.",
+  ru:"Посмотрите со двора храма в сторону моря у Сосина — это родное море, по которому тосковала Хонран.",
+  en:"From the temple yard, look toward the Seosin sea — the home waters Hongnang longed for."}}
 );
