@@ -33,8 +33,10 @@ I18N.en = {
   fSubmit:"Submit legend", fNote:"Saved on this phone only for now. Once the server is connected, everyone will see it. Write in any language.",
   // Раздел «Нуби»
   moreH:"More in Nubi", inUse:"Live", soon:"Coming soon",
-  sec:{walk:["Legend Walk","Visit legendary places, collect stamps"], meet:["Meetups","Find people to walk and train with"], gear:["Gear Show","Share photos of your outdoor gear"],
-       cup:["Contests & Challenges","Local contests, time-limited challenges"], cult:["Culture","Festivals, shows, local events"]},
+  // Разделы во вкладке «Нуби». Ключи старые (их ждёт app.js), содержимое — под идеи команды:
+  // meet = футзал, gear = кемпинг, cup = рыбалка, cult = турниры и челленджи
+  sec:{walk:["Legend Walk","Visit legendary places, collect stamps"], meet:["Futsal","Team matching by skill and fair-play rating, local team rankings"], gear:["Camping","Campsites, reviews, find people to go with"],
+       cup:["Fishing","Fishing spots, catch log, angler meetups"], cult:["Contests & Challenges","Local contests, time-limited challenges"]},
   // Уведомления
   toastStamp:"Stamped", toastTitle:"New title: {t}", toastAdded:"Legend submitted",
   toastWorn:"Now wearing “{t}”", toastSaved:"Saved",
