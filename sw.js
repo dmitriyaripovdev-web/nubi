@@ -1,7 +1,7 @@
 // Service worker: делает приложение устанавливаемым и позволяет открывать его без интернета.
 // Стратегия «сначала сеть»: если интернет есть — всегда берём свежие файлы (обновления видны сразу),
 // если нет — показываем сохранённую копию.
-const CACHE = "nubi-v12";
+const CACHE = "nubi-v13";
 
 self.addEventListener("install", e => self.skipWaiting());
 self.addEventListener("activate", e => e.waitUntil(
@@ -17,8 +17,11 @@ self.addEventListener("fetch", e => {
   const host = new URL(req.url).host;
   const ok = host === location.host || host === "unpkg.com" || host.endsWith("fonts.googleapis.com") || host.endsWith("fonts.gstatic.com");
   if (!ok) return;
+  // Свои файлы всегда сверяем с сервером (cache: "no-cache"), чтобы браузер не отдавал
+  // старую копию из своего кэша ещё 10 минут после обновления сайта.
   e.respondWith(
-    fetch(req).then(res => {
+    // (для страниц-переходов нельзя передать настройки в сам req, поэтому берём по адресу)
+    (host === location.host ? fetch(req.url, { cache: "no-cache" }) : fetch(req)).then(res => {
       const copy = res.clone();
       caches.open(CACHE).then(c => c.put(req, copy)).catch(()=>{});
       return res;
