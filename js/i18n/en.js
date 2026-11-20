@@ -83,3 +83,33 @@ I18N.en = {
   accountAnon:"You have a temporary account tied to this phone. Clearing app data will erase your progress. Kakao login is coming soon.",
   locale:"en-US"
 };
+
+// ===== Sections: sports, fishing, camping =====
+Object.assign(I18N.en, {
+  secs:{walk:["Legend walk","Visit legend sites and collect stamps"], sport:["Sports","Pitches, futsal, tennis, gyms, pools — and people to play with"],
+        fish:["Fishing","Hwaseong fishing spots — fish, fees, what's nearby"], camp:["Camping","Campsites, reviews, people to go with"],
+        cult:["Contests","Local tournaments and limited-time challenges"]},
+  navPlaces:"Places", navTalk:"Talk", demo:"Preview", nubiNow:"You're here",
+  placesN:"{n} {n:place|places}", legendsN:"{n} {n:legend|legends}",
+  secDemoNote:"Sports, fishing and camping are a preview built on Hwaseong open data. Talk and booking open after Kakao login.",
+  srcNote:"Based on Hwaseong open data (Hwaseong Urban Corporation, city hall, 2025–2026). Call ahead before you go.",
+  srcShort:"Source: data.go.kr — Hwaseong Urban Corporation, Hwaseong City",
+  campNote:"For now only the city-run auto campsites are listed. Private campsites will come with the Korea Tourism Organization's GoCamping data.",
+  nearMe:"📍 Nearest first", noneHere:"No places match this filter.", noMapPin:"No map pin — search the address in Kakao Map",
+  bookOnly:"Bookable", bookTag:"bookable",
+  bookingH:"Book on 공유누리", bookText:"This place is on Hwaseong's list of public facilities open for booking. Pick a date and time on the government portal 공유누리.", bookBtn:"Open 공유누리",
+  gameH:"Get a game together", gameText:"You'll be able to post a game here and find teammates. Skill levels and manner ratings are planned.",
+  fishGoH:"Find people to go with", campGoH:"Find people to go with", goText:"Share catches and reviews and find company here.", toTalk:"Open Talk",
+  ownerH:"Do you run this place?", ownerText:"Owners and managers will be able to verify “this is my place”, manage photos, hours and prices, and post news.", ownerBtn:"Verify (coming soon)",
+  offLbl:"Closed", telLbl:"Phone", call:"Call", guestsLbl:"Guests",
+  off:{h:"Seollal and Chuseok holidays", hw:"Seollal, Chuseok, weekends and holidays", w:"Weekends and holidays", n:"Open all year"},
+  fishTypes:{r:"Reservoir", s:"Sea", i:"Indoor"}, fishLbl:"Fish", feeLbl:"Fee · capacity", nearLbl:"Nearby",
+  feeV:"₩{p}", capV:"{n} {n:spot|spots}", guests:"{n} guests in 2025",
+  noCoordsN:"{n} more {n:place|places} without exact coordinates are in the Places list.",
+  talkH:"Talk", talkText:"Each section gets its own feed: find teammates, games today, place reviews, questions. Posting opens after Kakao login so the feed stays real people.",
+  talkPh:"Write a post", talkSoon:"Opens after Kakao login", talkEmpty:"Nothing here yet. The first posts will show up here.",
+  talkTopics:{sport:["Need players","Playing today","Reviews","Questions"], fish:["Catches","Go together","Reviews","Questions"], camp:["Reviews","Go together","Gear","Questions"]},
+  kinds:{soccer:"Soccer", futsal:"Futsal", tennis:"Tennis", basket:"Basketball", badm:"Badminton", base:"Baseball", pool:"Pool",
+         indoor:"Indoor gym", center:"Sports center", pgolf:"Park golf", jokgu:"Jokgu", gate:"Gateball", inline:"Inline skating",
+         xgame:"X-park", archery:"Archery", multi:"Multi-court", etc:"Other"}
+});
