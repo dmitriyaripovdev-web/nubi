@@ -16,7 +16,7 @@ I18N.en = {
   myLoc:"Locate me",
   // Челленджи
   chH:"Challenges", chActive:"Active", chDoneH:"Completed", chDone:"Completed!", reward:"Reward title: {t}", seeAll:"All challenges →",
-  chChain:"Route · within {d} days", chPeriod:"Limited time · {a} – {b}", chWeekend:"Weekend",
+  chChain:"Route · within {d} {d:day|days}", chPeriod:"Limited time · {a} – {b}", chWeekend:"Weekend",
   // Профиль
   meH:"Profile", edit:"Change nickname", save:"Save", cancel:"Cancel",
   stStamps:"Stamps", stTitles:"Titles", stAdded:"Legends",
@@ -72,7 +72,7 @@ I18N.en = {
   errAlready:"You already checked in here today. Come back tomorrow!", errAcc:"GPS is imprecise (±{a} m). Wait a moment or move to open ground.",
   errTeleport:"Too fast since your last check-in — nobody gets here that quickly.", errServer:"The server didn't respond. Please try again.",
   checkinAgain:"Check in again (hike)", visitedTodayNote:"You already checked in here today. Come back tomorrow for more hike points.",
-  diffLbl:"Difficulty: {d} points", keeperLbl:"Keeper of the month: {n} ({c})", keeperNone:"No keeper yet. Visit 3 times this month to become one.",
+  diffLbl:"Difficulty: {d} {d:point|points}", keeperLbl:"Keeper of the month: {n} ({c} {c:visit|visits})", keeperNone:"No keeper yet. Visit 3 times this month to become one.",
   ascentBtn:"Start the climb here", ascentHint:"Tap at the trailhead, at least 1 km from the place. Climbing on foot gives ×1.5 points.", ascentOn:"Climb started at {t}", ascentGo:"Stamp at the top within 4 hours.", ascentFar:"You're too close to the place. Start at least 1 km away.",
   stColl:"Collection", stHikes:"Hikes (month)", boardColl:"Collection · month", boardHikes:"Hikes · month", boardAll:"Collection · all time", boardLoading:"Loading…", boardEmpty:"Nobody yet. Be the first!",
   rankNoteServer:"Rankings are calculated by the server. Test stamps don't count.",
