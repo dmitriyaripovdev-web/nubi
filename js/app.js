@@ -43,7 +43,15 @@ const app = document.getElementById("app");
 let map = null; // объект карты Leaflet
 
 // ===== Помощники =====
-const t = (k, vars = {}) => String(I18N[lang][k] ?? I18N.ko[k] ?? k).replace(/\{(\w)\}/g, (_, v) => vars[v] ?? "");
+// Склонение по числу. В строке перевода пишется {d:день|дня|дней} (ru) или {d:day|days} (en).
+// Русский: 1 день, 2–4 дня, 5–20 дней, 21 день… Английский: 1 day, 2 days.
+const plural = (n, forms) => {
+  const f = forms.split("|"); n = Math.abs(Number(n)) || 0;
+  if (lang === "ru") { const a = n % 100, b = n % 10; return f[a > 10 && a < 20 ? 2 : b === 1 ? 0 : b >= 2 && b <= 4 ? 1 : 2] ?? f[f.length - 1]; }
+  return n === 1 ? f[0] : (f[1] ?? f[0]);
+};
+const t = (k, vars = {}) => String(I18N[lang][k] ?? I18N.ko[k] ?? k)
+  .replace(/\{(\w)(?::([^}]+))?\}/g, (_, v, forms) => forms ? plural(vars[v], forms) : (vars[v] ?? ""));
 const tr = obj => obj[lang] ?? obj.ko ?? Object.values(obj)[0];   // текст на нужном языке, иначе оригинал
 const regionName = c => REGIONS[c] ? REGIONS[c][lang] : c;
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -139,7 +147,7 @@ async function tryCheckin(id) {
   if (!srv.ready) {
     ui.checking = false;
     const d = Geo.distance(here, p);
-    if (d > radius(l)) { ui.checkMsg = { err: true, text: t("tooFar", { d: Geo.format(d), r: radius(l) }) }; return render(); }
+    if (d > radius(l)) { ui.checkMsg = { err: true, text: t("tooFar", { d: Geo.format(d, lang), r: radius(l) }) }; return render(); }
     stampLocal(id, { offline: true }); ui.checkMsg = { err: true, text: t("offlineNote") };
     checkNewTitles(); return render();
   }
@@ -149,7 +157,7 @@ async function tryCheckin(id) {
     ui.checking = false;
     if (!r.ok) {
       ui.checkMsg = { err: true, text: ({
-        too_far: t("tooFar", { d: Geo.format(r.dist), r: r.radius }),
+        too_far: t("tooFar", { d: Geo.format(r.dist, lang), r: r.radius }),
         low_accuracy: t("errAcc", { a: r.acc }),
         already_today: t("errAlready"),
         teleport: t("errTeleport"),
@@ -268,7 +276,7 @@ function walkView() {
       ${Art.html(l.id, "thumb")}
       <div><h3>${esc(tr(l.name))}${lang !== "ko" && !l.user ? `<span class="orig">${esc(l.name.ko)}</span>` : ""}${l.user ? `<span class="user-tag">${l.status === "pending" ? t("pendingTag") : t("tagUser")}</span>` : ""}</h3>
       <div class="meta">${esc(regionName(l.region))} · ${esc(tr(l.place))}</div>
-      ${d != null ? `<div class="dist">${t("distAway", { d: Geo.format(d) })}</div>` : !pos(l) ? `<div class="meta">${t("noPin")}</div>` : ""}</div>
+      ${d != null ? `<div class="dist">${t("distAway", { d: Geo.format(d, lang) })}</div>` : !pos(l) ? `<div class="meta">${t("noPin")}</div>` : ""}</div>
       <div class="seal ${visits[l.id] ? "got" : ""}">${visits[l.id] ? t("sealGot") : "?"}</div>
     </button>`;
   }).join("")}</div>`;
@@ -304,7 +312,7 @@ function detailView(l) {
     ${lang !== "ko" && !l.user ? `<div class="ko">${esc(l.name.ko)}</div>` : ""}
     <div class="place"><b>${t("where")}</b><span>${esc(tr(l.place))}</span>
       ${lang !== "ko" && !l.user ? `<span class="meta">${esc(l.place.ko)}</span>` : ""}
-      ${d != null ? `<span class="dist">${t("distAway", { d: Geo.format(d) })}</span>` : !p ? `<span class="meta">${t("noPin")}</span>` : ""}
+      ${d != null ? `<span class="dist">${t("distAway", { d: Geo.format(d, lang) })}</span>` : !p ? `<span class="meta">${t("noPin")}</span>` : ""}
       ${isApprox(l) ? `<span class="meta">${t("approxNote", { r: radius(l) })}</span>` : ""}
       ${!pending ? `<span class="meta">${t("diffLbl", { d: diff })}</span>` : ""}
       ${srv.ready && !pending ? `<span class="meta" id="keeper">${srv.keeper[l.id] === undefined ? "" : srv.keeper[l.id] ? "👑 " + t("keeperLbl", { n: esc(srv.keeper[l.id].nick), c: srv.keeper[l.id].visits_count }) : t("keeperNone")}</span>` : ""}</div>
