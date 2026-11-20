@@ -28,8 +28,12 @@ window.Geo = {
     return 2 * R * Math.asin(Math.sqrt(h));
   },
 
-  // Красивая запись расстояния: 850 m / 2.3 km
-  format(m) {
-    return m < 1000 ? Math.round(m) + " m" : (m / 1000).toFixed(m < 10000 ? 1 : 0) + " km";
+  // Красивая запись расстояния: 850 m / 2.3 km (ko, en) или 850 м / 2,3 км (ru)
+  format(m, lang) {
+    const ru = lang === "ru";
+    if (m < 1000) return Math.round(m) + (ru ? " м" : " m");
+    let km = (m / 1000).toFixed(m < 10000 ? 1 : 0);
+    if (ru) km = km.replace(".", ",");          // в русском десятичная запятая
+    return km + (ru ? " км" : " km");
   }
 };
