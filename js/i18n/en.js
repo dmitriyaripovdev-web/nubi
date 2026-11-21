@@ -127,6 +127,7 @@ Object.assign(I18N.en, {
 
 // ===== Wishes and the lantern wall =====
 Object.assign(I18N.en, {
+  wishStep1:"Come here and get a stamp (within 1 km)", wishStep2:"Write your wish", wishStep3:"Hang a lantern — it lights up on the wall after review", wishGoStamp:"Go to stamp",
   wishPlace:"Wish spot", wishChip:"Wish spots", wishH:"Make a wish",
   wishIntro:"People have made wishes here since long ago. Write yours.",
   wishNeedStamp:"Get a stamp here and you can make a wish.",
