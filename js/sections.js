@@ -145,7 +145,7 @@ function initPlacesMap() {
     maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
   }).addTo(map);
   secPlaces(sec).filter(p => p.lat != null).forEach(p => {
-    const ic = sec === "sport" ? KIND_ICON[mainKind(p)] : "🎣";
+    const ic = sec === "sport" ? KIND_ICON[mainKind(p)] : sec === "fish" ? "🎣" : "⛺";
     const icon = L.divIcon({ className: "", html: `<div class="kpin ${sec}${p.book ? " book" : ""}"><span>${ic}</span></div>`,
       iconSize: [34, 34], iconAnchor: [17, 34], popupAnchor: [0, -30] });
     const m = L.marker([p.lat, p.lng], { icon }).addTo(map)
