@@ -39,7 +39,7 @@ for (const k in visits) if (typeof visits[k] === "number") visits[k] = { t: visi
 
 // Состояние экрана (не сохраняется)
 let ui = { tab: sec === "walk" ? "walk" : "plist", openPlace: null, kind: "all", bookOnly: false, ftype: "all", openId: null, adding: false, region: "all", editing: false, confirmReset: false,
-           checkMsg: null, checking: false, draft: null, camMsg: null, mapFocus: null, busy: false };
+           checkMsg: null, checking: false, draft: null, camMsg: null, mapFocus: null, busy: false, kakaoTaken: false };
 
 const app = document.getElementById("app");
 let map = null; // объект карты Leaflet
@@ -248,8 +248,12 @@ function welcomeView() {
     <p>${t("wText")}</p>
     <div><div class="meta" style="margin-bottom:6px">${t("wLang")}</div>
       <div class="langbig">${LANGS.map(([c, , full]) => `<button data-lang="${c}" aria-pressed="${c === lang}">${full}</button>`).join("")}</div></div>
+    ${Server.isKakao()
+      ? `<div class="msg">${t("kakaoIn")}</div>`
+      : `<button class="kakao-btn" data-kakao-start>${KAKAO_SVG}${t("kakaoStart")}</button>
+         <div class="or"><span>${t("orNick")}</span></div>`}
     <form id="nickForm">
-      <label for="w-nick">${t("wNick")}<input id="w-nick" maxlength="12" placeholder="${t("wNickPh")}" autocomplete="nickname"></label>
+      <label for="w-nick">${t("wNick")}<input id="w-nick" maxlength="12" placeholder="${t("wNickPh")}" autocomplete="nickname" value="${esc(Server.kakaoName().slice(0, 12))}"></label>
       <button class="btn" type="submit" ${ui.busy ? "disabled" : ""}>${ui.busy ? t("sending") : t("wStart")}</button>
     </form>
   </div>`;
@@ -481,6 +485,23 @@ async function refreshTotals() {
   try { srv.totals = await Server.totals(); if (ui.tab === "me") render(); } catch (e) {}
 }
 
+// Значок Kakao (облачко) для кнопки входа
+const KAKAO_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 3C6.5 3 2 6.6 2 11c0 2.8 1.9 5.3 4.7 6.7l-1 3.6c-.1.3.3.6.6.4l4.2-2.8c.5.1 1 .1 1.5.1 5.5 0 10-3.6 10-8S17.5 3 12 3z"/></svg>';
+
+// Блок «Аккаунт» в профиле: временный аккаунт → предложить Kakao; уже Kakao → галочка
+function accountCard() {
+  if (!srv.ready) return `<p class="meta">${t("offlineBanner")}</p>`;
+  if (Server.isKakao()) return `<h3 class="sub-h">${t("accountH")}</h3>
+    <div class="card"><p style="margin:0"><b>✅ ${t("kakaoLinked")}</b></p><p class="meta" style="margin:0">${t("accountKakao")}</p></div>`;
+  return `<h3 class="sub-h">${t("accountH")}</h3>
+  <div class="card">
+    <p class="meta" style="margin:0">${t("accountAnon")}</p>
+    <button class="kakao-btn" data-kakao-link>${KAKAO_SVG}${t("kakaoLink")}</button>
+    ${ui.kakaoTaken ? `<div class="msg" style="margin:0">${t("kakaoTaken")}</div>
+      <button class="btn ghost" data-kakao-switch>${t("kakaoSwitch")}</button>` : ""}
+  </div>`;
+}
+
 function meView() {
   const visited = all().filter(l => visits[l.id]).sort((a, b) => vTime(b.id) - vTime(a.id));
   if (srv.ready && !srv.board) loadBoard();
@@ -537,8 +558,8 @@ function meView() {
     ${Object.keys(pins).length ? `<div class="coordbox"><b>${t("pinsH", { n: Object.keys(pins).length })}</b>
       <textarea id="pins-out" readonly rows="4">${esc(pinsText())}</textarea>
       <button type="button" class="ghostbtn" data-copypins>${t("pinsCopy")}</button></div>` : ""}
-    <p class="meta" style="margin:0">${srv.ready ? t("accountAnon") : t("offlineBanner")}</p>
   </div>
+  ${accountCard()}
   ${ui.confirmReset
     ? `<div class="card" style="margin-top:16px"><p style="margin:0">${t("resetQ")}</p>
        <div class="row"><button class="btn danger" data-reset-yes>${t("resetYes")}</button><button class="btn ghost" data-reset-no>${t("cancel")}</button></div></div>`
@@ -668,6 +689,24 @@ document.addEventListener("click", async e => {
   else if (d.wear) { profile.title = d.wear; saveProfile(); render(); toast(t("toastWorn", { t: tr(titleById(d.wear).name) })); }
   else if (b.hasAttribute("data-edit")) { ui.editing = true; render(); }
   else if (b.hasAttribute("data-cancel")) { ui.editing = false; render(); }
+  // --- Вход через Kakao ---
+  else if (b.hasAttribute("data-kakao-start") || b.hasAttribute("data-kakao-link") || b.hasAttribute("data-kakao-switch")) {
+    if (!Server.db) return toast(t("offlineBanner"));
+    b.disabled = true;
+    try {
+      sessionStorage.setItem("nubi_kakao", "1");
+      if (b.hasAttribute("data-kakao-link") && Server.user) await Server.linkKakao();
+      else {
+        // Переход в другой (уже существующий) профиль: местные записи этого телефона убираем,
+        // после входа всё загрузится с сервера из того профиля
+        if (b.hasAttribute("data-kakao-switch")) {
+          ["visits", "mine", "profile", "seenTitles", "finds", "ascent"].forEach(store.del);
+          await Server.db.auth.signOut().catch(() => {});
+        }
+        await Server.signInKakao();
+      }
+    } catch (err) { b.disabled = false; toast(t("kakaoErr", { e: String(err) }), true); }
+  }
   else if (b.hasAttribute("data-reset")) { ui.confirmReset = true; render(); }
   else if (b.hasAttribute("data-reset-no")) { ui.confirmReset = false; render(); }
   else if (b.hasAttribute("data-reset-yes")) {
@@ -802,9 +841,29 @@ async function loadServerData() {
 }
 
 // ===== Запуск =====
+// После возврата с Kakao в адресе может быть ошибка — читаем её
+function readAuthError() {
+  const q = new URLSearchParams(location.search), h = new URLSearchParams(location.hash.slice(1));
+  const code = q.get("error_code") || h.get("error_code");
+  const desc = q.get("error_description") || h.get("error_description") || q.get("error") || h.get("error");
+  return code || desc ? { code: code || "", desc: (desc || "").replace(/\+/g, " ") } : null;
+}
+
 async function boot() {
   render();
+  const authErr = readAuthError();
   const ok = await Server.init();
+  if (authErr) history.replaceState(null, "", location.pathname);   // убираем ошибку из адреса
+  // Профиль есть на сервере, а на этом телефоне нет (вход через Kakao на новом телефоне)
+  if (ok && !profile && Server.user) {
+    try { const sp = await Server.getProfile(); if (sp) { profile = { nick: sp.nick, title: sp.title || null }; store.set("profile", profile); } } catch (e) {}
+  }
+  // Итог входа через Kakao
+  const kakaoTry = sessionStorage.getItem("nubi_kakao"); sessionStorage.removeItem("nubi_kakao");
+  if (authErr) {
+    if (/identity_already_exists|already/i.test(authErr.code + authErr.desc)) { ui.kakaoTaken = true; ui.tab = "me"; }
+    else toast(t("kakaoErr", { e: authErr.desc || authErr.code }), true);
+  } else if (kakaoTry && Server.isKakao()) toast(t("kakaoOk"), true);
   if (ok && profile) {
     try {
       // Старый игрок без аккаунта на сервере — создаём аккаунт с тем же ником
