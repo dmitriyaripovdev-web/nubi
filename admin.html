@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>누비 · Админка</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="icons/icon-32.png">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="css/style.css">
+<style>
+  /* ===== Админка: только то, чего нет в основном стиле ===== */
+  body{padding-bottom:40px}
+  .adm-top{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 0 6px}
+  .adm-top h1{margin:0;font-family:var(--display);font-size:24px}
+  .adm-top small{color:var(--muted);font-size:13px;margin-left:6px}
+  .adm-tabs{display:flex;gap:6px;overflow-x:auto;padding:6px 0 12px;scrollbar-width:none}
+  .adm-tabs button{flex:0 0 auto;border:1px solid var(--line);background:var(--surface);color:inherit;border-radius:999px;padding:7px 13px;font:inherit;font-size:14px;cursor:pointer}
+  .adm-tabs button[aria-pressed="true"]{background:var(--indigo);border-color:var(--indigo);color:#fff}
+  .badge{display:inline-block;min-width:18px;padding:0 5px;margin-left:5px;border-radius:999px;background:var(--seal);color:#fff;font-size:11.5px;font-weight:700;text-align:center}
+  .kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .kpi{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+  .kpi b{display:block;font-size:24px;font-family:var(--display)}
+  .kpi span{color:var(--muted);font-size:12.5px}
+  .bars{display:flex;align-items:flex-end;gap:4px;height:110px;padding:10px 0 0}
+  .bars div{flex:1;background:var(--indigo);border-radius:4px 4px 0 0;min-height:2px;position:relative}
+  .bars div span{position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--muted);white-space:nowrap}
+  .acard{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:14px;display:grid;gap:10px}
+  .acard h3{margin:0;font-size:17px;overflow-wrap:anywhere}
+  .acard img{width:100%;max-height:340px;object-fit:contain;border-radius:12px;background:var(--soft)}
+  .acard input,.acard textarea,.acard select{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:10px;padding:9px 11px;font:inherit;background:var(--bg);color:inherit}
+  .acard textarea{min-height:120px;resize:vertical}
+  .acard label{display:grid;gap:4px;font-size:13px;color:var(--muted)}
+  .amap{height:220px;border-radius:12px;overflow:hidden}
+  .arow{display:flex;gap:8px;flex-wrap:wrap}
+  .arow .btn{flex:1 1 140px;margin:0}
+  .btn.ok{background:#2D7A66;border-color:#2D7A66;color:#fff}
+  .btn.no{background:transparent;border:1px solid var(--seal);color:var(--seal)}
+  .ameta{color:var(--muted);font-size:12.5px;overflow-wrap:anywhere}
+  .search{display:flex;gap:6px}
+  .search input{flex:1}
+  .search button{flex:0 0 auto;border:1px solid var(--line);background:var(--soft);border-radius:10px;padding:0 12px;font:inherit;cursor:pointer;color:inherit}
+  .sub-tabs{display:flex;gap:6px;margin:-4px 0 12px}
+  .sub-tabs button{border:0;background:transparent;color:var(--muted);font:inherit;font-size:13px;padding:4px 8px;border-radius:8px;cursor:pointer}
+  .sub-tabs button[aria-pressed="true"]{background:var(--soft);color:inherit;font-weight:700}
+  .wishtxt{font-size:16px;font-weight:600;overflow-wrap:anywhere}
+  .center{text-align:center;padding:40px 10px}
+</style>
+</head>
+<body>
+<div class="app" id="adm"></div>
+<div class="toast" id="toast" hidden role="status" aria-live="polite"></div>
+
+<!-- Названия мест берём из тех же файлов, что и приложение -->
+<script src="js/i18n/ko.js"></script>
+<script src="js/legends-main.js"></script>
+<script src="js/legends-hwaseong.js"></script>
+<script src="js/legends-hwaseong-2.js"></script>
+<script src="js/vendor/supabase-2.117.3.js"></script>
+<script src="js/server.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>
