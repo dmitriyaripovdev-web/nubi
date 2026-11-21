@@ -181,7 +181,7 @@ async function tryCheckin(id) {
       lines.push(t("toastTitle", { t: tr(fresh[fresh.length - 1].name) }));
     }
     toast(lines.join(" · "), true);
-    srv.board = null; delete srv.keeper[id];
+    srv.board = null; delete srv.keeper[id]; delete Wish.walls[id];
     refreshTotals();
   } catch (e) {
     ui.checking = false; ui.checkMsg = { err: true, text: t("errServer") };
@@ -265,7 +265,7 @@ function walkView() {
   if (ui.adding) return addView();
   if (ui.openId) return detailView(byId(ui.openId));
   const codes = ["all", ...new Set(all().map(l => l.region).filter(Boolean))];
-  let list = all().filter(l => ui.region === "all" || l.region === ui.region);
+  let list = all().filter(l => ui.region === "all" || (ui.region === "wish" ? Wish.is(l.id) : l.region === ui.region));
   if (Geo.last) list = list.slice().sort((a, b) => (distTo(a) ?? 1e9) - (distTo(b) ?? 1e9));
   const next = CHALLENGES.filter(c => !progress(c).done)
     .sort((a, b) => progress(b).got / progress(b).total - progress(a).got / progress(a).total)[0];
@@ -274,13 +274,14 @@ function walkView() {
     <div class="stampcount">${t("stamps")} <b>${count()}</b> / ${all().length}</div></div>
   ${!srv.ready ? `<div class="msg">${t("offlineBanner")}</div>` : ""}
   ${next ? `<div class="mini">${chCard(next)}<button class="link" data-tab="chal">${t("seeAll")}</button></div>` : ""}
-  <div class="filters">${codes.map(r => `<button class="chip" data-region="${r}" aria-pressed="${r === ui.region}">${r === "all" ? t("all") : esc(regionName(r))}</button>`).join("")}</div>
+  <div class="filters">${codes.map(r => `<button class="chip" data-region="${r}" aria-pressed="${r === ui.region}">${r === "all" ? t("all") : esc(regionName(r))}</button>`).join("")}
+    <button class="chip lantern-chip" data-region="wish" aria-pressed="${ui.region === "wish"}">🏮 ${t("wishChip")}</button></div>
   <div class="addrow"><button class="link" data-find>📋 ${t("findBtn")}</button><button class="link" data-add>${t("addBtn")}</button></div>
   <div class="list">${list.map(l => {
     const d = distTo(l);
     return `<button class="item" data-open="${esc(l.id)}">
       ${Art.html(l.id, "thumb")}
-      <div><h3>${esc(tr(l.name))}${lang !== "ko" && !l.user ? `<span class="orig">${esc(l.name.ko)}</span>` : ""}${l.user ? `<span class="user-tag">${l.status === "pending" ? t("pendingTag") : t("tagUser")}</span>` : ""}</h3>
+      <div><h3>${esc(tr(l.name))}${Wish.tag(l.id)}${lang !== "ko" && !l.user ? `<span class="orig">${esc(l.name.ko)}</span>` : ""}${l.user ? `<span class="user-tag">${l.status === "pending" ? t("pendingTag") : t("tagUser")}</span>` : ""}</h3>
       <div class="meta">${esc(regionName(l.region))} · ${esc(tr(l.place))}</div>
       ${d != null ? `<div class="dist">${t("distAway", { d: Geo.format(d, lang) })}</div>` : !pos(l) ? `<div class="meta">${t("noPin")}</div>` : ""}</div>
       <div class="seal ${visits[l.id] ? "got" : ""}">${visits[l.id] ? t("sealGot") : "?"}</div>
@@ -314,6 +315,7 @@ function detailView(l) {
   ${Art.has(l.id) ? Art.html(l.id, "hero") : ""}
   <article class="detail">
     <div class="meta">${esc(regionName(l.region))}${l.user ? " · " + t("userLegend", { n: esc(l.author || "?") }) : ""}</div>
+    ${Wish.is(l.id) ? `<div class="wishtag">🏮 ${t("wishPlace")}</div>` : ""}
     <h2>${esc(tr(l.name))}</h2>
     ${lang !== "ko" && !l.user ? `<div class="ko">${esc(l.name.ko)}</div>` : ""}
     <div class="place"><b>${t("where")}</b><span>${esc(tr(l.place))}</span>
@@ -339,6 +341,7 @@ function detailView(l) {
         ${ascentHere ? `<b>🥾 ${t("ascentOn", { t: timeFmt(ascent.at) })}</b><span class="meta">${t("ascentGo")}</span>`
           : `<button class="ghostbtn" data-ascent="${esc(l.id)}" ${ui.busy ? "disabled" : ""}>🥾 ${t("ascentBtn")}</button><span class="meta">${t("ascentHint")}</span>`}
       </div>` : ""}
+    ${Wish.card(l)}
     ${markMode && !l.user ? `<div class="card markbox"><b>${t("markMode")}</b>
        <span class="meta">${pins[l.id] ? t("pinSaved", { c: pins[l.id].lat.toFixed(5) + ", " + pins[l.id].lng.toFixed(5) }) : t("markHint")}</span>
        <button class="ghostbtn" data-pin="${esc(l.id)}">${t("pinHere")}</button></div>` : ""}
@@ -437,7 +440,7 @@ function initMap() {
     maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
   }).addTo(map);
   all().filter(l => pos(l)).forEach(l => {
-    const icon = L.divIcon({ className: "", html: `<div class="pin ${visits[l.id] ? "got" : ""}"></div>`, iconSize: [30, 30], iconAnchor: [15, 30], popupAnchor: [0, -28] });
+    const icon = L.divIcon({ className: "", html: `<div class="pin ${visits[l.id] ? "got" : ""} ${Wish.is(l.id) ? "wish" : ""}"></div>`, iconSize: [30, 30], iconAnchor: [15, 30], popupAnchor: [0, -28] });
     const p = pos(l);
     const m = L.marker([p.lat, p.lng], { icon }).addTo(map)
       .bindPopup(`<b>${esc(tr(l.name))}</b><br>${esc(tr(l.place))}<br><button class="popbtn" data-open-map="${esc(l.id)}">→</button>`);
@@ -549,6 +552,8 @@ function meView() {
     ? visited.map(l => `<button data-open-from-me="${esc(l.id)}">${Art.has(l.id) ? Art.html(l.id, "stamp-art") : ""}<span>${esc(tr(l.name))}</span></button>`).join("")
     : `<button class="empty" disabled>${t("bookEmpty")}</button>`}</div>
 
+  ${Wish.profileBlock()}
+
   <h3 class="sub-h">${t("settingsH")}</h3>
   <div class="card">
     <label class="switch" for="s-test"><span>${t("testMode")}<br><span class="meta" style="font-weight:400">${t("testHint")}</span></span>
@@ -596,6 +601,8 @@ function render() {
   if (big && ui.viewFind) Photos.get(ui.viewFind).then(src => { if (src) big.src = src; });
   const img = document.getElementById("lphoto");
   if (img && ui.openId) Photos.get(ui.openId).then(src => { if (src) img.src = src; else img.remove(); });
+  // Стена фонариков и мои желания подгружаются отдельно
+  Wish.load();
   // Хранитель места подгружается отдельно
   if (ui.openId && srv.ready && srv.keeper[ui.openId] === undefined) {
     const id = ui.openId;
@@ -689,6 +696,8 @@ document.addEventListener("click", async e => {
   else if (d.wear) { profile.title = d.wear; saveProfile(); render(); toast(t("toastWorn", { t: tr(titleById(d.wear).name) })); }
   else if (b.hasAttribute("data-edit")) { ui.editing = true; render(); }
   else if (b.hasAttribute("data-cancel")) { ui.editing = false; render(); }
+  // --- Желания и стена фонариков ---
+  else if (d.wishSend || d.cheer || d.fulfill) await Wish.click(b);
   // --- Вход через Kakao ---
   else if (b.hasAttribute("data-kakao-start") || b.hasAttribute("data-kakao-link") || b.hasAttribute("data-kakao-switch")) {
     if (!Server.db) return toast(t("offlineBanner"));
