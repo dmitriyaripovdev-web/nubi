@@ -302,7 +302,8 @@ document.addEventListener("click", async e => {
     if (!name || !story) return toast(tx("needText"));
     act(async () => {
       const { error } = await db().rpc("admin_find_to_legend", { p_find: id, p_name: name, p_place: val("p-" + id).trim(),
-        p_story: story, p_lang: admLang === "ru" ? "ru" : "ko", p_lat: r.lat, p_lng: r.lng });
+        p_story: story, p_lang: /[가-힣]/.test(story) ? "ko" : /[а-яё]/i.test(story) ? "ru" : "en",   // язык — по тексту легенды
+        p_lat: r.lat, p_lng: r.lng });
       if (error) throw error;
     });
   }
