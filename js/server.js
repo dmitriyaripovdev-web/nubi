@@ -20,9 +20,31 @@ window.Server = {
       });
       const { data } = await this.db.auth.getSession();
       this.user = data.session ? data.session.user : null;
+      // Свежие данные аккаунта (в т.ч. привязан ли Kakao)
+      if (this.user) { const r = await this.db.auth.getUser().catch(() => null); if (r && r.data && r.data.user) this.user = r.data.user; }
       this.online = true;
       return true;
     } catch (e) { this.online = false; return false; }
+  },
+
+  // ===== Вход через Kakao =====
+  // Вошёл ли человек через Kakao (а не временный аккаунт этого телефона)
+  isKakao() { return !!(this.user && (this.user.identities || []).some(i => i.provider === "kakao")); },
+  // Имя из профиля Kakao — подставляем как ник по умолчанию
+  kakaoName() {
+    const m = (this.user && this.user.user_metadata) || {};
+    return String(m.nickname || m.name || m.full_name || m.preferred_username || "").trim();
+  },
+  backUrl() { return location.origin + location.pathname; },
+  // Привязать Kakao к текущему временному аккаунту — печати и очки остаются
+  async linkKakao() {
+    const { error } = await this.db.auth.linkIdentity({ provider: "kakao", options: { redirectTo: this.backUrl() } });
+    if (error) throw error.message;
+  },
+  // Войти через Kakao (новый телефон или уже существующий профиль)
+  async signInKakao() {
+    const { error } = await this.db.auth.signInWithOAuth({ provider: "kakao", options: { redirectTo: this.backUrl() } });
+    if (error) throw error.message;
   },
 
   // Войти (создать анонимный аккаунт, если ещё нет)
