@@ -101,12 +101,14 @@ function hasTitle(x) {
   if (x.kind === "region") { const ids = regionIds(x.region), n = ids.filter(i => visits[i]).length; return x.need ? n >= x.need : n === ids.length; }
   if (x.kind === "challenge") return progress(CHALLENGES.find(c => c.id === x.ch)).done;
   if (x.kind === "submit") return myLegendsCount() >= x.need;
+  if (x.kind === "cheer") return (Wish.cheersGiven || 0) >= x.need;
 }
 function titleProg(x) {
   if (x.kind === "count") return `${Math.min(count(), x.need)}/${x.need}`;
   if (x.kind === "region") { const ids = regionIds(x.region), need = x.need || ids.length; return `${Math.min(ids.filter(i => visits[i]).length, need)}/${need}`; }
   if (x.kind === "challenge") { const p = progress(CHALLENGES.find(c => c.id === x.ch)); return `${p.got}/${p.total}`; }
   if (x.kind === "submit") return `${Math.min(myLegendsCount(), x.need)}/${x.need}`;
+  if (x.kind === "cheer") return `${Math.min(Wish.cheersGiven || 0, x.need)}/${x.need}`;
 }
 const earned = () => TITLES.filter(hasTitle);
 const wornName = () => profile && profile.title && titleById(profile.title) && hasTitle(titleById(profile.title))
@@ -241,9 +243,11 @@ function chCard(c) {
 }
 
 // ===== Первый запуск =====
-// Картинка легенды: у народных легенд — фото автора, у остальных — рисунок
+// Картинка легенды. У народных легенд — нарисованная картинка (загружается в админке),
+// пока её нет — заглушка в нашем стиле (фото автора показывается только внутри легенды)
 function thumbHtml(l, cls) {
-  if (l.photoUrl) return `<img class="art ${cls}" src="${esc(l.photoUrl)}" alt="" loading="lazy" decoding="async" style="object-fit:cover">`;
+  if (l.artUrl) return `<img class="art ${cls}" src="${esc(l.artUrl)}" alt="" loading="lazy" decoding="async">`;
+  if (l.user) return `<div class="art art-user ${cls}" aria-hidden="true"><span>📜</span></div>`;
   return Art.html(l.id, cls);
 }
 
@@ -318,7 +322,7 @@ function detailView(l) {
     : visitedToday(l.id) && !testMode ? `<p class="note">${t("visitedTodayNote")}</p>`
     : `<button class="btn" data-checkin="${esc(l.id)}" ${ui.checking ? "disabled" : ""}>${v ? t("checkinAgain") : t("checkin")}</button>`;
   return topBar() + `<button class="back" data-back>${t("back")}</button>
-  ${Art.has(l.id) ? Art.html(l.id, "hero") : ""}
+  ${l.artUrl ? `<img class="art hero" src="${esc(l.artUrl)}" alt="">` : Art.has(l.id) ? Art.html(l.id, "hero") : ""}
   <article class="detail">
     <div class="meta">${esc(regionName(l.region))}${l.user ? " · " + t("userLegend", { n: esc(l.author || "?") }) : ""}</div>
     ${Wish.is(l.id) ? `<div class="wishtag">🏮 ${t("wishPlace")}</div>` : ""}
@@ -555,7 +559,7 @@ function meView() {
 
   <h3 class="sub-h">${t("bookH")}</h3>
   <div class="book">${visited.length
-    ? visited.map(l => `<button data-open-from-me="${esc(l.id)}">${l.photoUrl || Art.has(l.id) ? thumbHtml(l, "stamp-art") : ""}<span>${esc(tr(l.name))}</span></button>`).join("")
+    ? visited.map(l => `<button data-open-from-me="${esc(l.id)}">${l.user || Art.has(l.id) ? thumbHtml(l, "stamp-art") : ""}<span>${esc(tr(l.name))}</span></button>`).join("")
     : `<button class="empty" disabled>${t("bookEmpty")}</button>`}</div>
 
   ${Wish.profileBlock()}
@@ -703,7 +707,7 @@ document.addEventListener("click", async e => {
   else if (b.hasAttribute("data-edit")) { ui.editing = true; render(); }
   else if (b.hasAttribute("data-cancel")) { ui.editing = false; render(); }
   // --- Желания и стена фонариков ---
-  else if (d.wishSend || d.cheer || d.fulfill || d.wishGoto !== undefined) await Wish.click(b);
+  else if (Wish.handles(d)) await Wish.click(b);
   // --- Вход через Kakao ---
   else if (b.hasAttribute("data-kakao-start") || b.hasAttribute("data-kakao-link") || b.hasAttribute("data-kakao-switch")) {
     if (!Server.db) return toast(t("offlineBanner"));
@@ -848,6 +852,7 @@ async function loadServerData() {
       lat: r.lat, lng: r.lng, status: r.status, mine: r.author === me,
       photoUrl: r.photo_path && r.status === "approved" ? Server.photoUrl(r.photo_path) : null,
       photoTime: r.photo_at,
+      artUrl: r.art_path && r.status === "approved" ? Server.photoUrl(r.art_path) : null,
       name: { [r.lang]: r.name }, place: { [r.lang]: r.place || "" }, story: { [r.lang]: r.story }
     })).filter(l => l.status === "approved" || l.mine);
   } catch (e) {}
