@@ -331,8 +331,9 @@ async function copyFindPhoto(findPath, legendId) {
   if (!sig.data) return;
   const blob = await (await fetch(sig.data.signedUrl)).blob();
   const path = `${Server.user.id}/${legendId}.jpg`;
-  const up = await db().storage.from("legends").upload(path, blob, { contentType: "image/jpeg", upsert: true });
-  if (up.error) throw up.error;
+  // без перезаписи: у админа нет права менять файлы, а имя файла новое (если файл уже есть — просто используем его)
+  const up = await db().storage.from("legends").upload(path, blob, { contentType: "image/jpeg" });
+  if (up.error && !/exist|duplicate/i.test(up.error.message || "")) throw up.error;
   const { error } = await db().from("user_legends").update({ photo_path: path }).eq("id", legendId);
   if (error) throw error;
 }
