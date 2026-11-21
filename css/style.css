@@ -315,6 +315,34 @@ img.art.hero{aspect-ratio:16/9;height:auto}
 .wcheck{display:flex;gap:8px;align-items:flex-start;margin:10px 0;font-size:14px;line-height:1.35}
 .wishbox .wcheck input{width:18px;height:18px;flex:none;margin:1px 0 0;accent-color:var(--lantern2)}
 .wcheck span{flex:1;text-align:left}
+/* Небо фонариков */
+.sky-stats{margin:-2px 0 10px}
+.sky{position:relative;height:230px;border-radius:14px;overflow:hidden;margin-bottom:10px;
+  background:radial-gradient(120% 90% at 50% 100%,#2b3a6e 0%,#141c3a 55%,#0b1026 100%)}
+.sky::after{content:"";position:absolute;left:0;right:0;bottom:0;height:34px;background:linear-gradient(transparent,rgba(11,16,38,.9));pointer-events:none}
+.star{position:absolute;transform:translate(-50%,-50%);border:0;padding:0;border-radius:50%;cursor:pointer;
+  background:radial-gradient(circle at 50% 40%,#fff3c9,var(--lantern2) 55%,var(--lantern));
+  box-shadow:0 0 10px 2px rgba(243,163,59,.6);animation:twinkle 3.2s ease-in-out infinite}
+.star::before{content:"";position:absolute;inset:-10px}
+.star.done{background:radial-gradient(circle at 50% 40%,#fffbe8,#ffd86b 60%,#e9a92c);box-shadow:0 0 14px 4px rgba(255,216,107,.75)}
+.star.mine{outline:2px solid #fff3d6;outline-offset:2px}
+.star.on{box-shadow:0 0 10px 2px rgba(243,163,59,.6),0 0 0 3px rgba(255,255,255,.35)}
+.star.sel{transform:translate(-50%,-50%) scale(1.8);z-index:2}
+@keyframes twinkle{0%,100%{opacity:.75}50%{opacity:1}}
+@media (prefers-reduced-motion: reduce){.star{animation:none}}
+.opened,.browse{display:grid;gap:10px;justify-items:center;margin:4px 0 12px;text-align:center}
+.lantern.big{width:min(100%,300px);box-sizing:border-box;padding:24px 18px 14px;text-align:left}
+.lantern.big p{font-size:16px}
+.sky-btns{gap:8px;margin-bottom:14px}
+.sky-btns .btn,.brow .btn{margin:0;flex:1;padding:12px 10px;font-size:14.5px}
+.brow{width:100%;gap:8px}
+.wishbox .btn.ghost{background:rgba(255,255,255,.1);color:#ffe6b8;border:1px solid rgba(255,230,184,.35)}
+.wishbox .link{color:#ffe6b8;text-align:center}
+.bcount{font-size:12.5px}
+/* Народная легенда без рисунка — заглушка в общем стиле */
+.art-user{display:grid;place-items:center;background:radial-gradient(circle at 30% 25%,#fbf3e2,#efe2c4 70%,#e4d2aa)}
+.art-user span{font-size:26px;filter:sepia(.4)}
+.art.hero.art-user span{font-size:64px}
 .wsteps{margin:4px 0 12px;padding-left:22px;display:grid;gap:6px;font-size:14px;line-height:1.4}
 .wsteps li::marker{color:#ffe6b8;font-weight:700}
 .btn.pulse{animation:pulse .6s ease-in-out 3}
