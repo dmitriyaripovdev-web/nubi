@@ -241,6 +241,12 @@ function chCard(c) {
 }
 
 // ===== Первый запуск =====
+// Картинка легенды: у народных легенд — фото автора, у остальных — рисунок
+function thumbHtml(l, cls) {
+  if (l.photoUrl) return `<img class="art ${cls}" src="${esc(l.photoUrl)}" alt="" loading="lazy" decoding="async" style="object-fit:cover">`;
+  return Art.html(l.id, cls);
+}
+
 function welcomeView() {
   return `<div class="welcome">
     <div class="brand">누비</div>
@@ -280,7 +286,7 @@ function walkView() {
   <div class="list">${list.map(l => {
     const d = distTo(l);
     return `<button class="item" data-open="${esc(l.id)}">
-      ${Art.html(l.id, "thumb")}
+      ${thumbHtml(l, "thumb")}
       <div><h3>${esc(tr(l.name))}${Wish.tag(l.id)}${lang !== "ko" && !l.user ? `<span class="orig">${esc(l.name.ko)}</span>` : ""}${l.user ? `<span class="user-tag">${l.status === "pending" ? t("pendingTag") : t("tagUser")}</span>` : ""}</h3>
       <div class="meta">${esc(regionName(l.region))} · ${esc(tr(l.place))}</div>
       ${d != null ? `<div class="dist">${t("distAway", { d: Geo.format(d, lang) })}</div>` : !pos(l) ? `<div class="meta">${t("noPin")}</div>` : ""}</div>
@@ -549,7 +555,7 @@ function meView() {
 
   <h3 class="sub-h">${t("bookH")}</h3>
   <div class="book">${visited.length
-    ? visited.map(l => `<button data-open-from-me="${esc(l.id)}">${Art.has(l.id) ? Art.html(l.id, "stamp-art") : ""}<span>${esc(tr(l.name))}</span></button>`).join("")
+    ? visited.map(l => `<button data-open-from-me="${esc(l.id)}">${l.photoUrl || Art.has(l.id) ? thumbHtml(l, "stamp-art") : ""}<span>${esc(tr(l.name))}</span></button>`).join("")
     : `<button class="empty" disabled>${t("bookEmpty")}</button>`}</div>
 
   ${Wish.profileBlock()}
@@ -697,7 +703,7 @@ document.addEventListener("click", async e => {
   else if (b.hasAttribute("data-edit")) { ui.editing = true; render(); }
   else if (b.hasAttribute("data-cancel")) { ui.editing = false; render(); }
   // --- Желания и стена фонариков ---
-  else if (d.wishSend || d.cheer || d.fulfill) await Wish.click(b);
+  else if (d.wishSend || d.cheer || d.fulfill || d.wishGoto !== undefined) await Wish.click(b);
   // --- Вход через Kakao ---
   else if (b.hasAttribute("data-kakao-start") || b.hasAttribute("data-kakao-link") || b.hasAttribute("data-kakao-switch")) {
     if (!Server.db) return toast(t("offlineBanner"));
