@@ -127,6 +127,10 @@ Object.assign(I18N.en, {
 
 // ===== Wishes and the lantern wall =====
 Object.assign(I18N.en, {
+  skyH:"Sky of wishes", skyStats:"{a} glowing · {b} lit today · {c} flew into the sky",
+  catchBtn:"Catch a lantern", browseBtn:"Browse lanterns", cheerBtn:"Cheering for you", nextBtn:"Next", closeBtn:"Close",
+  browseDone:"You've read every wish. Thank you!", cheerLimit:"You've cheered 50 wishes today. Come back tomorrow!",
+  cheersGiven:"You've cheered {n} {n:wish|wishes}",
   wishStep1:"Come here and get a stamp (within 1 km)", wishStep2:"Write your wish", wishStep3:"Hang a lantern — it lights up on the wall after review", wishGoStamp:"Go to stamp",
   wishPlace:"Wish spot", wishChip:"Wish spots", wishH:"Make a wish",
   wishIntro:"People have made wishes here since long ago. Write yours.",
