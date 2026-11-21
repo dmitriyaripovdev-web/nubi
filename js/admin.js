@@ -21,7 +21,7 @@ const ADM_TXT = {
     approve: "Одобрить", reject: "Отклонить", reason: "Причина отказа (автор её увидит)",
     approveFind: "Одобрить (+30)", toLegend: "Сделать легендой", createLegend: "Создать легенду (+100 автору)",
     note: "Подпись", cur: "Сейчас", sugg: "Предложено", dist: "Разница",
-    approvePin: "Принять точку (+20)", hide: "Скрыть", light: "Зажечь на стене",
+    approvePin: "Принять точку (+20)", far: "Очень далеко от места — скорее всего ошибка, лучше отклонить", hide: "Скрыть", light: "Зажечь на стене",
     saved: "Сохранено", err: "Ошибка: ", needText: "Заполните название и текст", notFound: "Ничего не нашлось",
     lang: "Язык", logout: "Выйти", openApp: "Открыть приложение"
   },
@@ -38,7 +38,7 @@ const ADM_TXT = {
     approve: "승인", reject: "거절", reason: "거절 사유 (작성자에게 보입니다)",
     approveFind: "승인 (+30)", toLegend: "전설로 만들기", createLegend: "전설 만들기 (작성자 +100)",
     note: "메모", cur: "현재", sugg: "제안", dist: "차이",
-    approvePin: "위치 승인 (+20)", hide: "숨기기", light: "벽에 불 켜기",
+    approvePin: "위치 승인 (+20)", far: "장소에서 너무 멉니다 — 오류일 가능성이 높아 거절을 권합니다", hide: "숨기기", light: "벽에 불 켜기",
     saved: "저장했습니다", err: "오류: ", needText: "이름과 내용을 입력하세요", notFound: "찾지 못했습니다",
     lang: "언어", logout: "로그아웃", openApp: "앱 열기"
   }
@@ -178,6 +178,7 @@ function cardView(r) {
       <div class="ameta">${tx("author")}: ${esc(r.profiles ? r.profiles.nick : "?")} · ${dt(r.created_at)} · ±${Math.round(r.acc || 0)} м</div>
       <div class="ameta">${tx("cur")}: ${cur && cur.lat != null ? cur.lat.toFixed(5) + ", " + cur.lng.toFixed(5) + (cur.approx ? " (≈)" : "") : "—"}
         · ${tx("sugg")}: ${r.lat.toFixed(5)}, ${r.lng.toFixed(5)}${d != null ? ` · ${tx("dist")}: ${d} м` : ""}</div>
+      ${d != null && d > 1000 ? `<div class="warn">⚠ ${tx("far")}</div>` : ""}
       <div class="amap" data-amap="${r.id}" data-cur="${cur && cur.lat != null ? cur.lat + "," + cur.lng : ""}"></div>
       ${pend ? `<div class="arow"><button class="btn ok" data-aok-pin="${r.id}">${tx("approvePin")}</button>
         <button class="btn no" data-areject-pin="${r.id}">${tx("reject")}</button></div>` : ""}
@@ -215,7 +216,9 @@ function initCardMap(el) {
   if (el.dataset.cur) {
     const [la, ln] = el.dataset.cur.split(",").map(Number);
     L.circleMarker([la, ln], { radius: 8, color: "#C0392B" }).addTo(m);
-    m.fitBounds([[la, ln], [r.lat, r.lng]], { padding: [30, 30], maxZoom: 17 });
+    // карта видна целиком только после отрисовки — подгоняем обе точки чуть позже
+    const fit = () => { m.invalidateSize(); m.fitBounds([[la, ln], [r.lat, r.lng]], { padding: [30, 30], maxZoom: 17 }); };
+    fit(); setTimeout(fit, 150);
   }
   A.maps.push(m);
 }
