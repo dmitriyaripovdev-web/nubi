@@ -301,10 +301,11 @@ document.addEventListener("click", async e => {
     const name = val("n-" + id).trim(), story = val("s-" + id).trim();
     if (!name || !story) return toast(tx("needText"));
     act(async () => {
-      const { error } = await db().rpc("admin_find_to_legend", { p_find: id, p_name: name, p_place: val("p-" + id).trim(),
+      const { data: newId, error } = await db().rpc("admin_find_to_legend", { p_find: id, p_name: name, p_place: val("p-" + id).trim(),
         p_story: story, p_lang: /[가-힣]/.test(story) ? "ko" : /[а-яё]/i.test(story) ? "ru" : "en",   // язык — по тексту легенды
         p_lat: r.lat, p_lng: r.lng });
       if (error) throw error;
+      await copyFindPhoto(r.photo_path, newId);   // фото таблички становится картинкой легенды
     });
   }
   else if (d.aokPin || d.arejectPin) act(async () => {
@@ -320,6 +321,31 @@ document.addEventListener("click", async e => {
 document.addEventListener("keydown", e => {
   if (e.key === "Enter" && e.target.id && e.target.id.startsWith("q-")) { e.preventDefault(); kakaoSearch(e.target.id.slice(2)); }
 });
+
+// ---------- Фото таблички → картинка легенды ----------
+// Фото находок лежат в закрытой папке, а картинки легенд — в открытой.
+// Копируем файл: скачиваем по временной ссылке и кладём в папку легенд.
+async function copyFindPhoto(findPath, legendId) {
+  if (!findPath || !legendId) return;
+  const sig = await db().storage.from("finds").createSignedUrl(findPath, 600);
+  if (!sig.data) return;
+  const blob = await (await fetch(sig.data.signedUrl)).blob();
+  const path = `${Server.user.id}/${legendId}.jpg`;
+  const up = await db().storage.from("legends").upload(path, blob, { contentType: "image/jpeg", upsert: true });
+  if (up.error) throw up.error;
+  const { error } = await db().from("user_legends").update({ photo_path: path }).eq("id", legendId);
+  if (error) throw error;
+}
+// Легенды, сделанные из табличек раньше, — без картинки. Находим их табличку (тот же автор и время снимка)
+async function fixMissingPhotos() {
+  const { data: ls } = await db().from("user_legends").select("id, author, photo_at").eq("status", "approved").is("photo_path", null);
+  for (const l of ls || []) {
+    if (!l.photo_at) continue;
+    const { data: fs } = await db().from("finds").select("photo_path, shot_at").eq("author", l.author).not("photo_path", "is", null);
+    const f = (fs || []).find(x => x.shot_at && new Date(x.shot_at).getTime() === new Date(l.photo_at).getTime());
+    if (f) await copyFindPhoto(f.photo_path, l.id).catch(() => {});
+  }
+}
 
 // ---------- Запуск ----------
 function gate(msg, withLogin) {
@@ -338,4 +364,5 @@ function gate(msg, withLogin) {
   const { data: isAdm } = await db().rpc("is_admin");
   if (!isAdm) return gate(tx("noAccess"));
   await load();
+  fixMissingPhotos().catch(() => {});
 })();
