@@ -124,3 +124,20 @@ Object.assign(I18N.ko, {
   kakaoTaken:"이 카카오 계정은 이미 다른 누비 프로필과 연결되어 있습니다. 그 프로필로 로그인할 수 있지만, 이 휴대폰의 임시 기록은 옮겨지지 않습니다.",
   kakaoSwitch:"그 프로필로 로그인", kakaoErr:"카카오 로그인에 실패했습니다: {e}"
 });
+
+// ===== Желания и стена фонариков =====
+Object.assign(I18N.ko, {
+  wishPlace:"소원 명소", wishChip:"소원 명소", wishH:"소원 빌기",
+  wishIntro:"예로부터 사람들이 소원을 빌던 곳입니다. 마음속 소원을 적어 보세요.",
+  wishNeedStamp:"이곳에서 도장을 받으면 소원을 빌 수 있습니다.",
+  wishPh:"나의 소원 (120자까지)", wishPublic:"소원의 벽에 소원등 걸기 (익명)", wishSend:"소원 빌기",
+  wishRules:"다른 사람의 이름이나 연락처는 적지 마세요. 공개 소원은 확인 후 이름 없이 걸립니다.",
+  wishEmptyText:"소원을 적어 주세요", wishOkPrivate:"소원을 빌었습니다. 나만 볼 수 있어요.",
+  wishOkPublic:"소원등을 걸었습니다. 확인 후 벽에 불이 켜집니다.", wishErrAny:"소원을 보내지 못했습니다. 잠시 후 다시 시도해 주세요.",
+  wishErr:{no_visit:"먼저 이곳에서 도장을 받아 주세요.", limit:"오늘은 이곳에서 소원을 세 번 빌었어요. 내일 다시 오세요!", bad_text:"소원은 1~120자로 적어 주세요.", no_user:"서버에 연결되지 않았습니다."},
+  wallH:"소원의 벽 · 소원등 {n}개", wallEmpty:"아직 걸린 소원등이 없어요. 첫 번째 등을 밝혀 보세요.",
+  fulfilledTag:"이루어짐 ✨", mineTag:"내 소원", myWishesH:"🏮 나의 소원",
+  wishStatus:{private:"나만 보기", pending:"확인 중", approved:"벽에 걸림", hidden:"숨김"},
+  fulfillBtn:"이루어졌어요!", fulfillAsk:"30일이 지났어요. 소원이 이루어졌나요?", fulfilledOk:"축하합니다! 소원 성취 ✨",
+  noWishes:"아직 빈 소원이 없어요. 목록에서 🏮 소원 명소를 찾아보세요."
+});
