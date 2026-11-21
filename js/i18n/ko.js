@@ -127,6 +127,10 @@ Object.assign(I18N.ko, {
 
 // ===== Желания и стена фонариков =====
 Object.assign(I18N.ko, {
+  skyH:"소원의 하늘", skyStats:"소원등 {a}개가 빛나요 · 오늘 {b}개 · 하늘로 날아간 등 {c}개",
+  catchBtn:"소원등 잡기", browseBtn:"소원 넘겨 보기", cheerBtn:"응원해요", nextBtn:"다음", closeBtn:"닫기",
+  browseDone:"모든 소원을 다 봤어요. 고마워요!", cheerLimit:"오늘은 응원을 50번 했어요. 내일 또 응원해 주세요!",
+  cheersGiven:"소원 {n}개를 응원했어요",
   wishStep1:"이곳에 와서 도장을 찍으세요 (1km 이내)", wishStep2:"마음속 소원을 적으세요", wishStep3:"소원등을 벽에 걸면 확인 후 불이 켜집니다", wishGoStamp:"도장 찍으러 가기",
   wishPlace:"소원 명소", wishChip:"소원 명소", wishH:"소원 빌기",
   wishIntro:"예로부터 사람들이 소원을 빌던 곳입니다. 마음속 소원을 적어 보세요.",
