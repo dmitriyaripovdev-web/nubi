@@ -124,3 +124,20 @@ Object.assign(I18N.en, {
   kakaoTaken:"This Kakao account is already connected to another Nubi profile. You can sign in to that profile, but the temporary records on this phone won't move over.",
   kakaoSwitch:"Sign in to that profile", kakaoErr:"Kakao login failed: {e}"
 });
+
+// ===== Wishes and the lantern wall =====
+Object.assign(I18N.en, {
+  wishPlace:"Wish spot", wishChip:"Wish spots", wishH:"Make a wish",
+  wishIntro:"People have made wishes here since long ago. Write yours.",
+  wishNeedStamp:"Get a stamp here and you can make a wish.",
+  wishPh:"My wish (up to 120 characters)", wishPublic:"Hang a lantern on the wish wall (anonymous)", wishSend:"Make a wish",
+  wishRules:"Don't write other people's names or contacts. Public wishes are reviewed and shown without a name.",
+  wishEmptyText:"Write your wish", wishOkPrivate:"Wish made. Only you can see it.",
+  wishOkPublic:"Lantern hung. It will light up on the wall after review.", wishErrAny:"Couldn't send. Please try again a bit later.",
+  wishErr:{no_visit:"Get a stamp at this place first.", limit:"You've made three wishes here today. Come back tomorrow!", bad_text:"A wish is 1–120 characters.", no_user:"No connection to the server."},
+  wallH:"Wish wall · {n} {n:lantern|lanterns}", wallEmpty:"No lanterns yet. Light the first one.",
+  fulfilledTag:"Came true ✨", mineTag:"mine", myWishesH:"🏮 My wishes",
+  wishStatus:{private:"only me", pending:"in review", approved:"glowing on the wall", hidden:"hidden"},
+  fulfillBtn:"It came true!", fulfillAsk:"30 days have passed. Did it come true?", fulfilledOk:"Congratulations! Your wish came true ✨",
+  noWishes:"No wishes yet. Look for 🏮 wish spots in the list."
+});
