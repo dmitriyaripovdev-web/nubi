@@ -52,6 +52,7 @@ window.TITLES = [
   {id:"t_phoenix", kind:"challenge", ch:"phoenix", name:{ko:"봉황을 본 자",ru:"Видевший феникса",en:"Phoenix Seeker"}, desc:{ko:"챌린지 ‘화성의 봉황’ 완료",ru:"Челлендж «Фениксы Хвасона»",en:"Complete “Phoenixes of Hwaseong”"}},
   {id:"t_autumn", kind:"challenge", ch:"nov", name:{ko:"늦가을 나그네",ru:"Осенний странник",en:"Autumn Wanderer"}, desc:{ko:"챌린지 ‘늦가을 전설 주간’ 완료",ru:"Челлендж «Легенды поздней осени»",en:"Complete “Late Autumn Legends”"}},
   {id:"t_weekend", kind:"challenge", ch:"weekend", name:{ko:"주말 산책자",ru:"Гуляка выходного дня",en:"Weekend Walker"}, desc:{ko:"챌린지 ‘주말 산책자’ 완료",ru:"Челлендж «Прогулка выходного дня»",en:"Complete “Weekend Walker”"}},
+  {id:"t_lights", kind:"cheer", need:100, name:{ko:"불빛 지킴이",ru:"Хранитель огней",en:"Keeper of Lights"}, desc:{ko:"소원 100개 응원",ru:"Поддержать 100 желаний",en:"Cheer 100 wishes"}},
   {id:"t_scribe", kind:"submit", need:1, name:{ko:"이야기꾼",ru:"Сказитель",en:"Storyteller"}, desc:{ko:"전설 1개 제보",ru:"Добавить 1 легенду",en:"Submit 1 legend"}}
 ];
 
