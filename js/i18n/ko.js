@@ -127,6 +127,7 @@ Object.assign(I18N.ko, {
 
 // ===== Желания и стена фонариков =====
 Object.assign(I18N.ko, {
+  wishStep1:"이곳에 와서 도장을 찍으세요 (1km 이내)", wishStep2:"마음속 소원을 적으세요", wishStep3:"소원등을 벽에 걸면 확인 후 불이 켜집니다", wishGoStamp:"도장 찍으러 가기",
   wishPlace:"소원 명소", wishChip:"소원 명소", wishH:"소원 빌기",
   wishIntro:"예로부터 사람들이 소원을 빌던 곳입니다. 마음속 소원을 적어 보세요.",
   wishNeedStamp:"이곳에서 도장을 받으면 소원을 빌 수 있습니다.",
