@@ -315,6 +315,10 @@ img.art.hero{aspect-ratio:16/9;height:auto}
 .wcheck{display:flex;gap:8px;align-items:flex-start;margin:10px 0;font-size:14px;line-height:1.35}
 .wishbox .wcheck input{width:18px;height:18px;flex:none;margin:1px 0 0;accent-color:var(--lantern2)}
 .wcheck span{flex:1;text-align:left}
+.wsteps{margin:4px 0 12px;padding-left:22px;display:grid;gap:6px;font-size:14px;line-height:1.4}
+.wsteps li::marker{color:#ffe6b8;font-weight:700}
+.btn.pulse{animation:pulse .6s ease-in-out 3}
+@keyframes pulse{50%{transform:scale(1.04);box-shadow:0 0 0 6px rgba(243,163,59,.45)}}
 .btn.lantern-btn{background:linear-gradient(90deg,var(--lantern),var(--lantern2));border:0;color:#fff}
 .wall-h{margin-top:18px!important;font-size:15.5px!important}
 .wall{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 12px;margin-top:6px}
