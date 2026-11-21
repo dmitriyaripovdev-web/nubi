@@ -237,3 +237,53 @@ img.art.hero{aspect-ratio:16/9;height:auto}
 /* Пеший подъём */
 .card.ascent{margin-top:16px;gap:8px}
 .toast{border-radius:16px;line-height:1.45}
+
+/* ===== Разделы: спорт, рыбалка, кемпинг ===== */
+:root{--sport:#2D7A66;--fish:#2A6F97;--camp:#8A5A2B}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--sport:#6CC2A8;--fish:#7FB8DA;--camp:#D9A46B}}
+:root[data-theme="dark"]{--sport:#6CC2A8;--fish:#7FB8DA;--camp:#D9A46B}
+.kthumb{width:56px;height:56px;border-radius:12px;display:grid;place-items:center;font-size:26px;background:color-mix(in srgb,var(--sport) 14%,var(--surface))}
+.kthumb.fish{background:color-mix(in srgb,var(--fish) 14%,var(--surface))}
+.kthumb.camp{background:color-mix(in srgb,var(--camp) 16%,var(--surface))}
+.item h3{overflow-wrap:anywhere}
+.item .meta{overflow-wrap:anywhere}
+.faint{opacity:.75;font-size:11.5px}
+.book-tag{font-family:var(--body);font-size:10.5px;color:var(--gold);border:1px solid var(--gold);border-radius:4px;padding:0 5px;margin-left:6px;vertical-align:2px;font-weight:700;white-space:nowrap}
+.chip.book[aria-pressed="true"]{background:var(--gold);border-color:var(--gold);color:var(--bg)}
+.chip:disabled{cursor:default;opacity:.8}
+.phero{width:100%;aspect-ratio:16/7;border-radius:14px;display:grid;place-items:center;font-size:64px;margin-bottom:14px;
+  background:color-mix(in srgb,var(--sport) 16%,var(--surface))}
+.phero.fish{background:color-mix(in srgb,var(--fish) 16%,var(--surface))}
+.phero.camp{background:color-mix(in srgb,var(--camp) 18%,var(--surface))}
+.facs{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 0}
+.fac{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:13px}
+.fac b{color:var(--sport)}
+.place.info{gap:10px}
+.place.info a{color:var(--indigo)}
+.card.soft{background:var(--soft);border:0;margin-top:14px;gap:6px;padding:16px}
+.card.soft h3{font-size:17px}
+.card.soft p{margin:0}
+.card.soft .btn{margin-top:8px}
+.linkbtn{display:block;text-align:center;text-decoration:none;box-sizing:border-box}
+.btn.ghost:disabled{opacity:.55}
+/* Метки на карте разделов */
+.kpin{width:34px;height:34px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:var(--sport);border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35);display:grid;place-items:center}
+.kpin span{transform:rotate(45deg);font-size:15px;line-height:1}
+.kpin.fish{background:var(--fish)}
+.kpin.book{border-color:#E9B949}
+.mapnote{position:absolute;left:12px;right:12px;top:12px;z-index:500;background:var(--surface);color:var(--muted);font-size:12.5px;border-radius:10px;padding:8px 12px;box-shadow:0 1px 6px rgba(0,0,0,.2)}
+/* Экран «Нуби»: выбор раздела */
+.secs{display:grid;gap:10px}
+.secbtn{display:grid;grid-template-columns:48px 1fr auto;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;font:inherit;color:inherit;text-align:left;cursor:pointer;width:100%}
+.secbtn.on{border-color:var(--indigo);box-shadow:inset 0 0 0 1px var(--indigo)}
+.secbtn:disabled{cursor:default;opacity:.6}
+.secbtn em{font-style:normal;font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:2px 10px;white-space:nowrap}
+.secbtn.on em{color:var(--indigo);border-color:var(--indigo)}
+.sicon{width:48px;height:48px;border-radius:12px;display:grid;place-items:center;font-size:24px;background:var(--soft)}
+.sicon.sport{background:color-mix(in srgb,var(--sport) 16%,var(--surface))}
+.sicon.fish{background:color-mix(in srgb,var(--fish) 16%,var(--surface))}
+.sicon.camp{background:color-mix(in srgb,var(--camp) 18%,var(--surface))}
+.stxt{min-width:0;display:grid;gap:1px}
+.stxt b{font-family:var(--display);font-size:17px}
+.empty-feed{display:grid;justify-items:center;gap:4px;padding:28px 0;text-align:center}
+.empty-feed span{font-size:34px;opacity:.6}
