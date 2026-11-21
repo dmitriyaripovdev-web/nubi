@@ -21,7 +21,7 @@ const ADM_TXT = {
     approve: "Одобрить", reject: "Отклонить", reason: "Причина отказа (автор её увидит)",
     approveFind: "Одобрить (+30)", toLegend: "Сделать легендой", createLegend: "Создать легенду (+100 автору)",
     note: "Подпись", cur: "Сейчас", sugg: "Предложено", dist: "Разница",
-    approvePin: "Принять точку (+20)", far: "Очень далеко от места — скорее всего ошибка, лучше отклонить", hide: "Скрыть", light: "Зажечь на стене",
+    uploadArt: "Загрузить рисунок", changeArt: "Заменить рисунок", noArt: "Рисунка пока нет — в приложении стоит заглушка", approvePin: "Принять точку (+20)", far: "Очень далеко от места — скорее всего ошибка, лучше отклонить", hide: "Скрыть", light: "Зажечь на стене",
     saved: "Сохранено", err: "Ошибка: ", needText: "Заполните название и текст", notFound: "Ничего не нашлось",
     lang: "Язык", logout: "Выйти", openApp: "Открыть приложение"
   },
@@ -38,7 +38,7 @@ const ADM_TXT = {
     approve: "승인", reject: "거절", reason: "거절 사유 (작성자에게 보입니다)",
     approveFind: "승인 (+30)", toLegend: "전설로 만들기", createLegend: "전설 만들기 (작성자 +100)",
     note: "메모", cur: "현재", sugg: "제안", dist: "차이",
-    approvePin: "위치 승인 (+20)", far: "장소에서 너무 멉니다 — 오류일 가능성이 높아 거절을 권합니다", hide: "숨기기", light: "벽에 불 켜기",
+    uploadArt: "그림 올리기", changeArt: "그림 바꾸기", noArt: "아직 그림이 없습니다 — 앱에는 기본 이미지가 보입니다", approvePin: "위치 승인 (+20)", far: "장소에서 너무 멉니다 — 오류일 가능성이 높아 거절을 권합니다", hide: "숨기기", light: "벽에 불 켜기",
     saved: "저장했습니다", err: "오류: ", needText: "이름과 내용을 입력하세요", notFound: "찾지 못했습니다",
     lang: "언어", logout: "로그아웃", openApp: "앱 열기"
   }
@@ -149,6 +149,8 @@ function cardView(r) {
       <label>${tx("story")}<textarea id="s-${r.id}" maxlength="10000">${esc(r.story)}</textarea></label>`
       : `<h3>${esc(r.name)}</h3><div class="ameta">${esc(r.place || "")}</div><p style="margin:0;white-space:pre-wrap">${esc(r.story)}</p>
          ${r.reject_reason ? `<div class="msg err">${esc(r.reject_reason)}</div>` : ""}`}
+    <div class="artrow">${r.art_path ? `<img class="artprev" src="${esc(Server.photoUrl(r.art_path))}" alt="">` : `<span class="ameta">${tx("noArt")}</span>`}
+      <label class="btn">🎨 ${tx(r.art_path ? "changeArt" : "uploadArt")}<input type="file" accept="image/*" data-aart="${r.id}" hidden></label></div>
     ${mapBlock(r, pend)}
     ${pend ? `<div class="arow"><button class="btn ok" data-aok-legend="${r.id}">${tx("approve")}</button>
       <button class="btn no" data-areject="${r.id}">${tx("reject")}</button></div>${rej}` : ""}
@@ -315,6 +317,19 @@ document.addEventListener("click", async e => {
   });
   else if (d.awish) act(async () => {
     const { error } = await db().from("wishes").update({ status: d.st }).eq("id", d.awish);
+    if (error) throw error;
+  });
+});
+// Рисунок для народной легенды: файл кладём в открытую папку легенд под новым именем
+document.addEventListener("change", async e => {
+  const id = e.target.dataset && e.target.dataset.aart, file = e.target.files && e.target.files[0];
+  if (!id || !file) return;
+  act(async () => {
+    const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+    const path = `${Server.user.id}/art_${id}_${Date.now()}.${ext}`;
+    const up = await db().storage.from("legends").upload(path, file, { contentType: file.type || "image/jpeg" });
+    if (up.error) throw up.error;
+    const { error } = await db().from("user_legends").update({ art_path: path }).eq("id", id);
     if (error) throw error;
   });
 });
