@@ -1,13 +1,15 @@
 // ============================================================
 // Легенды Хвасона (из «Базы легенд Хвасона»).
-// У большинства мест координаты ещё не уточнены (lat:null).
+// Координаты проставлены через Kakao (21.11.2026). approx:true — точка горы/деревни, печать в радиусе 1 км;
+// точное место уточняется на месте в режиме разметки.
 // Их можно записать прямо в приложении: Профиль → Режим разметки.
 // ============================================================
 window.LEGENDS = window.LEGENDS || [];
 LEGENDS.push(
 
 // ---------- Гора Собонсан: «Монах и девушка» ----------
-{id:"seobongsan", region:"hs", lat:null, lng:null,
+{id:"seobongsan", region:"hs", lat:37.158608, lng:126.944505, approx:true, // Kakao: 서봉산 (정남면 문학리 산90)
+
  name:{ko:"서봉산", ru:"Гора Собонсан", en:"Seobongsan"},
  place:{ko:"화성시 정남면 문학리 ~ 팔탄면 · 봉담읍", ru:"Хвасон, от Чоннам-мён (Мунхак-ри) до Пхальтхана и Пондама", en:"Hwaseong, from Munhak-ri, Jeongnam to Paltan and Bongdam"},
  legend:{
@@ -23,7 +25,8 @@ LEGENDS.push(
   ru:"Найдите на тропе табличку «Происхождение названия Собонсан», а у вершины — табличку Скалы Шинкиль.",
   en:"Find the “Origin of Seobongsan” sign on the trail and the Swingil Rock sign near the top."}},
 
-{id:"swingil", region:"hs", lat:null, lng:null,
+{id:"swingil", region:"hs", lat:37.158608, lng:126.944505, approx:true, // на 서봉산 — точное место найти на месте
+
  name:{ko:"쉰길바위", ru:"Скала Шинкиль", en:"Swingil Rock"},
  place:{ko:"서봉산", ru:"Гора Собонсан", en:"Seobongsan"},
  legend:{
@@ -39,7 +42,8 @@ LEGENDS.push(
   ru:"Посмотрите вниз от таблички: под вами тот самый обрыв «в пятьдесят ростов», а за ним — деревни внизу.",
   en:"Look down from beside the sign: below is the fifty-men-tall drop, and the villages beyond it."}},
 
-{id:"nunmul", region:"hs", lat:null, lng:null,
+{id:"nunmul", region:"hs", lat:37.158608, lng:126.944505, approx:true, // на 서봉산 — точное место найти на месте
+
  name:{ko:"눈물바위", ru:"Скала слёз", en:"Tear Rock"},
  place:{ko:"서봉산", ru:"Гора Собонсан", en:"Seobongsan"},
  legend:{
@@ -52,7 +56,8 @@ LEGENDS.push(
   en:"This story continues the text on the Swingil Rock sign."}},
 
 // ---------- Пхальтхан, Хяннам, Пондам ----------
-{id:"geondalsan", region:"hs", lat:null, lng:null,
+{id:"geondalsan", region:"hs", lat:37.190903, lng:126.921123, approx:true, // Kakao: 건달산 (봉담읍 세곡리 산48)
+
  name:{ko:"건달산", ru:"Гора Кондальсан", en:"Geondalsan"},
  place:{ko:"화성시 봉담읍 · 팔탄면", ru:"Хвасон, Пондам / Пхальтхан", en:"Bongdam / Paltan, Hwaseong"},
  legend:{
@@ -64,7 +69,8 @@ LEGENDS.push(
   ru:"Где-то на этой горе, по преданию, стоял храм, который опустел из-за нашествия клопов.",
   en:"Somewhere on this mountain, legend says, stood a temple abandoned because of a plague of bedbugs."}},
 
-{id:"jeunggeo", region:"hs", lat:null, lng:null,
+{id:"jeunggeo", region:"hs", lat:37.139258, lng:126.974744, // Kakao: 증거리 느티나무 (향남읍 증거리 468)
+
  name:{ko:"증거리 느티나무", ru:"Дзельква в Чынго-ри", en:"Jeunggeo-ri Zelkova"},
  place:{ko:"화성시 향남읍 증거리", ru:"Хвасон, Хяннам, Чынго-ри", en:"Jeunggeo-ri, Hyangnam, Hwaseong"},
  legend:{
@@ -76,7 +82,8 @@ LEGENDS.push(
   ru:"Дереву около 1340 лет — это третья по возрасту дзельква в Корее. Старое имя деревни — Чинкэуль, «Длинный ручей».",
   en:"The tree is about 1,340 years old, known as the third-oldest zelkova in Korea. The village's old name is Jingaeul, “Long Stream.”"}},
 
-{id:"samcheon", region:"hs", lat:null, lng:null,
+{id:"samcheon", region:"hs", lat:37.206369, lng:126.942382, approx:true, // Kakao: 삼천병마고개 (봉담읍 상리)
+
  name:{ko:"삼천병마골", ru:"Долина трёх тысяч коней", en:"Valley of Three Thousand Horses"},
  place:{ko:"화성시 봉담읍 왕림리", ru:"Хвасон, Пондам, Ванрим-ри", en:"Wangnim-ri, Bongdam, Hwaseong"},
  legend:{
@@ -89,7 +96,8 @@ LEGENDS.push(
   en:"A nearby road is named Samcheonbyeongma-ro after this legend. Look for the blue street signs."}},
 
 // ---------- Побережье ----------
-{id:"jinesan", region:"hs", lat:null, lng:null,
+{id:"jinesan", region:"hs", lat:37.038466, lng:126.788348, approx:true, // Kakao: 지내산 (우정읍 매향리, рядом с 이화리)
+
  name:{ko:"지네산", ru:"Гора Сороконожки", en:"Centipede Mountain"},
  place:{ko:"화성시 우정읍 이화리", ru:"Хвасон, Уджон, Ихва-ри", en:"Ihwa-ri, Ujeong, Hwaseong"},
  legend:{
@@ -97,7 +105,8 @@ LEGENDS.push(
   ru:"Во время Имджинской войны огромная сороконожка, жившая на этой горе, выдохнула яд, похожий на туман. Туман укрыл корейцев, а японцы сбились с пути и не смогли пройти. С тех пор жители соседней деревни в благодарность совершали обряд в честь горы.",
   en:"During the Imjin War a giant centipede living on this mountain breathed out poison like fog. The fog hid the Koreans, while the Japanese lost their way and could not advance. Ever since, people in the neighboring village held rites to thank the mountain."}},
 
-{id:"joam", region:"hs", lat:null, lng:null,
+{id:"joam", region:"hs", lat:37.085841, lng:126.814116, approx:true, // центр 우정읍 조암리
+
  name:{ko:"조암리 삼귀", ru:"Чоам-ри: «Три возвращения»", en:"Joam-ri, Samgwi"},
  place:{ko:"화성시 우정읍 조암리", ru:"Хвасон, Уджон, Чоам-ри", en:"Joam-ri, Ujeong, Hwaseong"},
  legend:{
@@ -105,7 +114,8 @@ LEGENDS.push(
   ru:"Старое имя этих мест — Самгви, «Три возвращения». Говорят, во время отлива вода, уходя от Пальана к пристани, трижды огибала эту землю.",
   en:"The old name of this place is Samgwi, “Three Returns.” They say that at low tide the sea, draining from Baran to the harbor, wound around this land three times."}},
 
-{id:"dangseong", region:"hs", lat:null, lng:null,
+{id:"dangseong", region:"hs", lat:37.196087, lng:126.71366, approx:true, // Kakao: 당성 산성 (서신면 상안리 산32)
+
  name:{ko:"당성", ru:"Крепость Тансон", en:"Dangseong Fortress"},
  place:{ko:"화성시 서신면 구봉산", ru:"Хвасон, Сосин, гора Кубонсан", en:"Gubongsan, Seosin, Hwaseong"},
  legend:{
@@ -129,7 +139,8 @@ LEGENDS.push(
   ru:"Посмотрите расписание приливов и пройдите к острову по дну моря пешком.",
   en:"Check the tide table and walk across the sea road on foot."}},
 
-{id:"salgoji", region:"hs", lat:null, lng:null,
+{id:"salgoji", region:"hs", lat:37.161125, lng:126.670957, approx:true, // центр 서신면 송교리
+
  name:{ko:"살곶이", ru:"Салькоджи", en:"Salgoji"},
  place:{ko:"화성시 서신면 송교리", ru:"Хвасон, Сосин, Сонгё-ри", en:"Songgyo-ri, Seosin, Hwaseong"},
  legend:{
@@ -137,7 +148,8 @@ LEGENDS.push(
   ru:"Когда на Корею напали маньчжуры, лодочник Сондоль вёз спасавшегося бегством короля Инджо. Сондоль предупредил, что впереди опасный пролив, но ему не поверили, и он поплатился жизнью.\n\nТогда поднялась буря, и судно разбилось. Те, кто чудом выбрался на берег, назвали это место Салькот — «место, где можно спастись». С тех пор рыбаки поминали Сондоля в день его смерти.",
   en:"When the Manchus invaded, the boatman Sondol carried the fleeing King Injo. Sondol warned that the strait ahead was dangerous, but no one believed him, and he lost his life.\n\nThen a storm rose and the boat was wrecked. Those who barely made it ashore named the place Salgot, “the place to survive.” Fishermen remembered Sondol every year on the day he died."}},
 
-{id:"bonghyeol", region:"hs", lat:null, lng:null,
+{id:"bonghyeol", region:"hs", lat:37.205828, lng:126.845549, approx:true, // Kakao: 봉림사 (남양읍 북양리 642)
+
  name:{ko:"봉림산 봉혈", ru:"Гнездо феникса", en:"Phoenix Cave"},
  place:{ko:"화성시 남양 비봉산, 봉림사 근처", ru:"Хвасон, Намъян, гора Пибонсан у храма Бонримса", en:"Bibongsan by Bongnimsa, Namyang, Hwaseong"},
  legend:{
@@ -145,7 +157,8 @@ LEGENDS.push(
   ru:"Во время маньчжурского нашествия цинский император Тайцзун услышал, что в этой пещере живёт феникс, и захотел увидеть его сам. Он велел развести у входа костёр из сосновых веток, чтобы выкурить птицу дымом. Тогда из пещеры что-то вылетело и ударило императора в левый глаз. Так он и не увидел феникса, а глаз потерял.",
   en:"During the Manchu invasion the Qing emperor Taizong heard that a phoenix lived in this cave and wanted to see it himself. He had pine branches burned at the entrance to smoke the bird out. Something shot out of the cave and struck him in the left eye. He never saw the phoenix and lost the eye."}},
 
-{id:"bugyang", region:"hs", lat:null, lng:null,
+{id:"bugyang", region:"hs", lat:37.216098, lng:126.841824, approx:true, // центр 남양읍 북양리
+
  name:{ko:"북양 충절비", ru:"Памятник верности в Пугяне", en:"Bugyang Loyalty Monument"},
  place:{ko:"화성시 남양 북양리", ru:"Хвасон, Намъян, Пугян-ри", en:"Bugyang-ri, Namyang, Hwaseong"},
  legend:{
@@ -153,7 +166,8 @@ LEGENDS.push(
   ru:"В день, когда регента Хынсон-тэвонгуна увозили в Китай, старик в парадной одежде преградил дорогу, упал на колени и зарыдал: «На кого вы оставляете народ?» Вернувшись, тэвонгун стал искать старика, но тот уже умер. В честь его верности поставили этот памятник.",
   en:"On the day the regent Heungseon Daewongun was taken away to China, an old man in formal dress blocked the road, knelt and wept: “To whom are you leaving the people?” When the regent returned he looked for the old man, but he had already died. This monument was raised to honor his loyalty."}},
 
-{id:"hyoja-tiger", region:"hs", lat:null, lng:null,
+{id:"hyoja-tiger", region:"hs", lat:37.184332, lng:126.812992, approx:true, // центр 남양읍 신남리
+
  name:{ko:"나주정씨 효자비", ru:"Памятник сыну и тигру", en:"Filial Son and the Tiger"},
  place:{ko:"화성시 신남동", ru:"Хвасон, Синнам-дон", en:"Sinnam-dong, Hwaseong"},
  legend:{
@@ -173,7 +187,8 @@ LEGENDS.push(
   ru:"На самом деле здесь похоронена госпожа Синбин Ким.",
   en:"The tomb actually belongs to Lady Sinbin Kim."}},
 
-{id:"geumbul", region:"hs", lat:null, lng:null,
+{id:"geumbul", region:"hs", lat:37.194161, lng:126.757634, approx:true, // Kakao: 절골 (마도면 슬항리)
+
  name:{ko:"황금불상과 절골 우물", ru:"Золотой Будда и колодец Чольголь", en:"Golden Buddha and Jeolgol Well"},
  place:{ko:"화성시 마도면 슬항리", ru:"Хвасон, Мадо, Сыльхан-ри", en:"Seulhang-ri, Mado, Hwaseong"},
  legend:{
@@ -181,7 +196,8 @@ LEGENDS.push(
   ru:"Когда-то у здешнего храма был целебный колодец, и в деревне никто не болел. Но жадный настоятель стал наживаться на ростовщичестве. Золотой Будда в слезах явился ему во сне и предупредил, но настоятель не послушал, и вода в колодце исчезла.\n\nПозже, когда напали японские пираты, люди спрятали золотую статую, а злодеев, охотившихся за ней, постигла кара.",
   en:"Long ago the temple here had a healing well, and no one in the village fell ill. But a greedy abbot began growing rich by lending at interest. The Golden Buddha appeared to him in a dream, weeping, and warned him. The abbot did not listen, and the well ran dry.\n\nLater, when Japanese pirates raided, people hid the golden statue, and the villains who hunted for it were punished."}},
 
-{id:"yeogae", region:"hs", lat:null, lng:null,
+{id:"yeogae", region:"hs", lat:37.199677, lng:126.74091, approx:true, // центр 마도면 해문리
+
  name:{ko:"여개우물", ru:"Колодец сестёр", en:"Sisters' Well"},
  place:{ko:"화성시 마도면 해문리", ru:"Хвасон, Мадо, Хэмун-ри", en:"Haemun-ri, Mado, Hwaseong"},
  legend:{
@@ -190,7 +206,8 @@ LEGENDS.push(
   en:"When war came and the villagers fled to an island, two sisters could not get away in time. To avoid capture by the enemy, they threw themselves into the well."}},
 
 // ---------- Восток и границы ----------
-{id:"mubongsan", region:"hs", lat:null, lng:null,
+{id:"mubongsan", region:"hs", lat:37.209486, lng:127.149861, approx:true, // Kakao: 만의사 на 무봉산 (동탄 중동)
+
  name:{ko:"무봉산", ru:"Гора Мубонсан", en:"Mubongsan"},
  place:{ko:"화성시 동탄, 용인 경계", ru:"Хвасон, Тонтхан, граница с Ёнъином", en:"Dongtan, Hwaseong, Yongin border"},
  legend:{
@@ -206,7 +223,8 @@ LEGENDS.push(
   ru:"Когда-то на этой горе было восемь сокровищ: женьшень, жернов, кедр, золотой петух, тигр, храм, силач и золото. Гору называли «Горой восьми сокровищ». Однажды разбойники погнались за золотым петухом, грянул гром, и петух погиб. Сокровищ осталось семь, и гора стала Чхильбосан — «Горой семи сокровищ».",
   en:"This mountain once held eight treasures: wild ginseng, a millstone, a pine, a golden rooster, a tiger, a temple, a strongman and gold, so it was called the Mountain of Eight Treasures. One day thieves chased the golden rooster, thunder struck, and the rooster died. Seven treasures remained, and the mountain became Chilbosan, the Mountain of Seven Treasures."}},
 
-{id:"geumdang", region:"hs", lat:null, lng:null,
+{id:"geumdang", region:"hs", lat:37.184584, lng:126.746777, approx:true, // центр 마도면 금당리
+
  name:{ko:"금당리", ru:"Деревня Кымдан-ри", en:"Geumdang-ri"},
  place:{ko:"화성시 마도면", ru:"Хвасон, Мадо-мён", en:"Mado-myeon, Hwaseong"},
  legend:{
@@ -214,7 +232,8 @@ LEGENDS.push(
   ru:"В начале эпохи Чосон здесь мыли золотой песок и собирали его в пруду, поэтому место называли «Золотой пруд». Позже один чиновник сказал, что здешние виды прекрасны, как парча, и имя стали писать иероглифом «парча», который тоже читается «кым».",
   en:"In early Joseon, gold dust was panned here and collected in a pond, so the place was called Gold Pond. Later an official said the scenery was as beautiful as silk brocade and changed the name to the character for brocade, also read geum."}},
 
-{id:"igon", region:"hs", lat:null, lng:null,
+{id:"igon", region:"hs", lat:37.224136, lng:126.939903, approx:true, // центр 봉담읍 상리
+
  name:{ko:"이곤 효자문", ru:"Ворота почтительного сына И Гона", en:"Gate of the Filial Son Yi Gon"},
  place:{ko:"화성시 봉담읍 상리", ru:"Хвасон, Пондам, Сан-ри", en:"Sang-ri, Bongdam, Hwaseong"},
  legend:{
