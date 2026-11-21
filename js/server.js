@@ -126,7 +126,7 @@ window.Server = {
   // Одобренные легенды других игроков + мои (любого статуса)
   async userLegends() {
     const { data } = await this.db.from("user_legends")
-      .select("id, author, author_nick, lang, region, name, place, story, lat, lng, photo_path, photo_at, status")
+      .select("id, author, author_nick, lang, region, name, place, story, lat, lng, photo_path, photo_at, art_path, status")
       .order("created_at", { ascending: false }).limit(500);
     return data || [];
   },
