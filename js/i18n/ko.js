@@ -80,7 +80,7 @@ I18N.ko = {
   fNoteServer:"사진과 함께 서버로 보내집니다. 검토 후 모두에게 공개되며 100점을 받습니다.", toastSubmitted:"전설을 보냈습니다. 검토 후 공개됩니다",
   findsHintServer:"안내판 사진은 자동으로 서버에 올라갑니다. 검토 후 30점을 받습니다.", findOnServer:"서버에 올라감", findUploaded:"안내판 사진을 서버에 올렸습니다",
   pinOkServer:"위치를 기록하고 서버에 보냈습니다. 확인 후 반영됩니다",
-  accountAnon:"지금은 이 휴대폰에 묶인 임시 계정입니다. 앱 데이터를 지우면 기록이 사라집니다. 곧 카카오 로그인이 추가됩니다.",
+  accountAnon:"지금은 이 휴대폰에만 묶인 임시 계정입니다. 카카오로 연결하면 도장과 점수가 그대로 남고, 휴대폰을 바꿔도 이어집니다.",
   locale:"ko-KR"
 };
 
@@ -112,4 +112,15 @@ Object.assign(I18N.ko, {
   kinds:{soccer:"축구장", futsal:"풋살장", tennis:"테니스장", basket:"농구장", badm:"배드민턴장", base:"야구장", pool:"수영장",
          indoor:"실내체육관", center:"체육센터", pgolf:"파크골프장", jokgu:"족구장", gate:"게이트볼장", inline:"인라인장",
          xgame:"X게임장", archery:"국궁장", multi:"다목적구장", etc:"기타 체육시설"}
+});
+
+// ===== Вход через Kakao =====
+Object.assign(I18N.ko, {
+  kakaoStart:"카카오로 시작하기", kakaoLink:"카카오 계정 연결하기", orNick:"또는 닉네임만으로 시작",
+  kakaoIn:"카카오로 로그인되었습니다. 누비에서 쓸 닉네임만 정해 주세요.",
+  accountH:"계정", kakaoLinked:"카카오 계정으로 연결됨",
+  accountKakao:"다른 휴대폰에서도 카카오로 로그인하면 도장과 점수가 그대로 이어집니다.",
+  kakaoOk:"카카오 계정이 연결되었습니다",
+  kakaoTaken:"이 카카오 계정은 이미 다른 누비 프로필과 연결되어 있습니다. 그 프로필로 로그인할 수 있지만, 이 휴대폰의 임시 기록은 옮겨지지 않습니다.",
+  kakaoSwitch:"그 프로필로 로그인", kakaoErr:"카카오 로그인에 실패했습니다: {e}"
 });
