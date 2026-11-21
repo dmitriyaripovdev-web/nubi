@@ -80,7 +80,7 @@ I18N.en = {
   fNoteServer:"Your legend and photo go to the server. After review everyone sees it and you get 100 points.", toastSubmitted:"Legend sent for review",
   findsHintServer:"Sign photos upload to the server automatically. 30 points after review.", findOnServer:"on server", findUploaded:"Sign photo uploaded",
   pinOkServer:"Location saved and sent for review",
-  accountAnon:"You have a temporary account tied to this phone. Clearing app data will erase your progress. Kakao login is coming soon.",
+  accountAnon:"You have a temporary account tied to this phone. Connect Kakao to keep your stamps and points — even on a new phone.",
   locale:"en-US"
 };
 
@@ -112,4 +112,15 @@ Object.assign(I18N.en, {
   kinds:{soccer:"Soccer", futsal:"Futsal", tennis:"Tennis", basket:"Basketball", badm:"Badminton", base:"Baseball", pool:"Pool",
          indoor:"Indoor gym", center:"Sports center", pgolf:"Park golf", jokgu:"Jokgu", gate:"Gateball", inline:"Inline skating",
          xgame:"X-park", archery:"Archery", multi:"Multi-court", etc:"Other"}
+});
+
+// ===== Kakao login =====
+Object.assign(I18N.en, {
+  kakaoStart:"Continue with Kakao", kakaoLink:"Connect Kakao", orNick:"or start with a nickname only",
+  kakaoIn:"You're signed in with Kakao. Just pick a nickname for Nubi.",
+  accountH:"Account", kakaoLinked:"Kakao connected",
+  accountKakao:"Sign in with Kakao on another phone and your stamps and points will be there.",
+  kakaoOk:"Kakao connected",
+  kakaoTaken:"This Kakao account is already connected to another Nubi profile. You can sign in to that profile, but the temporary records on this phone won't move over.",
+  kakaoSwitch:"Sign in to that profile", kakaoErr:"Kakao login failed: {e}"
 });
