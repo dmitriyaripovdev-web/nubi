@@ -296,3 +296,51 @@ img.art.hero{aspect-ratio:16/9;height:auto}
 .kakao-btn:disabled{opacity:.6;cursor:default}
 .or{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12.5px;margin:4px 0}
 .or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
+
+/* ===== Желания: стена фонариков (소원의 벽) ===== */
+:root{--lantern:#E4572E;--lantern2:#F3A33B;--night:#121a33;--night2:#25305a}
+.lantern-tag{margin-left:6px;font-size:13px;vertical-align:1px}
+.chip.lantern-chip[aria-pressed="true"]{background:var(--lantern);border-color:var(--lantern);color:#fff}
+.wishtag{display:inline-block;margin:6px 0 2px;padding:3px 10px;border-radius:999px;font-size:12.5px;font-weight:700;
+  color:#fff;background:linear-gradient(90deg,var(--lantern),var(--lantern2))}
+.pin.wish{position:relative}
+.pin.wish::after{content:"🏮";position:absolute;top:-14px;left:16px;font-size:15px;transform:rotate(45deg)}
+.wishbox{position:relative;margin-top:18px;padding:18px 16px;border-radius:16px;overflow:hidden;color:#f4ecdf;
+  background:radial-gradient(120% 80% at 50% 0%,var(--night2),var(--night))}
+.wishbox h3{margin:0 0 6px;color:#ffe6b8;font-size:18px}
+.wishbox .meta,.wishbox .note{color:rgba(244,236,223,.72)}
+.wishbox textarea{width:100%;box-sizing:border-box;border-radius:12px;border:1px solid rgba(255,230,184,.35);background:rgba(255,255,255,.08);
+  color:#fff;padding:10px 12px;font:inherit;resize:vertical}
+.wishbox textarea::placeholder{color:rgba(255,255,255,.5)}
+.wcheck{display:flex;gap:8px;align-items:flex-start;margin:10px 0;font-size:14px;line-height:1.35}
+.wishbox .wcheck input{width:18px;height:18px;flex:none;margin:1px 0 0;accent-color:var(--lantern2)}
+.wcheck span{flex:1;text-align:left}
+.btn.lantern-btn{background:linear-gradient(90deg,var(--lantern),var(--lantern2));border:0;color:#fff}
+.wall-h{margin-top:18px!important;font-size:15.5px!important}
+.wall{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 12px;margin-top:6px}
+.lantern{position:relative;padding:16px 12px 10px;border-radius:22px 22px 26px 26px;color:#3a1b06;
+  background:radial-gradient(90% 70% at 50% 35%,#ffe9b3,var(--lantern2) 60%,var(--lantern));
+  box-shadow:0 0 18px rgba(243,163,59,.55),0 0 42px rgba(228,87,46,.25);animation:flicker 4s ease-in-out infinite}
+.lantern:nth-child(2n){animation-delay:-1.3s}.lantern:nth-child(3n){animation-delay:-2.6s}
+.lantern::before{content:"";position:absolute;left:50%;top:-6px;width:38%;height:7px;transform:translateX(-50%);border-radius:4px;background:#6b2a12}
+.lantern::after{content:"";position:absolute;left:50%;bottom:-12px;width:2px;height:12px;transform:translateX(-50%);background:#6b2a12}
+.lantern p{margin:0;font-size:13.5px;line-height:1.4;font-weight:600;overflow-wrap:anywhere}
+.lantern.mine{outline:2px solid #fff3d6;outline-offset:2px}
+.lantern.done{background:radial-gradient(90% 70% at 50% 35%,#fffbe8,#ffd86b 60%,#e9a92c)}
+.lfoot{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-top:8px;font-size:12px}
+.lfoot .meta{color:#6b2a12!important}
+.ldone{font-weight:800;color:#7a3d00;font-size:12px}
+.cheer{border:0;border-radius:999px;padding:3px 9px;font:inherit;font-size:12px;font-weight:700;cursor:pointer;background:rgba(255,255,255,.55);color:#5a2208}
+.cheer.on{background:#6b2a12;color:#ffe6b8;cursor:default}
+@keyframes flicker{0%,100%{box-shadow:0 0 18px rgba(243,163,59,.55),0 0 42px rgba(228,87,46,.25)}50%{box-shadow:0 0 24px rgba(243,163,59,.75),0 0 56px rgba(228,87,46,.35)}}
+/* Фонарик улетает вверх после желания */
+.fly{position:absolute;left:50%;bottom:20px;font-size:44px;transform:translateX(-50%);animation:fly 2.6s ease-out forwards;pointer-events:none;
+  filter:drop-shadow(0 0 12px rgba(243,163,59,.9))}
+@keyframes fly{0%{opacity:0;transform:translate(-50%,0) scale(.8)}15%{opacity:1}100%{opacity:0;transform:translate(-30%,-360px) scale(1.15)}}
+@media (prefers-reduced-motion: reduce){.lantern{animation:none}.fly{display:none}}
+/* Мои желания в профиле */
+.mywishes{display:grid;gap:10px}
+.mywish{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:12px 14px;border-radius:14px;background:var(--surface);border:1px solid var(--line)}
+.mywish b{display:block;overflow-wrap:anywhere}
+.mywish .meta,.mywish .dist{display:block}
+.mywish.done{border-color:#e9a92c;background:color-mix(in srgb,#ffd86b 14%,var(--surface))}
