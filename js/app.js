@@ -20,6 +20,8 @@ let markMode = store.get("markMode", false); // режим разметки: з�
 let pins    = store.get("pins", {});        // id места -> {lat, lng}: точки, записанные на месте
 let finds   = store.get("finds", []);       // находки: фото табличек
 let ascent  = store.get("ascent", null);    // {at, place}: начат пеший подъём
+let sec     = store.get("sec", "walk");      // открытый раздел: walk (легенды), sport, fish, camp
+if (!["walk", "sport", "fish", "camp"].includes(sec)) sec = "walk";
 
 // Данные с сервера (не сохраняются — грузятся при запуске)
 let srv = {
@@ -36,7 +38,7 @@ let srv = {
 for (const k in visits) if (typeof visits[k] === "number") visits[k] = { t: visits[k], test: true };
 
 // Состояние экрана (не сохраняется)
-let ui = { tab: "walk", openId: null, adding: false, region: "all", editing: false, confirmReset: false,
+let ui = { tab: sec === "walk" ? "walk" : "plist", openPlace: null, kind: "all", bookOnly: false, ftype: "all", openId: null, adding: false, region: "all", editing: false, confirmReset: false,
            checkMsg: null, checking: false, draft: null, camMsg: null, mapFocus: null, busy: false };
 
 const app = document.getElementById("app");
@@ -550,13 +552,8 @@ function pinsText() {
   }).join("\n");
 }
 
-// ===== Вкладка «Нуби» =====
-function moreView() {
-  const s = I18N[lang].sec;
-  return topBar() + `<h2 class="sec-h">${t("moreH")}</h2><div class="soon">
-    ${["walk", "meet", "gear", "cup", "cult"].map((k, i) => `<div><span><b>${s[k][0]}</b><br><span class="meta">${s[k][1]}</span></span><em>${i === 0 ? t("inUse") : t("soon")}</em></div>`).join("")}
-  </div>`;
-}
+// ===== Вкладка «Нуби» — выбор раздела (код в js/sections.js) =====
+const moreView = () => sectionsView();
 
 // ===== Отрисовка =====
 function render() {
@@ -565,10 +562,14 @@ function render() {
   const nav = document.getElementById("nav");
   if (!profile) { nav.hidden = true; app.innerHTML = welcomeView(); return; }
   nav.hidden = false;
-  app.innerHTML = { walk: walkView, map: mapView, chal: chalView, me: meView, more: moreView }[ui.tab]();
-  document.querySelectorAll("nav button").forEach(b => b.setAttribute("aria-current", b.dataset.tab === ui.tab));
+  // Нижняя панель своя для каждого раздела
+  nav.querySelector(".in").innerHTML = navHtml();
+  const views = { walk: walkView, map: mapView, chal: chalView, me: meView, more: moreView,
+                  plist: placesView, pmap: placesMapView, talk: talkView };
+  app.innerHTML = (views[ui.tab] || views.more)();
   document.querySelectorAll("[data-i]").forEach(el => el.textContent = t(el.dataset.i));
   if (ui.tab === "map") initMap();
+  if (ui.tab === "pmap") initPlacesMap();
   document.querySelectorAll("[data-fimg]").forEach(im => Photos.get(im.dataset.fimg).then(src => { if (src) im.src = src; }));
   const big = document.getElementById("fbig");
   if (big && ui.viewFind) Photos.get(ui.viewFind).then(src => { if (src) big.src = src; });
@@ -581,7 +582,7 @@ function render() {
   }
 }
 function go(tab) {
-  ui = { ...ui, tab, openId: null, adding: false, finding: false, viewFind: null, editing: false, confirmReset: false, checkMsg: null };
+  ui = { ...ui, tab, openId: null, openPlace: null, adding: false, finding: false, viewFind: null, editing: false, confirmReset: false, checkMsg: null };
   if (tab === "me") { srv.board = null; refreshTotals(); }
   render(); window.scrollTo(0, 0);
 }
@@ -593,6 +594,23 @@ document.addEventListener("click", async e => {
   const d = b.dataset;
   if (d.lang) { lang = d.lang; store.set("lang", lang); if (profile) saveProfile(); render(); }
   else if (d.tab) go(d.tab);
+  // --- Разделы спорт / рыбалка / кемпинг ---
+  else if (d.sec) {
+    sec = d.sec; store.set("sec", sec);
+    ui = { ...ui, kind: "all", bookOnly: false, ftype: "all" };
+    go(sec === "walk" ? "walk" : "plist");
+  }
+  else if (d.place) { ui = { ...ui, tab: "plist", openPlace: d.place }; render(); window.scrollTo(0, 0); }
+  else if (b.hasAttribute("data-back-place")) { ui.openPlace = null; render(); }
+  else if (d.placemap) { ui.mapFocus = d.placemap; go("pmap"); }
+  else if (d.kind) { ui.kind = d.kind; render(); }
+  else if (b.hasAttribute("data-bookonly")) { ui.bookOnly = !ui.bookOnly; render(); }
+  else if (d.ftype) { ui.ftype = d.ftype; render(); }
+  else if (b.hasAttribute("data-near")) {
+    b.disabled = true; b.textContent = t("locating");
+    try { await Geo.locate(); } catch (err) { toast(err === "denied" ? t("gpsDenied") : t("gpsErr")); }
+    render();
+  }
   else if (d.region) { ui.region = d.region; render(); }
   else if (d.board) { srv.boardKey = d.board; srv.board = null; render(); }
   else if (d.open) openLegend(d.open);
@@ -817,7 +835,7 @@ async function boot() {
   // Тихо узнаём местоположение, если доступ уже разрешён, — чтобы показать расстояния
   if (profile && navigator.permissions) {
     navigator.permissions.query({ name: "geolocation" }).then(p => {
-      if (p.state === "granted") Geo.locate().then(() => { if (ui.tab !== "map") render(); else drawMe(); }).catch(() => {});
+      if (p.state === "granted") Geo.locate().then(() => { if (ui.tab !== "map" && ui.tab !== "pmap") render(); else drawMe(); }).catch(() => {});
     }).catch(() => {});
   }
 }
