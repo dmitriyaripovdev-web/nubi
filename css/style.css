@@ -287,3 +287,11 @@ img.art.hero{aspect-ratio:16/9;height:auto}
 .stxt b{font-family:var(--display);font-size:17px}
 .empty-feed{display:grid;justify-items:center;gap:4px;padding:28px 0;text-align:center}
 .empty-feed span{font-size:34px;opacity:.6}
+
+/* ===== Кнопка «Войти через Kakao» (цвета по правилам Kakao) ===== */
+.kakao-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:48px;border:0;border-radius:12px;
+  background:#FEE500;color:rgba(0,0,0,.85);font:inherit;font-weight:700;font-size:15.5px;cursor:pointer;margin-top:10px}
+.kakao-btn svg{width:20px;height:20px}
+.kakao-btn:disabled{opacity:.6;cursor:default}
+.or{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12.5px;margin:4px 0}
+.or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
