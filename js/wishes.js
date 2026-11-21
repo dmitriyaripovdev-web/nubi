@@ -67,7 +67,9 @@ window.Wish = {
     const v = visits[l.id];
     let form;
     if (!srv.ready) form = `<p class="meta">${t("offlineBanner")}</p>`;
-    else if (!v || v.test || v.offline) form = `<p class="meta">${t("wishNeedStamp")}</p>`;
+    else if (!v || v.test || v.offline) form = `<ol class="wsteps">
+        <li>${t("wishStep1")}</li><li>${t("wishStep2")}</li><li>${t("wishStep3")}</li></ol>
+      <button class="btn lantern-btn" data-wish-goto>📍 ${t("wishGoStamp")}</button>`;
     else form = `<textarea id="wish-text" maxlength="120" rows="2" placeholder="${esc(t("wishPh"))}"></textarea>
       <label class="wcheck"><input type="checkbox" id="wish-public"> <span>${t("wishPublic")}</span></label>
       <button class="btn lantern-btn" data-wish-send="${esc(l.id)}" ${ui.busy ? "disabled" : ""}>🏮 ${t("wishSend")}</button>
@@ -133,6 +135,12 @@ window.Wish = {
   // Нажатия на кнопки желаний. Возвращает true, если нажатие обработано.
   async click(b) {
     const d = b.dataset;
+    // Кнопка «К печати» — прокручиваем к кнопке «Поставить печать»
+    if (d.wishGoto !== undefined) {
+      const c = document.querySelector("[data-checkin]");
+      if (c) { c.scrollIntoView({ behavior: "smooth", block: "center" }); c.classList.add("pulse"); setTimeout(() => c.classList.remove("pulse"), 1800); }
+      return true;
+    }
     if (d.wishSend) {
       const place = d.wishSend;
       const text = (document.getElementById("wish-text").value || "").trim();
