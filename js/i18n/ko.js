@@ -146,3 +146,36 @@ Object.assign(I18N.ko, {
   fulfillBtn:"이루어졌어요!", fulfillAsk:"30일이 지났어요. 소원이 이루어졌나요?", fulfilledOk:"축하합니다! 소원 성취 ✨",
   noWishes:"아직 빈 소원이 없어요. 목록에서 🏮 소원 명소를 찾아보세요."
 });
+
+// ===== 장소 주인, 공유하기, 신고, 이루어진 소원 별자리, 개인정보 처리방침 =====
+Object.assign(I18N.ko, {
+  ownerText:"이곳의 주인이나 운영자라면 인증해 주세요. 공지, 소개, 운영 시간, 요금, 연락처와 예약 방법을 직접 관리할 수 있습니다.",
+  ownerBtn:"내 장소 인증하기", ownerVerified:"주인 인증", ownerUpdated:"{d} 업데이트",
+  ownerYou:"이 장소의 주인으로 인증되었습니다", ownerYouText:"입력한 정보는 ‘주인 인증’ 표시와 함께 사용자에게 보입니다.", ownerManage:"장소 관리하기",
+  accLbl:"이용", acc_free:"자유 이용", acc_booking:"예약제", acc_residents:"주민 전용",
+  accHint_free:" — 그냥 와서 이용하면 됩니다", accHint_booking:" — 미리 예약해야 합니다", accHint_residents:" — 단지 주민만 이용할 수 있습니다",
+  hoursLbl:"운영 시간", hoursPh:"예: 06:00–22:00, 연중무휴", pricesLbl:"요금",
+  pricesPh:"한 줄에 하나씩: 항목 — 요금\n1시간 — 20,000원\n1박 — 50,000원",
+  kakaoCh:"카카오 채널", bookOwner:"예약하기", noticeLbl:"공지 (맨 위에 표시)", noticePh:"예: 12월 1~3일 휴무",
+  aboutLbl:"소개", kakaoChLbl:"카카오 채널 링크", bookUrlLbl:"예약 링크",
+  ownerRules:"내 장소에 대한 사실만 적어 주세요. 정보가 사실과 다르면 관리자가 인증을 해제할 수 있습니다.",
+  claimPending:"신청을 보냈습니다. 관리자가 곧 확인합니다.", claimRejected:"인증이 승인되지 않았습니다",
+  claimNeedKakao:"장소 인증은 카카오로 로그인한 뒤에 할 수 있습니다.", claimToProfile:"내 정보에서 카카오 로그인",
+  claimIntro:"간단히 소개하고 증빙 사진을 올려 주세요. 사진은 관리자만 봅니다.",
+  claimBiz:"상호", claimContact:"연락받을 전화번호 (공개되지 않음)", claimNote:"이 장소와의 관계",
+  claimNotePh:"예: 대표, 관리자, 임차인", claimProof:"증빙 사진",
+  claimProofHint:"예: 간판이나 카운터 앞에서 찍은 사진, 사업자등록증, 임대차 계약서.",
+  claimProofBtn:"사진 선택", claimSend:"신청 보내기", claimNeedContact:"연락처를 입력해 주세요", claimNeedProof:"증빙 사진을 올려 주세요",
+  claimSent:"신청을 보냈습니다! 확인 후 장소를 관리할 수 있습니다.",
+  claimErr:{not_kakao:"먼저 카카오로 로그인해 주세요.", has_owner:"이 장소에는 이미 인증된 주인이 있습니다.", pending:"이미 신청이 확인 중입니다.", bad:"연락처와 사진을 넣어 주세요.", banned:"이용이 제한된 계정입니다.", no_user:"서버에 연결되지 않았습니다."},
+  shareBtn:"도장 사진 공유하기", shareHint:"사진이나 영상을 고르면 장소 도장이 찍힌 카드를 만들어 드려요. 사진은 휴대폰에만 남습니다.",
+  shareText:"‘{n}’에서 도장 찍었어요! — 누비", shareMaking:"카드를 만드는 중…", shareErr:"카드를 만들지 못했어요. 다른 사진으로 해 보세요.",
+  shareSaved:"카드를 휴대폰에 저장하고 링크를 복사했어요.",
+  reportBtn:"신고하기", reportOk:"감사합니다! 관리자가 확인하겠습니다.",
+  starsBtn:"이루어진 소원 별자리 · {n}", starsH:"이루어진 소원 별자리", starsText:"이 소원들은 이루어졌어요. 영원히 꺼지지 않습니다.", starsBack:"하늘로 돌아가기",
+  wishStep3:"소원등을 걸면 이름 없이 바로 하늘에 불이 켜집니다",
+  wishRules:"다른 사람의 이름, 전화번호, 링크는 적지 마세요. 이런 소원은 관리자가 먼저 확인합니다. 소원등은 이름 없이 걸립니다.",
+  wishOkLit:"소원등이 하늘에 켜졌어요! 🏮",
+  wishErr:{no_visit:"먼저 이곳에서 도장을 받아 주세요.", limit:"오늘은 이곳에서 소원을 세 번 빌었어요. 내일 다시 오세요!", bad_text:"소원은 1~120자로 적어 주세요.", no_user:"서버에 연결되지 않았습니다.", banned:"이용이 제한된 계정입니다."},
+  privacyLink:"개인정보 처리방침", privacyAgree:"시작하면 다음에 동의하게 됩니다:"
+});
