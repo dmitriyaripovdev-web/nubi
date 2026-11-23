@@ -2,7 +2,10 @@
 // 누비 — «Загадать желание» и «Стена фонариков» (소원의 벽)
 // Желание можно загадать только там, где стоит твоя печать (проверяет сервер).
 // По умолчанию желание видит только автор. Если повесить фонарик на стену —
-// он загорится после проверки в админке и будет висеть без имени.
+// он сразу загорится на небе без имени (если автофильтр нашёл ссылку, телефон
+// или грубое слово — сначала проверка в админке).
+// Для больших мест (сотни желаний в день): на небе до 300 огней, «Поймать» и «Листать»
+// берут случайные фонарики с сервера, сбывшиеся уходят в «Созвездие сбывшихся».
 // ============================================================
 
 // Места, где по традиции загадывают желания (храмы, алтари, деревья-хранители, рассветы)
@@ -29,6 +32,17 @@ Object.assign(Server, {
   },
   async wishWall(place) {
     const { data, error } = await this.db.rpc("wish_wall", { p_place: place });
+    if (error) throw error.message;
+    return data || [];
+  },
+  // Случайные фонарики с сервера (чаще те, кого мало поддержали), кроме уже показанных
+  async wishPick(place, n, skip) {
+    const { data, error } = await this.db.rpc("wish_pick", { p_place: place, p_n: n, p_skip: skip || [] });
+    if (error) throw error.message;
+    return data || [];
+  },
+  async wishStars(place) {
+    const { data, error } = await this.db.rpc("wish_stars", { p_place: place });
     if (error) throw error.message;
     return data || [];
   },
@@ -70,11 +84,17 @@ window.Wish = {
   open: null,     // открытый фонарик {place, id}
   browse: null,   // режим «Листать фонарики» {place, order:[id], i}
   cheersGiven: undefined,   // сколько желаний я поддержал (звание «Хранитель огней»)
+  pool: new Map(),  // все фонарики, которые уже приходили с сервера: id -> фонарик
+  stars: {},        // id места -> сбывшиеся (созвездие)
+  consty: null,     // id места, где открыто «Созвездие сбывшихся»
+
+  // Запоминаем фонарики в общем списке (чтобы открыть любой по id)
+  keep(list) { return list.map(w => { const old = this.pool.get(w.id); if (old) return Object.assign(old, w); this.pool.set(w.id, w); return w; }); },
 
   // Обрабатывает ли Wish это нажатие
   handles(d) {
-    return !!(d.wishSend || d.cheer || d.fulfill || d.lopen || d.lcatch || d.lbrowse)
-      || ["wishGoto", "lclose", "lnext", "lstop"].some(k => d[k] !== undefined);
+    return !!(d.wishSend || d.cheer || d.fulfill || d.lopen || d.lcatch || d.lbrowse || d.lstars || d.lreport)
+      || ["wishGoto", "lclose", "lnext", "lstop", "lstarsOff"].some(k => d[k] !== undefined);
   },
 
   is(id) { return WISH_IDS.has(id); },
@@ -113,37 +133,59 @@ window.Wish = {
   skyBlock(place, wall) {
     const st = this.stats[place] || {};
     const line = `<p class="meta sky-stats">${t("skyStats", { a: st.lit ?? wall.length, b: st.today ?? 0, c: st.flown ?? 0 })}</p>`;
-    if (!wall.length) return line + `<p class="meta">${t("wallEmpty")}</p>`;
+    const starsBtn = st.stars ? `<button class="btn ghost stars-btn" data-lstars="${esc(place)}">✨ ${t("starsBtn", { n: st.stars })}</button>` : "";
+    const opened = this.open && this.open.place === place ? this.pool.get(this.open.id) : null;
+    const openedHtml = opened ? `<div class="opened">${this.lantern(opened, true)}${this.reportLink(opened)}<button class="link" data-lclose>${t("closeBtn")}</button></div>` : "";
+    // «Созвездие сбывшихся»
+    if (this.consty === place) {
+      const list = this.stars[place];
+      return line + `<h3 class="wall-h">✨ ${t("starsH")}</h3><p class="meta">${t("starsText")}</p>
+        ${list == null ? `<p class="meta">…</p>` : `<div class="sky stars-sky">${this.dots(place, list)}</div>`}
+        ${openedHtml}
+        <button class="btn ghost" data-lstars-off>${t("starsBack")}</button>`;
+    }
+    if (!wall.length) return line + `<p class="meta">${t("wallEmpty")}</p>` + starsBtn;
     // Режим «Листать фонарики»: по одному, крупно
     if (this.browse && this.browse.place === place) {
-      const b = this.browse, w = wall.find(x => x.id === b.order[b.i]);
-      if (!w) return line + `<div class="browse"><p>${t("browseDone")}</p>
+      const b = this.browse, w = this.pool.get(b.order[b.i]);
+      if (!w) return line + `<div class="browse"><p>${b.loading ? "…" : t("browseDone")}</p>
         <button class="btn lantern-btn" data-lstop>${t("closeBtn")}</button></div>`;
       return line + `<div class="browse">
-        <div class="bcount meta">${b.i + 1} / ${b.order.length}</div>
+        <div class="bcount meta">${b.i + 1}${st.lit ? " / " + st.lit : ""}</div>
         ${this.lantern(w, true, true)}
         <div class="row brow">
           ${w.mine || w.cheered ? "" : `<button class="btn lantern-btn" data-cheer="${w.id}" data-auto="1">🙏 ${t("cheerBtn")}</button>`}
           <button class="btn ghost" data-lnext>${t("nextBtn")} ›</button>
         </div>
+        ${this.reportLink(w)}
         <button class="link" data-lstop>${t("closeBtn")}</button></div>`;
     }
-    const maxC = Math.max(1, ...wall.map(w => w.cheers));
-    const dots = wall.map(w => {
+    return line + `<div class="sky">${this.dots(place, wall)}</div>
+      ${openedHtml}
+      <div class="row sky-btns">
+        <button class="btn ghost" data-lcatch="${esc(place)}">🎐 ${t("catchBtn")}</button>
+        <button class="btn ghost" data-lbrowse="${esc(place)}">🙏 ${t("browseBtn")}</button>
+      </div>
+      ${starsBtn}
+      <div class="wall">${this.pick(place, wall).map(w => this.lantern(w)).join("")}</div>`;
+  },
+
+  // Огоньки на небе. Место каждого считаем из id — у фонарика своё постоянное место
+  dots(place, list) {
+    const maxC = Math.max(1, ...list.map(w => w.cheers));
+    return list.map(w => {
       const h = this.hash(w.id), x = 4 + (h % 920) / 10, y = 8 + ((h >>> 10) % 820) / 10;
       const size = 7 + Math.round(9 * Math.sqrt(w.cheers / maxC));
       const cls = `${w.fulfilled ? "done" : ""} ${w.mine ? "mine" : ""} ${w.cheered ? "on" : ""} ${this.open && this.open.id === w.id ? "sel" : ""}`;
       return `<button class="star ${cls}" data-lopen="${w.id}" data-place="${esc(place)}" aria-label="${esc(w.text)}"
         style="left:${x}%;top:${y}%;width:${size}px;height:${size}px;animation-delay:-${(h % 40) / 10}s"></button>`;
     }).join("");
-    const opened = this.open && this.open.place === place ? wall.find(w => w.id === this.open.id) : null;
-    return line + `<div class="sky">${dots}</div>
-      ${opened ? `<div class="opened">${this.lantern(opened, true)}<button class="link" data-lclose>${t("closeBtn")}</button></div>` : ""}
-      <div class="row sky-btns">
-        <button class="btn ghost" data-lcatch="${esc(place)}">🎐 ${t("catchBtn")}</button>
-        <button class="btn ghost" data-lbrowse="${esc(place)}">🙏 ${t("browseBtn")}</button>
-      </div>
-      <div class="wall">${this.pick(place, wall).map(w => this.lantern(w)).join("")}</div>`;
+  },
+
+  // «Пожаловаться» — у чужих фонариков
+  reportLink(w) {
+    if (!w || w.mine || !Server.user) return "";
+    return w.reported ? `<p class="note">${t("reportOk")}</p>` : `<button class="link report" data-lreport="${w.id}">⚑ ${t("reportBtn")}</button>`;
   },
 
   // 6 фонариков под небом: 2 самых ярких, 2 «ещё никто не поддержал», 2 случайных
@@ -198,7 +240,7 @@ window.Wish = {
     if (ui.tab === "walk" && id && this.is(id) && this.walls[id] === undefined) {
       this.walls[id] = null;   // уже загружаем
       Promise.all([Server.wishWall(id), Server.wishStats(id).catch(() => ({}))])
-        .then(([w, st]) => { this.walls[id] = w; this.stats[id] = st; if (ui.openId === id) render(); })
+        .then(([w, st]) => { this.walls[id] = this.keep(w); this.stats[id] = st; if (ui.openId === id) render(); })
         .catch(() => { this.walls[id] = []; });
     }
     if (this.cheersGiven === undefined && Server.user) {
@@ -209,6 +251,18 @@ window.Wish = {
       this.mine = null;
       Server.myWishes().then(w => { this.mine = w; if (ui.tab === "me") render(); }).catch(() => { this.mine = []; });
     }
+  },
+
+  // «Дальше» в режиме листания: кончились — догружаем ещё с сервера
+  async next(quiet) {
+    const b = this.browse; if (!b) return;
+    b.i++;
+    if (b.i >= b.order.length) {
+      b.loading = true; if (!quiet) render();
+      const more = await Server.wishPick(b.place, 30, b.order).catch(() => []);
+      b.order.push(...this.keep(more).map(w => w.id)); b.loading = false;
+    }
+    render();
   },
 
   scrollTo(sel) { const el = document.querySelector(sel); if (el) el.scrollIntoView({ behavior: "smooth", block: "nearest" }); },
@@ -234,7 +288,7 @@ window.Wish = {
         else {
           this.mine = undefined; delete this.walls[place];
           this.fly = place; setTimeout(() => { this.fly = null; }, 2600);
-          toast(r.status === "pending" ? t("wishOkPublic") : t("wishOkPrivate"), true);
+          toast(r.status === "approved" ? t("wishOkLit") : r.status === "pending" ? t("wishOkPublic") : t("wishOkPrivate"), true);
         }
       } catch (e) { toast(t("wishErrAny"), true); }
       ui.busy = false; render();
@@ -244,19 +298,41 @@ window.Wish = {
     if (d.lopen) { this.open = { place: d.place, id: d.lopen }; render(); this.scrollTo(".opened"); return true; }
     if (d.lclose !== undefined) { this.open = null; render(); return true; }
     if (d.lcatch) {
-      const wall = this.walls[d.lcatch] || [];
-      const pool = wall.filter(w => !this.open || w.id !== this.open.id);
-      if (pool.length) { this.open = { place: d.lcatch, id: pool[Math.floor(Math.random() * pool.length)].id }; render(); this.scrollTo(".opened"); }
+      const place = d.lcatch;
+      b.disabled = true;
+      let w = null;
+      try { [w] = this.keep(await Server.wishPick(place, 1, this.open ? [this.open.id] : [])); } catch (e) {}
+      // всё уже поддержали — берём любой огонёк с неба
+      if (!w) { const wall = (this.walls[place] || []).filter(x => !this.open || x.id !== this.open.id); w = wall[Math.floor(Math.random() * wall.length)]; }
+      b.disabled = false;
+      if (w) { this.open = { place, id: w.id }; render(); this.scrollTo(".opened"); }
       return true;
     }
     if (d.lbrowse) {
-      const wall = this.walls[d.lbrowse] || [];
-      // сначала те, кого я ещё не поддержал
-      const fresh = this.shuffle(wall.filter(w => !w.mine && !w.cheered)), rest = this.shuffle(wall.filter(w => w.mine || w.cheered));
-      this.browse = { place: d.lbrowse, order: [...fresh, ...rest].map(w => w.id), i: 0 }; this.open = null;
+      // сначала те, кого я ещё не поддержал (с сервера, по 30 штук)
+      this.browse = { place: d.lbrowse, order: [], i: 0, loading: true }; this.open = null; render();
+      const list = await Server.wishPick(d.lbrowse, 30, []).catch(() => []);
+      if (!this.browse) return true;
+      this.browse.order = this.keep(list).map(w => w.id); this.browse.loading = false;
       render(); this.scrollTo(".browse"); return true;
     }
-    if (d.lnext !== undefined) { if (this.browse) this.browse.i++; render(); return true; }
+    if (d.lnext !== undefined) { await this.next(); return true; }
+    if (d.lstars) {
+      const place = d.lstars;
+      this.consty = place; this.open = null; this.browse = null; render();
+      if (this.stars[place] == null) {
+        this.stars[place] = await Server.wishStars(place).then(l => this.keep(l)).catch(() => []);
+        render();
+      }
+      this.scrollTo(".stars-sky"); return true;
+    }
+    if (d.lstarsOff !== undefined) { this.consty = null; this.open = null; render(); return true; }
+    if (d.lreport) {
+      b.disabled = true;
+      try { await Server.report("wish", d.lreport); const w = this.pool.get(d.lreport); if (w) w.reported = true; toast(t("reportOk"), true); }
+      catch (e) { b.disabled = false; toast(t("errServer")); }
+      render(); return true;
+    }
     if (d.lstop !== undefined) { this.browse = null; render(); return true; }
     if (d.cheer) {
       b.disabled = true;
@@ -264,9 +340,9 @@ window.Wish = {
         const n = await Server.cheerWish(d.cheer);
         if (n === -1) toast(t("cheerLimit"), true);
         else {
-          for (const k in this.walls) for (const w of this.walls[k] || []) if (w.id === d.cheer) { w.cheers = n ?? w.cheers; w.cheered = true; }
+          const w = this.pool.get(d.cheer); if (w) { w.cheers = n ?? w.cheers; w.cheered = true; }
           if (typeof this.cheersGiven === "number") this.cheersGiven++;
-          if (d.auto && this.browse) { render(); await new Promise(r => setTimeout(r, 450)); this.browse && this.browse.i++; }
+          if (d.auto && this.browse) { render(); await new Promise(r => setTimeout(r, 450)); if (this.browse) await this.next(true); }
         }
       } catch (e) { b.disabled = false; }
       render();
@@ -278,6 +354,7 @@ window.Wish = {
         await Server.fulfillWish(d.fulfill);
         for (const w of this.mine || []) if (w.id === d.fulfill) w.fulfilled_at = new Date().toISOString();
         for (const k in this.walls) delete this.walls[k];
+        this.stars = {};
         toast(t("fulfilledOk"), true);
       } catch (e) { b.disabled = false; }
       render();
