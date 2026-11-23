@@ -80,7 +80,7 @@ function placeItem(p) {
   } else { icon = "⛺"; meta = t("guests", { n: num(p.guests) }); }
   return `<button class="item" data-place="${p.id}">
     <span class="kthumb ${sec}">${icon}</span>
-    <div><h3>${esc(p.name)}${p.book ? `<span class="book-tag">${t("bookTag")}</span>` : ""}</h3>
+    <div><h3>${esc(p.name)}${p.book ? `<span class="book-tag">${t("bookTag")}</span>` : ""}${Owner.tags(p)}</h3>
       <div class="meta">${esc(meta)}</div>
       <div class="meta">${esc(p.addr)}</div>
       ${d != null ? `<div class="dist">${t("distAway", { d: Geo.format(d, lang) })}</div>` : p.lat == null ? `<div class="meta faint">${t("noMapPin")}</div>` : ""}
@@ -112,6 +112,7 @@ function placeView(p) {
     <h2>${esc(p.name)}</h2>
     ${d != null ? `<div class="dist">${t("distAway", { d: Geo.format(d, lang) })}</div>` : ""}
     ${rows.join("")}
+    ${Owner.block(p)}
     <div class="place info">${info.join("")}</div>
     <div class="links">
       <a href="${kakaoLink(p)}" target="_blank" rel="noopener">${t("kakao")}</a>
@@ -123,8 +124,7 @@ function placeView(p) {
     <div class="card soft"><h3>${t(sec === "sport" ? "gameH" : sec === "fish" ? "fishGoH" : "campGoH")}</h3>
       <p class="meta">${t(sec === "sport" ? "gameText" : "goText")}</p>
       <button class="btn ghost" data-tab="talk">${t("toTalk")}</button></div>
-    <div class="card soft"><h3>${t("ownerH")}</h3><p class="meta">${t("ownerText")}</p>
-      <button class="btn ghost" disabled>${t("ownerBtn")}</button></div>
+    ${Owner.card(p)}
     <p class="note">${t("srcShort")}</p>
   </div>`;
 }
