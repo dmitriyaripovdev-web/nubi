@@ -266,6 +266,7 @@ function welcomeView() {
       <label for="w-nick">${t("wNick")}<input id="w-nick" maxlength="12" placeholder="${t("wNickPh")}" autocomplete="nickname" value="${esc(Server.kakaoName().slice(0, 12))}"></label>
       <button class="btn" type="submit" ${ui.busy ? "disabled" : ""}>${ui.busy ? t("sending") : t("wStart")}</button>
     </form>
+    <p class="note">${t("privacyAgree")} <a href="privacy.html?lang=${lang}">${t("privacyLink")}</a></p>
   </div>`;
 }
 
@@ -343,7 +344,10 @@ function detailView(l) {
       : l.hasPhoto ? `<img class="lphoto" id="lphoto" alt="${esc(tr(l.name))}"><p class="note">${t("photoBy", { n: esc(l.author || "?"), d: dateFmt(l.photoTime) })}</p>` : ""}
     <div class="story">${body}</div>
     ${v ? `<div class="bigseal">${esc(tr(l.name))}<br>${t("sealBig")}</div>
-       <p class="note">${t("visited", { d: dateFmt(v.t) })}${v.test ? ` <span class="testtag">${t("testStamp")}</span>` : ""}${v.offline ? ` <span class="testtag">${t("offlineTag")}</span>` : ""}</p>` : ""}
+       <p class="note">${t("visited", { d: dateFmt(v.t) })}${v.test ? ` <span class="testtag">${t("testStamp")}</span>` : ""}${v.offline ? ` <span class="testtag">${t("offlineTag")}</span>` : ""}</p>
+       <button class="btn ghost share-btn" data-share-pick>📸 ${t("shareBtn")}</button>
+       <input type="file" id="share-pick" accept="image/*,video/*" hidden>
+       <p class="note">${t("shareHint")}</p>` : ""}
     ${checkBtn}
     ${ui.checkMsg ? `<div class="msg ${ui.checkMsg.err ? "err" : ""}">${ui.checkMsg.text}</div>` : ""}
     ${!pending && !visitedToday(l.id) ? `<p class="note">${testMode ? t("testHint") : t("checkinHint", { r: radius(l) })}</p>` : ""}
@@ -352,6 +356,7 @@ function detailView(l) {
           : `<button class="ghostbtn" data-ascent="${esc(l.id)}" ${ui.busy ? "disabled" : ""}>🥾 ${t("ascentBtn")}</button><span class="meta">${t("ascentHint")}</span>`}
       </div>` : ""}
     ${Wish.card(l)}
+    ${l.user && !l.mine && l.status === "approved" && srv.ready ? `<p class="note"><button class="link" data-lgreport="${esc(l.id)}">⚑ ${t("reportBtn")}</button></p>` : ""}
     ${markMode && !l.user ? `<div class="card markbox"><b>${t("markMode")}</b>
        <span class="meta">${pins[l.id] ? t("pinSaved", { c: pins[l.id].lat.toFixed(5) + ", " + pins[l.id].lng.toFixed(5) }) : t("markHint")}</span>
        <button class="ghostbtn" data-pin="${esc(l.id)}">${t("pinHere")}</button></div>` : ""}
@@ -578,7 +583,8 @@ function meView() {
   ${ui.confirmReset
     ? `<div class="card" style="margin-top:16px"><p style="margin:0">${t("resetQ")}</p>
        <div class="row"><button class="btn danger" data-reset-yes>${t("resetYes")}</button><button class="btn ghost" data-reset-no>${t("cancel")}</button></div></div>`
-    : `<button class="btn ghost" style="margin-top:16px" data-reset>${t("reset")}</button>`}`;
+    : `<button class="btn ghost" style="margin-top:16px" data-reset>${t("reset")}</button>`}
+  <p class="note" style="text-align:center"><a href="privacy.html?lang=${lang}">${t("privacyLink")}</a></p>`;
 }
 
 // Точки в виде текста, который удобно отправить разработчику
@@ -613,6 +619,7 @@ function render() {
   if (img && ui.openId) Photos.get(ui.openId).then(src => { if (src) img.src = src; else img.remove(); });
   // Стена фонариков и мои желания подгружаются отдельно
   Wish.load();
+  Owner.load();
   // Хранитель места подгружается отдельно
   if (ui.openId && srv.ready && srv.keeper[ui.openId] === undefined) {
     const id = ui.openId;
@@ -708,6 +715,16 @@ document.addEventListener("click", async e => {
   else if (b.hasAttribute("data-cancel")) { ui.editing = false; render(); }
   // --- Желания и стена фонариков ---
   else if (Wish.handles(d)) await Wish.click(b);
+  // --- Владельцы мест ---
+  else if (Owner.handles(d)) await Owner.click(b);
+  // --- Поделиться фотокарточкой ---
+  else if (b.hasAttribute("data-share-pick")) { const f = document.getElementById("share-pick"); if (f) f.click(); }
+  // --- Жалоба на народную легенду ---
+  else if (d.lgreport) {
+    b.disabled = true;
+    try { await Server.report("legend", d.lgreport.replace(/^u_/, "")); toast(t("reportOk"), true); }
+    catch (err) { b.disabled = false; toast(t("errServer")); }
+  }
   // --- Вход через Kakao ---
   else if (b.hasAttribute("data-kakao-start") || b.hasAttribute("data-kakao-link") || b.hasAttribute("data-kakao-switch")) {
     if (!Server.db) return toast(t("offlineBanner"));
@@ -733,6 +750,7 @@ document.addEventListener("click", async e => {
     Photos.clear().catch(() => {});
     if (Server.db) await Server.db.auth.signOut().catch(() => {});
     Server.user = null; srv = { ...srv, ready: false, others: [], totals: null, board: null, keeper: {} };
+    Owner.info = null; Owner.claims = null;
     finds = []; visits = {}; mine = []; profile = null; seen = []; testMode = false; markMode = false; ascent = null;
     go("walk");
   }
@@ -740,6 +758,9 @@ document.addEventListener("click", async e => {
 
 // Переключатели
 document.addEventListener("change", e => {
+  // Фото для карточки «Поделиться» и фото-доказательство владельца
+  if (e.target.id === "share-pick" && e.target.files[0]) { Share.make(ui.openId, e.target.files[0]); e.target.value = ""; }
+  if (e.target.id === "o-proof" && e.target.files[0]) Owner.pickProof(e.target.files[0]);
   if (e.target.id === "s-mark") {
     markMode = e.target.checked; store.set("markMode", markMode);
     toast(markMode ? t("markOn") : t("markOff"));
@@ -909,6 +930,12 @@ async function boot() {
         refreshTotals();
       }
     } catch (e) { srv.ready = false; }
+  }
+  // Ссылка из соцсетей вида ?l=<id места> — сразу открываем это место
+  const deep = new URLSearchParams(location.search).get("l");
+  if (deep) {
+    history.replaceState(null, "", location.pathname);
+    if (profile && byId(deep)) { ui = { ...ui, tab: "walk", openId: deep }; if (sec !== "walk") { sec = "walk"; store.set("sec", sec); } }
   }
   render();
   // Тихо узнаём местоположение, если доступ уже разрешён, — чтобы показать расстояния
