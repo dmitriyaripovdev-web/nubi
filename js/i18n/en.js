@@ -146,3 +146,36 @@ Object.assign(I18N.en, {
   fulfillBtn:"It came true!", fulfillAsk:"30 days have passed. Did it come true?", fulfilledOk:"Congratulations! Your wish came true ✨",
   noWishes:"No wishes yet. Look for 🏮 wish spots in the list."
 });
+
+// ===== Place owners, sharing, reports, constellation, privacy =====
+Object.assign(I18N.en, {
+  ownerText:"If you own or run this place, verify it — then manage the notice, description, hours, prices, contacts and booking yourself.",
+  ownerBtn:"This is my place", ownerVerified:"Verified by owner", ownerUpdated:"updated {d}",
+  ownerYou:"You are the owner of this place", ownerYouText:"People see your details with a “Verified by owner” badge.", ownerManage:"Manage place",
+  accLbl:"Access", acc_free:"Free entry", acc_booking:"Booking needed", acc_residents:"Residents only",
+  accHint_free:" — just come and play", accHint_booking:" — book in advance", accHint_residents:" — for residents of the complex",
+  hoursLbl:"Opening hours", hoursPh:"E.g. 06:00–22:00, every day", pricesLbl:"Prices",
+  pricesPh:"One per line: Item — price\nHour — ₩20,000\nNight — ₩50,000",
+  kakaoCh:"Kakao channel", bookOwner:"Book", noticeLbl:"Notice (shown on top)", noticePh:"E.g. Closed Dec 1–3",
+  aboutLbl:"Description", kakaoChLbl:"Kakao channel link", bookUrlLbl:"Booking link",
+  ownerRules:"Only write true information about your place. If it turns out to be false, the admin can remove verification.",
+  claimPending:"Request sent. The admin will review it soon.", claimRejected:"Request was not approved",
+  claimNeedKakao:"You can verify a place only after Kakao login.", claimToProfile:"Log in with Kakao in Profile",
+  claimIntro:"Tell us about yourself and attach a proof photo. Only the admin will see it.",
+  claimBiz:"Business name", claimContact:"Your phone for contact (not public)", claimNote:"Your role at this place",
+  claimNotePh:"E.g. owner, manager, tenant", claimProof:"Proof photo",
+  claimProofHint:"E.g. you at the sign or counter, business registration (사업자등록증) or lease contract.",
+  claimProofBtn:"Choose photo", claimSend:"Send request", claimNeedContact:"Enter a contact phone", claimNeedProof:"Attach a proof photo",
+  claimSent:"Request sent! After review you'll be able to manage the place.",
+  claimErr:{not_kakao:"Log in with Kakao first.", has_owner:"This place already has a verified owner.", pending:"Your request is already under review.", bad:"Enter a phone and attach a photo.", banned:"Your account is blocked.", no_user:"No connection to the server."},
+  shareBtn:"Share photo with stamp", shareHint:"Pick a photo or video — the app makes a card with the place's stamp. The photo stays on your phone.",
+  shareText:"I got a stamp at “{n}” — 누비", shareMaking:"Making the card…", shareErr:"Couldn't make the card. Try another photo.",
+  shareSaved:"Card saved to your phone, text with link copied.",
+  reportBtn:"Report", reportOk:"Thank you! The admin will check it.",
+  starsBtn:"Constellation of wishes come true · {n}", starsH:"Constellation of wishes come true", starsText:"These wishes came true. They never fade.", starsBack:"Back to the sky",
+  wishStep3:"Hang a lantern — it lights up in the sky right away, without your name",
+  wishRules:"Don't write other people's names, phone numbers or links — such wishes are reviewed by the admin first. Lanterns are shown without a name.",
+  wishOkLit:"Your lantern is glowing in the sky! 🏮",
+  wishErr:{no_visit:"Get a stamp at this place first.", limit:"You've made three wishes here today. Come back tomorrow!", bad_text:"A wish is 1–120 characters.", no_user:"No connection to the server.", banned:"Your account is blocked."},
+  privacyLink:"Privacy policy", privacyAgree:"By starting you agree to the"
+});
