@@ -3,7 +3,7 @@
 // Вход через Kakao. Пускает только тех, у кого в профиле is_admin = true —
 // это проверяет сервер (функция is_admin и права в 07_АДМИНКА_И_ЖЕЛАНИЯ.sql),
 // поэтому чужой человек, даже зная адрес, ничего не увидит и не изменит.
-// Разделы: Обзор · Легенды · Таблички · Точки · Желания
+// Разделы: Обзор · Легенды · Таблички · Точки · Желания · Игроки · Владельцы · Жалобы · Места
 // ============================================================
 
 // ---------- Языки админки: русский и корейский ----------
@@ -23,7 +23,16 @@ const ADM_TXT = {
     note: "Подпись", cur: "Сейчас", sugg: "Предложено", dist: "Разница",
     uploadArt: "Загрузить рисунок", changeArt: "Заменить рисунок", noArt: "Рисунка пока нет — в приложении стоит заглушка", approvePin: "Принять точку (+20)", far: "Очень далеко от места — скорее всего ошибка, лучше отклонить", hide: "Скрыть", light: "Зажечь на стене",
     saved: "Сохранено", err: "Ошибка: ", needText: "Заполните название и текст", notFound: "Ничего не нашлось",
-    lang: "Язык", logout: "Выйти", openApp: "Открыть приложение"
+    lang: "Язык", logout: "Выйти", openApp: "Открыть приложение",
+    people: "Игроки", claims: "Владельцы", reports: "Жалобы", places: "Места",
+    userSearch: "Поиск по нику", regAt: "регистрация", lastAt: "был", anon: "без Kakao", adminTag: "админ",
+    stampsN: "печатей", legendsN: "легенд", wishesN: "желаний", ban: "Заблокировать", unban: "Разблокировать", bannedTag: "заблокирован",
+    owners: "владельцев мест", bizName: "Название", contact: "Контакт", proof: "Доказательство",
+    approveClaim: "Сделать владельцем", reportsN: "жалоб", hideIt: "Скрыть", keepIt: "Оставить", reasons: "Причины",
+    placeSearch: "Найти место (спорт, рыбалка, кемпинг)", access: "Вход", accNone: "— не указано —",
+    accFree: "Свободный вход", accBooking: "По записи", accResidents: "Только для жильцов", owner: "Владелец",
+    removeOwner: "Снять владельца", flag: "Автофильтр", flags: { link: "ссылка", phone: "телефон", email: "почта", bad: "мат", reports: "жалобы" },
+    typeMore: "Введите хотя бы 2 буквы"
   },
   ko: {
     title: "관리자", stats: "개요", legends: "전설", finds: "안내판", pins: "위치", wishes: "소원",
@@ -40,7 +49,16 @@ const ADM_TXT = {
     note: "메모", cur: "현재", sugg: "제안", dist: "차이",
     uploadArt: "그림 올리기", changeArt: "그림 바꾸기", noArt: "아직 그림이 없습니다 — 앱에는 기본 이미지가 보입니다", approvePin: "위치 승인 (+20)", far: "장소에서 너무 멉니다 — 오류일 가능성이 높아 거절을 권합니다", hide: "숨기기", light: "벽에 불 켜기",
     saved: "저장했습니다", err: "오류: ", needText: "이름과 내용을 입력하세요", notFound: "찾지 못했습니다",
-    lang: "언어", logout: "로그아웃", openApp: "앱 열기"
+    lang: "언어", logout: "로그아웃", openApp: "앱 열기",
+    people: "사용자", claims: "장소 주인", reports: "신고", places: "장소",
+    userSearch: "닉네임 검색", regAt: "가입", lastAt: "최근", anon: "카카오 없음", adminTag: "관리자",
+    stampsN: "도장", legendsN: "전설", wishesN: "소원", ban: "차단", unban: "차단 해제", bannedTag: "차단됨",
+    owners: "인증된 장소 주인", bizName: "상호", contact: "연락처", proof: "증빙",
+    approveClaim: "주인으로 인증", reportsN: "신고", hideIt: "숨기기", keepIt: "유지", reasons: "사유",
+    placeSearch: "장소 찾기 (운동, 낚시, 캠핑)", access: "이용", accNone: "— 미정 —",
+    accFree: "자유 이용", accBooking: "예약제", accResidents: "주민 전용", owner: "주인",
+    removeOwner: "주인 해제", flag: "자동 필터", flags: { link: "링크", phone: "전화번호", email: "이메일", bad: "욕설", reports: "신고" },
+    typeMore: "2글자 이상 입력하세요"
   }
 };
 let admLang = (() => { try { return localStorage.getItem("nubi_admin_lang") || "ru"; } catch (e) { return "ru"; } })();
@@ -55,13 +73,19 @@ function toast(s) {
 }
 const placeName = id => {
   const l = (window.LEGENDS || []).find(x => x.id === id);
-  return l ? l.name.ko : id;
+  if (l) return l.name.ko;
+  const p = sportPlace(id);
+  return p ? p.name : id;
 };
+// Места разделов «Спорт», «Рыбалка», «Кемпинг» (из js/places-hwaseong.js)
+const sportPlaces = () => [...(window.SPORT || []), ...(window.FISH || []), ...(window.CAMP || [])];
+const sportPlace = id => sportPlaces().find(p => p.id === id);
+const flagTag = f => f ? `<div class="warn">⚠ ${tx("flag")}: ${esc((ADM_TXT[admLang].flags || {})[f] || f)}</div>` : "";
 const dt = s => s ? new Date(s).toLocaleString(admLang === "ko" ? "ko-KR" : "ru-RU", { dateStyle: "short", timeStyle: "short" }) : "";
 const distM = (a, b) => { const R = 6371e3, r = Math.PI / 180, x = (b.lng - a.lng) * r * Math.cos((a.lat + b.lat) / 2 * r), y = (b.lat - a.lat) * r; return Math.round(Math.hypot(x, y) * R); };
 
 // ---------- Состояние ----------
-const A = { tab: "stats", filter: "pending", rows: [], stats: null, places: {}, open: null, rejecting: null, maps: [] };
+const A = { tab: "stats", filter: "pending", rows: [], stats: null, places: {}, open: null, rejecting: null, maps: [], q: "", info: {} };
 const db = () => Server.db;
 
 // ---------- Загрузка данных раздела ----------
@@ -95,6 +119,41 @@ async function load() {
       const { data, error } = await db().from("wishes").select("id, place_id, text, status, cheers, fulfilled_at, created_at")
         .eq("status", st).order("created_at", { ascending: false }).limit(200);
       if (error) throw error; A.rows = data || [];
+    } else if (A.tab === "people") {
+      const { data, error } = await db().rpc("admin_users", { p_q: A.q || null, p_limit: 300 });
+      if (error) throw error; A.rows = data || [];
+    } else if (A.tab === "claims") {
+      const { data, error } = await db().from("place_claims").select("*, profiles(nick)").eq("status", A.filter)
+        .order("created_at", { ascending: false }).limit(100);
+      if (error) throw error; A.rows = data || [];
+      for (const r of A.rows) if (r.proof_path) {
+        const s = await db().storage.from("finds").createSignedUrl(r.proof_path, 3600);
+        r.url = s.data && s.data.signedUrl;
+      }
+    } else if (A.tab === "reports") {
+      const { data, error } = await db().from("reports").select("*").eq("status", "open").order("created_at", { ascending: false }).limit(500);
+      if (error) throw error;
+      // одна карточка на один фонарик/легенду: сколько жалоб и какие причины
+      const groups = {};
+      for (const r of data || []) {
+        const k = r.kind + ":" + r.target;
+        (groups[k] = groups[k] || { id: k, kind: r.kind, target: r.target, n: 0, reasons: [] }).n++;
+        if (r.reason) groups[k].reasons.push(r.reason);
+      }
+      A.rows = Object.values(groups).sort((a, b) => b.n - a.n);
+      const wIds = A.rows.filter(g => g.kind === "wish").map(g => g.target);
+      const lIds = A.rows.filter(g => g.kind === "legend").map(g => g.target);
+      const w = wIds.length ? await db().from("wishes").select("id, text, place_id, status, flag").in("id", wIds) : { data: [] };
+      const l = lIds.length ? await db().from("user_legends").select("id, name, story, status").in("id", lIds) : { data: [] };
+      for (const g of A.rows) g.item = (g.kind === "wish" ? w.data : l.data).find(x => x.id === g.target) || null;
+    } else if (A.tab === "places") {
+      const { data, error } = await db().from("place_info").select("*, profiles(nick)").limit(2000);
+      if (error) throw error;
+      A.info = Object.fromEntries((data || []).map(r => [r.place_id, r]));
+      const q = A.q.trim().toLowerCase();
+      // без поиска показываем места, где уже что-то указано (владелец или «вход»)
+      A.rows = q.length >= 2 ? sportPlaces().filter(p => (p.name + " " + p.addr).toLowerCase().includes(q)).slice(0, 40)
+        : sportPlaces().filter(p => A.info[p.id]);
     }
   } catch (e) { toast(tx("err") + (e.message || e)); }
   draw();
@@ -105,14 +164,18 @@ function draw() {
   A.maps.forEach(m => m.remove()); A.maps = [];
   const root = document.getElementById("adm");
   const p = (A.stats && A.stats.pending) || {};
-  const tabs = [["stats", ""], ["legends", p.legends], ["finds", p.finds], ["pins", p.pins], ["wishes", p.wishes]];
+  const tabs = [["stats", ""], ["legends", p.legends], ["finds", p.finds], ["pins", p.pins], ["wishes", p.wishes],
+    ["claims", p.claims], ["reports", p.reports], ["people", ""], ["places", ""]];
+  const withFilter = ["legends", "finds", "pins", "wishes", "claims"].includes(A.tab);
   root.innerHTML = `
     <div class="adm-top"><h1>누비<small>${tx("title")}</small></h1>
       <div class="lang"><button data-alang="ru" aria-pressed="${admLang === "ru"}">RU</button><button data-alang="ko" aria-pressed="${admLang === "ko"}">한</button></div></div>
     <div class="adm-tabs">${tabs.map(([k, n]) => `<button data-atab="${k}" aria-pressed="${A.tab === k}">${tx(k)}${n ? `<span class="badge">${n}</span>` : ""}</button>`).join("")}</div>
-    ${A.tab !== "stats" ? `<div class="sub-tabs">${["pending", "approved", "rejected"].map(f =>
+    ${A.tab === "people" || A.tab === "places" ? `<div class="search"><input id="aq" value="${esc(A.q)}" placeholder="${esc(tx(A.tab === "people" ? "userSearch" : "placeSearch"))}"><button data-aq>${tx("find")}</button></div>` : ""}
+    ${withFilter ? `<div class="sub-tabs">${["pending", "approved", "rejected"].map(f =>
       `<button data-afilter="${f}" aria-pressed="${A.filter === f}">${tx(A.tab === "wishes" && f === "rejected" ? "hidden" : f)}</button>`).join("")}</div>` : ""}
-    <div id="body">${A.tab === "stats" ? statsView() : A.rows.length ? A.rows.map(cardView).join("") : `<p class="center ameta">${tx("empty")}</p>`}</div>
+    <div id="body">${A.tab === "stats" ? statsView() : A.rows.length ? A.rows.map(cardView).join("")
+      : `<p class="center ameta">${A.tab === "places" && A.q.trim().length < 2 && A.q ? tx("typeMore") : tx("empty")}</p>`}</div>
     <p class="ameta center"><a href="./">${tx("openApp")}</a> · <button class="link" data-logout>${tx("logout")}</button></p>`;
   // мини-карты у карточек
   document.querySelectorAll("[data-amap]").forEach(el => initCardMap(el));
@@ -125,9 +188,11 @@ function statsView() {
   return `<div class="kpis">
       ${k(s.users, tx("users"))}${k(s.kakao, tx("kakaoUsers"))}${k(s.new_week, tx("newWeek"))}${k(s.active_week, tx("activeWeek"))}
       ${k(s.visits, tx("visits"))}${k(s.visits_week, tx("visitsWeek"))}${k(s.lanterns, "🏮 " + tx("lanterns"))}${k(s.fulfilled, "✨ " + tx("fulfilled"))}
+      ${k(s.owners, "🏠 " + tx("owners"))}
     </div>
     <h3 class="sub-h">${tx("waiting")}</h3>
-    <div class="kpis">${k(s.pending.legends, tx("legends"))}${k(s.pending.finds, tx("finds"))}${k(s.pending.pins, tx("pins"))}${k(s.pending.wishes, tx("wishes"))}</div>
+    <div class="kpis">${k(s.pending.legends, tx("legends"))}${k(s.pending.finds, tx("finds"))}${k(s.pending.pins, tx("pins"))}${k(s.pending.wishes, tx("wishes"))}
+      ${k(s.pending.claims, tx("claims"))}${k(s.pending.reports, tx("reports"))}</div>
     <h3 class="sub-h">${tx("byDay")}</h3>
     <div class="card" style="padding-bottom:26px"><div class="bars">${days.length ? days.map(d =>
       `<div style="height:${Math.round(d.n / max * 100)}%" title="${d.d}: ${d.n}"><span>${String(d.d).slice(5)}</span></div>`).join("") : `<span class="ameta">—</span>`}</div></div>
@@ -144,6 +209,7 @@ function cardView(r) {
   if (A.tab === "legends") return `<div class="acard">
     ${r.photo_path ? `<img src="${esc(Server.photoUrl(r.photo_path))}" alt="">` : ""}
     <div class="ameta">${tx("author")}: ${esc(r.author_nick || "?")} · ${dt(r.created_at)} · ${esc(r.lang)}</div>
+    ${flagTag(r.flag)}
     ${pend ? `<label>${tx("name")}<input id="n-${r.id}" value="${esc(r.name)}" maxlength="100"></label>
       <label>${tx("place")}<input id="p-${r.id}" value="${esc(r.place || "")}" maxlength="200"></label>
       <label>${tx("story")}<textarea id="s-${r.id}" maxlength="10000">${esc(r.story)}</textarea></label>`
@@ -187,9 +253,58 @@ function cardView(r) {
     </div>`;
   }
 
+  if (A.tab === "people") return `<div class="acard">
+    <h3>${esc(r.nick)} ${r.is_admin ? `<span class="badge">${tx("adminTag")}</span>` : ""} ${r.banned ? `<span class="warn">${tx("bannedTag")}</span>` : ""}</h3>
+    <div class="ameta">${r.kakao ? "Kakao" : tx("anon")} · ${tx("regAt")} ${dt(r.created_at)} · ${tx("lastAt")} ${dt(r.last_at)}</div>
+    <div class="ameta">${tx("stampsN")}: <b>${r.stamps}</b> · ${tx("legendsN")}: <b>${r.legends}</b> · ${tx("wishesN")}: <b>${r.wishes}</b></div>
+    ${r.is_admin ? "" : `<div class="arow"><button class="btn ${r.banned ? "ok" : "no"}" data-aban="${r.id}" data-on="${r.banned ? "" : 1}">${tx(r.banned ? "unban" : "ban")}</button></div>`}
+  </div>`;
+
+  if (A.tab === "claims") {
+    const pl = sportPlace(r.place_id);
+    return `<div class="acard">
+    <h3>🏠 ${esc(placeName(r.place_id))}</h3>
+    ${pl ? `<div class="ameta">${esc(pl.addr)}${pl.tel ? " · ☎ " + esc(pl.tel) : ""}</div>` : ""}
+    <div class="ameta">${tx("author")}: ${esc(r.profiles ? r.profiles.nick : "?")} · ${dt(r.created_at)}</div>
+    ${r.biz_name ? `<div>${tx("bizName")}: <b>${esc(r.biz_name)}</b></div>` : ""}
+    <div>${tx("contact")}: <b>${esc(r.contact || "")}</b></div>
+    ${r.note ? `<p style="margin:0;white-space:pre-wrap">${esc(r.note)}</p>` : ""}
+    ${r.url ? `<div class="ameta">${tx("proof")}:</div><img src="${esc(r.url)}" alt="">` : ""}
+    ${r.reject_reason ? `<div class="msg err">${esc(r.reject_reason)}</div>` : ""}
+    ${pend ? `<div class="arow"><button class="btn ok" data-aclaim="${r.id}" data-ok="1">${tx("approveClaim")}</button>
+      <button class="btn no" data-areject="${r.id}">${tx("reject")}</button></div>${rej}` : ""}
+  </div>`;
+  }
+
+  if (A.tab === "reports") {
+    const it = r.item;
+    return `<div class="acard">
+    <div class="wishtxt">${r.kind === "wish" ? "🏮 " + esc(it ? it.text : "—") : "📜 " + esc(it ? it.name : "—")}</div>
+    ${r.kind === "legend" && it ? `<p class="ameta" style="margin:0">${esc(String(it.story || "").slice(0, 300))}</p>` : ""}
+    <div class="ameta">${r.kind === "wish" && it ? esc(placeName(it.place_id)) + " · " : ""}${tx("reportsN")}: <b>${r.n}</b></div>
+    ${r.reasons.length ? `<div class="ameta">${tx("reasons")}: ${r.reasons.map(esc).join(" · ")}</div>` : ""}
+    <div class="arow"><button class="btn no" data-arep="${esc(r.id)}" data-act="hide">${tx("hideIt")}</button>
+      <button class="btn ok" data-arep="${esc(r.id)}" data-act="keep">${tx("keepIt")}</button></div>
+  </div>`;
+  }
+
+  if (A.tab === "places") {
+    const inf = A.info[r.id] || {};
+    const acc = ["", "free", "booking", "residents"];
+    const accName = { "": "accNone", free: "accFree", booking: "accBooking", residents: "accResidents" };
+    return `<div class="acard">
+    <h3>${esc(r.name)}</h3>
+    <div class="ameta">${esc(r.addr)}</div>
+    <label>${tx("access")}<select data-aacc="${r.id}">${acc.map(a => `<option value="${a}" ${(inf.access || "") === a ? "selected" : ""}>${tx(accName[a])}</option>`).join("")}</select></label>
+    ${inf.owner_id ? `<div>🏠 ${tx("owner")}: <b>${esc(inf.profiles ? inf.profiles.nick : "?")}</b></div>
+      <div class="arow"><button class="btn no" data-aunown="${r.id}">${tx("removeOwner")}</button></div>` : ""}
+  </div>`;
+  }
+
   // желания
   return `<div class="acard">
     <div class="wishtxt">🏮 ${esc(r.text)}</div>
+    ${flagTag(r.flag)}
     <div class="ameta">${esc(placeName(r.place_id))} · ${dt(r.created_at)}${r.status === "approved" ? " · 🙏 " + r.cheers : ""}${r.fulfilled_at ? " · ✨" : ""}</div>
     <div class="arow">
       ${r.status !== "approved" ? `<button class="btn ok" data-awish="${r.id}" data-st="approved">${tx("light")}</button>` : ""}
@@ -269,7 +384,7 @@ document.addEventListener("click", async e => {
   const b = e.target.closest("button"); if (!b) return;
   const d = b.dataset;
   if (d.alang) { admLang = d.alang; try { localStorage.setItem("nubi_admin_lang", admLang); } catch (e) {} draw(); }
-  else if (d.atab) { A.tab = d.atab; A.filter = "pending"; await load(); }
+  else if (d.atab) { A.tab = d.atab; A.filter = "pending"; A.q = ""; await load(); }
   else if (d.afilter) { A.filter = d.afilter; await load(); }
   else if (d.akakao !== undefined) { try { await Server.signInKakao(); } catch (err) { toast(tx("err") + err); } }
   else if (b.hasAttribute("data-logout")) { await db().auth.signOut(); location.reload(); }
@@ -286,6 +401,10 @@ document.addEventListener("click", async e => {
       if (error) throw error;
     });
   }
+  else if (d.arejectGo && A.tab === "claims") act(async () => {
+    const { error } = await db().rpc("admin_claim", { p_id: d.arejectGo, p_ok: false, p_reason: val("rs-" + d.arejectGo).trim() || null });
+    if (error) throw error;
+  });
   else if (d.arejectGo) {
     const id = d.arejectGo, table = A.tab === "finds" ? "finds" : "user_legends";
     act(async () => {
@@ -315,6 +434,33 @@ document.addEventListener("click", async e => {
       reviewed_at: new Date().toISOString() }).eq("id", d.aokPin || d.arejectPin);
     if (error) throw error;
   });
+  else if (d.aq !== undefined) { A.q = val("aq"); await load(); }
+  else if (d.aban) act(async () => {
+    const { error } = await db().rpc("admin_set_ban", { p_user: d.aban, p_ban: !!d.on });
+    if (error) throw error;
+  });
+  else if (d.aclaim) act(async () => {
+    const { error } = await db().rpc("admin_claim", { p_id: d.aclaim, p_ok: true });
+    if (error) throw error;
+  });
+  else if (d.arep) act(async () => {
+    const g = A.rows.find(x => x.id === d.arep); if (!g) return;
+    if (d.act === "hide") {
+      const q = g.kind === "wish" ? db().from("wishes").update({ status: "hidden" }).eq("id", g.target)
+        : db().from("user_legends").update({ status: "rejected", reject_reason: "reports", reviewed_at: new Date().toISOString() }).eq("id", g.target);
+      const { error } = await q; if (error) throw error;
+    } else if (g.kind === "wish" && g.item && g.item.status === "pending" && g.item.flag === "reports") {
+      // фонарик погас из-за жалоб — зажигаем обратно
+      const { error } = await db().from("wishes").update({ status: "approved", flag: null }).eq("id", g.target);
+      if (error) throw error;
+    }
+    const { error } = await db().from("reports").update({ status: "done" }).eq("kind", g.kind).eq("target", g.target).eq("status", "open");
+    if (error) throw error;
+  });
+  else if (d.aunown) act(async () => {
+    const { error } = await db().rpc("admin_set_owner", { p_place: d.aunown, p_user: null });
+    if (error) throw error;
+  });
   else if (d.awish) act(async () => {
     const { error } = await db().from("wishes").update({ status: d.st }).eq("id", d.awish);
     if (error) throw error;
@@ -322,6 +468,15 @@ document.addEventListener("click", async e => {
 });
 // Рисунок для народной легенды: файл кладём в открытую папку легенд под новым именем
 document.addEventListener("change", async e => {
+  // «Вход» у места: свободный / по записи / только жильцы
+  if (e.target.dataset && e.target.dataset.aacc) {
+    const place = e.target.dataset.aacc, access = e.target.value || null;
+    return act(async () => {
+      const q = A.info[place] ? db().from("place_info").update({ access, updated_at: new Date().toISOString() }).eq("place_id", place)
+        : db().from("place_info").insert({ place_id: place, access });
+      const { error } = await q; if (error) throw error;
+    });
+  }
   const id = e.target.dataset && e.target.dataset.aart, file = e.target.files && e.target.files[0];
   if (!id || !file) return;
   act(async () => {
@@ -335,6 +490,7 @@ document.addEventListener("change", async e => {
 });
 document.addEventListener("keydown", e => {
   if (e.key === "Enter" && e.target.id && e.target.id.startsWith("q-")) { e.preventDefault(); kakaoSearch(e.target.id.slice(2)); }
+  if (e.key === "Enter" && e.target.id === "aq") { e.preventDefault(); A.q = e.target.value; load(); }
 });
 
 // ---------- Фото таблички → картинка легенды ----------
