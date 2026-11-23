@@ -376,3 +376,26 @@ img.art.hero{aspect-ratio:16/9;height:auto}
 .mywish b{display:block;overflow-wrap:anywhere}
 .mywish .meta,.mywish .dist{display:block}
 .mywish.done{border-color:#e9a92c;background:color-mix(in srgb,#ffd86b 14%,var(--surface))}
+
+/* ===== Владельцы мест ===== */
+.notice{background:color-mix(in srgb,var(--gold) 18%,var(--surface));border:1px solid var(--gold);border-radius:12px;padding:10px 12px;margin:10px 0;font-weight:500}
+.verified{color:var(--pine);font-weight:700;font-size:14px;margin:8px 0}
+.verified-tag{display:inline-grid;place-items:center;width:17px;height:17px;border-radius:50%;background:var(--pine);color:#fff;font-size:11px;margin-left:6px;vertical-align:2px}
+.acc-tag{font-family:var(--body);font-size:10.5px;border:1px solid currentColor;border-radius:4px;padding:0 5px;margin-left:6px;vertical-align:2px;font-weight:700;white-space:nowrap}
+.acc-tag.free,.acc.free b{color:var(--pine)}
+.acc-tag.booking,.acc.booking b{color:var(--gold)}
+.acc-tag.residents,.acc.residents b{color:var(--muted)}
+.acc{margin:8px 0;font-size:14px}
+.acc .meta{display:inline}
+table.prices{width:100%;border-collapse:collapse;margin-top:4px}
+table.prices td{padding:4px 0;border-bottom:1px solid var(--line)}
+table.prices td:last-child{text-align:right;font-weight:700;white-space:nowrap;padding-left:10px}
+.oform{display:grid;gap:10px}
+.oform input,.oform textarea,.oform select{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:10px;padding:9px 11px;font:inherit;background:var(--bg);color:inherit}
+/* ===== Поделиться ===== */
+.share-btn{margin-top:14px}
+/* ===== Созвездие сбывшихся и жалобы ===== */
+.stars-btn{margin-top:10px;width:100%}
+.sky.stars-sky{background:radial-gradient(ellipse at 50% 20%,#2a2450 0%,#0d1026 70%)}
+.sky.stars-sky .star{background:radial-gradient(circle,#fff8d6 0%,#f5d77a 45%,rgba(245,215,122,0) 72%)}
+.link.report{font-size:12.5px;color:var(--muted);margin-top:6px}
