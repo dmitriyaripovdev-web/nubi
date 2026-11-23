@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>누비 · 개인정보 처리방침</title>
+<link rel="icon" href="icons/icon-32.png">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  /* Страница политики: только текст, переключатель языка сверху */
+  body{padding-bottom:40px}
+  .pp{max-width:720px;margin:0 auto;padding:14px 0 30px;line-height:1.65}
+  .pp h1{font-family:var(--display);font-size:24px;margin:6px 0 4px}
+  .pp h2{font-size:16px;margin:22px 0 6px}
+  .pp p,.pp li{font-size:14.5px}
+  .pp ul{padding-left:20px;margin:6px 0}
+  .pp table{width:100%;border-collapse:collapse;font-size:13.5px;margin:6px 0}
+  .pp td,.pp th{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+  .pp .top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .pp .lang button{border:1px solid var(--line);background:var(--surface);color:inherit;border-radius:999px;padding:5px 11px;font:inherit;font-size:13px;cursor:pointer}
+  .pp .lang button[aria-pressed="true"]{background:var(--indigo);border-color:var(--indigo);color:#fff}
+  [data-l]{display:none}
+  [data-l].on{display:block}
+</style>
+</head>
+<body>
+<div class="app pp">
+  <div class="top"><a href="./">← 누비</a>
+    <div class="lang"><button data-set="ko">한국어</button> <button data-set="ru">Русский</button> <button data-set="en">English</button></div></div>
+
+<!-- ======================= 한국어 (기준 문서) ======================= -->
+<section data-l="ko">
+  <h1>개인정보 처리방침</h1>
+  <p class="meta">시행일: 2026년 11월 23일</p>
+  <p>누비(이하 ‘서비스’)는 「개인정보 보호법」에 따라 이용자의 개인정보를 보호하고, 이와 관련한 고충을 원활하게 처리하기 위해 다음과 같이 개인정보 처리방침을 둡니다.</p>
+
+  <h2>1. 처리하는 개인정보 항목</h2>
+  <ul>
+    <li><b>계정:</b> 닉네임, 서비스 내부 회원 식별자. 카카오 로그인 시 카카오 회원번호와 이용자가 카카오에서 제공에 동의한 프로필 정보(예: 닉네임).</li>
+    <li><b>위치:</b> 도장 찍기·장소 위치 제안 시 그 순간의 위치(위도·경도·정확도)와 시각.</li>
+    <li><b>이용자가 올린 내용:</b> 전설 글과 사진, 안내판 사진과 메모, 소원 글, 신고 사유.</li>
+    <li><b>장소 주인 인증 신청 시:</b> 상호, 연락처(전화번호), 이 장소와의 관계, 증빙 사진.</li>
+    <li><b>이용 기록:</b> 도장, 점수, 칭호, 응원 기록, 접속 시각.</li>
+  </ul>
+
+  <h2>2. 처리 목적</h2>
+  <ul>
+    <li>도장·점수·순위·칭호 등 서비스 기본 기능 제공</li>
+    <li>이용자가 등록한 전설·장소 정보·소원의 게시와 검토</li>
+    <li>장소 주인 확인과 연락</li>
+    <li>부정 이용(위치 조작, 스팸, 욕설 등) 방지와 신고 처리</li>
+  </ul>
+
+  <h2>3. 보유 및 이용 기간</h2>
+  <p>회원 탈퇴(삭제 요청) 시까지 보유하며, 요청을 받으면 지체 없이 파기합니다. 다만 법령에서 보존을 요구하는 경우에는 그 기간 동안 보관합니다. 장소 주인 인증 증빙 사진은 확인 목적이 끝나면 삭제를 요청할 수 있습니다.</p>
+
+  <h2>4. 공개되는 정보</h2>
+  <ul>
+    <li>닉네임과 순위, 칭호</li>
+    <li>승인된 전설과 사진(작성자 닉네임과 함께)</li>
+    <li>소원등은 <b>이름 없이</b> 공개됩니다(공개를 선택한 경우에만).</li>
+    <li>장소 주인이 직접 입력한 장소 정보(공지, 소개, 운영 시간, 요금, 공개 연락처)</li>
+  </ul>
+
+  <h2>5. 제3자 제공</h2>
+  <p>이용자의 개인정보를 제3자에게 제공하지 않습니다. 법령에 따른 요청이 있는 경우는 예외로 합니다.</p>
+
+  <h2>6. 처리 위탁 및 국외 이전</h2>
+  <table>
+    <tr><th>받는 자</th><th>국가</th><th>항목</th><th>목적·방법</th></tr>
+    <tr><td>Supabase Inc.</td><td>미국 법인 · 서버: 일본 도쿄 (AWS ap-northeast-1)</td><td>1항의 모든 항목</td><td>데이터베이스·파일 저장. 서비스 이용 시 네트워크로 수시 전송</td></tr>
+    <tr><td>Kakao Corp.</td><td>대한민국</td><td>카카오 로그인 정보</td><td>로그인</td></tr>
+    <tr><td>GitHub, Inc.</td><td>미국</td><td>개인정보 저장 없음 (접속 기록만)</td><td>앱 파일 제공(호스팅)</td></tr>
+  </table>
+  <p>보유 기간은 3항과 같습니다. 국외 이전은 서비스 제공에 꼭 필요하므로, 거부하려면 서비스 이용을 중단하고 아래 연락처로 삭제를 요청해 주세요.</p>
+
+  <h2>7. 위치정보</h2>
+  <p>위치는 이용자가 ‘도장 찍기’ 등 버튼을 누른 순간에만 한 번 확인합니다. 백그라운드에서 계속 추적하지 않습니다. 휴대폰 설정에서 언제든 위치 권한을 끌 수 있습니다.</p>
+
+  <h2>8. 이용자의 권리</h2>
+  <p>이용자는 언제든지 자신의 개인정보 열람, 정정, 삭제, 처리 정지를 요구할 수 있습니다. 아래 연락처로 닉네임과 함께 요청해 주시면 지체 없이 처리합니다.</p>
+
+  <h2>9. 만 14세 미만 아동</h2>
+  <p>만 14세 미만 아동이 가입하려면 법정대리인의 동의가 필요합니다.</p>
+
+  <h2>10. 안전성 확보 조치</h2>
+  <p>접근 권한 제한(행 단위 보안), 암호화된 통신(HTTPS), 관리자 권한 최소화, 비공개 저장소에 증빙 사진 보관.</p>
+
+  <h2>11. 개인정보 보호책임자</h2>
+  <p>Dmitriy Aripov · 이메일: <a href="mailto:dmitriy.aripov.dev@gmail.com">dmitriy.aripov.dev@gmail.com</a></p>
+  <p>개인정보 침해 신고·상담: 개인정보침해신고센터(국번 없이 118, privacy.kisa.or.kr), 개인정보 분쟁조정위원회(1833-6972, kopico.go.kr).</p>
+
+  <h2>12. 변경</h2>
+  <p>이 방침이 바뀌면 앱과 이 페이지를 통해 알립니다.</p>
+</section>
+
+<!-- ======================= Русский (перевод) ======================= -->
+<section data-l="ru">
+  <h1>Политика конфиденциальности</h1>
+  <p class="meta">Действует с 23 ноября 2026 г. Основной текст — корейский, это перевод.</p>
+  <h2>1. Какие данные мы обрабатываем</h2>
+  <ul>
+    <li><b>Аккаунт:</b> ник, внутренний номер пользователя. При входе через Kakao — номер аккаунта Kakao и сведения профиля, которые вы разрешили передать (например, имя).</li>
+    <li><b>Местоположение:</b> координаты, точность и время в момент, когда вы ставите печать или предлагаете точку места.</li>
+    <li><b>Ваши материалы:</b> легенды и фото, фото табличек и заметки, желания, причины жалоб.</li>
+    <li><b>Заявка владельца места:</b> название заведения, телефон, кто вы этому месту, фото-доказательство.</li>
+    <li><b>История:</b> печати, очки, звания, поддержки, время входа.</li>
+  </ul>
+  <h2>2. Зачем</h2>
+  <ul><li>Работа приложения: печати, очки, рейтинг, звания.</li><li>Публикация и проверка легенд, сведений о местах, желаний.</li><li>Проверка владельцев мест и связь с ними.</li><li>Защита от обмана (подмена GPS, спам, мат) и разбор жалоб.</li></ul>
+  <h2>3. Сколько храним</h2>
+  <p>Пока вы не попросите удалить аккаунт. После запроса удаляем без задержки, кроме случаев, когда закон требует хранить.</p>
+  <h2>4. Что видят другие</h2>
+  <ul><li>Ник, место в рейтинге, звания.</li><li>Одобренные легенды и фото (с ником автора).</li><li>Фонарики желаний — <b>без имени</b> и только если вы выбрали «повесить на небо».</li><li>Сведения о месте, которые ввёл его владелец.</li></ul>
+  <h2>5. Передача третьим лицам</h2>
+  <p>Не передаём, кроме требований закона.</p>
+  <h2>6. Подрядчики и передача за рубеж</h2>
+  <p>Supabase Inc. (компания США, сервер в Токио, Япония — AWS ap-northeast-1) — база данных и файлы; Kakao Corp. (Корея) — вход; GitHub, Inc. (США) — размещение файлов приложения, персональные данные там не хранятся. Передача за рубеж нужна для работы сервиса; если вы не согласны — прекратите пользоваться и попросите удалить данные.</p>
+  <h2>7. Местоположение</h2>
+  <p>Определяется только в момент нажатия кнопки (например, «Поставить печать»). Фоновой слежки нет.</p>
+  <h2>8. Ваши права</h2>
+  <p>Можно запросить просмотр, исправление, удаление данных или остановку обработки — напишите на почту ниже и укажите ник.</p>
+  <h2>9. Дети до 14 лет</h2>
+  <p>Нужно согласие родителя или законного представителя.</p>
+  <h2>10. Ответственный</h2>
+  <p>Dmitriy Aripov · <a href="mailto:dmitriy.aripov.dev@gmail.com">dmitriy.aripov.dev@gmail.com</a></p>
+</section>
+
+<!-- ======================= English (translation) ======================= -->
+<section data-l="en">
+  <h1>Privacy policy</h1>
+  <p class="meta">Effective November 23, 2026. The Korean text is the official version; this is a translation.</p>
+  <h2>1. Data we process</h2>
+  <ul>
+    <li><b>Account:</b> nickname, internal user ID. With Kakao login — your Kakao account ID and the profile data you agreed to share (e.g. nickname).</li>
+    <li><b>Location:</b> coordinates, accuracy and time at the moment you get a stamp or suggest a place pin.</li>
+    <li><b>Your content:</b> legends and photos, signboard photos and notes, wishes, report reasons.</li>
+    <li><b>Place owner request:</b> business name, phone, your role, proof photo.</li>
+    <li><b>Usage:</b> stamps, points, titles, cheers, sign-in time.</li>
+  </ul>
+  <h2>2. Purposes</h2>
+  <ul><li>Core features: stamps, points, ranking, titles.</li><li>Publishing and reviewing legends, place details and wishes.</li><li>Verifying and contacting place owners.</li><li>Preventing abuse (GPS spoofing, spam, insults) and handling reports.</li></ul>
+  <h2>3. Retention</h2>
+  <p>Until you ask us to delete your account; then deleted without delay, unless the law requires keeping it.</p>
+  <h2>4. What others see</h2>
+  <ul><li>Nickname, ranking, titles.</li><li>Approved legends and photos (with author's nickname).</li><li>Wish lanterns — <b>without your name</b>, only if you chose to hang them in the sky.</li><li>Place details entered by the place owner.</li></ul>
+  <h2>5. Third parties</h2>
+  <p>We don't share your data, except where required by law.</p>
+  <h2>6. Processors and transfer abroad</h2>
+  <p>Supabase Inc. (US company, server in Tokyo, Japan — AWS ap-northeast-1) — database and files; Kakao Corp. (Korea) — login; GitHub, Inc. (US) — hosting app files, no personal data stored. The transfer is necessary to run the service; if you disagree, stop using it and ask us to delete your data.</p>
+  <h2>7. Location</h2>
+  <p>Checked only when you press a button such as “Get stamp”. No background tracking.</p>
+  <h2>8. Your rights</h2>
+  <p>You may request access, correction, deletion or suspension of processing — email us with your nickname.</p>
+  <h2>9. Children under 14</h2>
+  <p>Consent of a parent or legal guardian is required.</p>
+  <h2>10. Contact</h2>
+  <p>Dmitriy Aripov · <a href="mailto:dmitriy.aripov.dev@gmail.com">dmitriy.aripov.dev@gmail.com</a></p>
+</section>
+</div>
+<script>
+  // Язык: из адреса (?lang=ru), иначе из приложения, иначе корейский
+  (function () {
+    let l = new URLSearchParams(location.search).get("lang");
+    if (!l) { try { l = JSON.parse(localStorage.getItem("nubi_lang")); } catch (e) {} }
+    const set = x => {
+      if (!["ko", "ru", "en"].includes(x)) x = "ko";
+      document.documentElement.lang = x;
+      document.querySelectorAll("[data-l]").forEach(s => s.classList.toggle("on", s.dataset.l === x));
+      document.querySelectorAll("[data-set]").forEach(b => b.setAttribute("aria-pressed", b.dataset.set === x));
+    };
+    document.addEventListener("click", e => { const b = e.target.closest("[data-set]"); if (b) set(b.dataset.set); });
+    set(l);
+  })();
+</script>
+</body>
+</html>
