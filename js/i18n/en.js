@@ -177,5 +177,7 @@ Object.assign(I18N.en, {
   wishRules:"Don't write other people's names, phone numbers or links — such wishes are reviewed by the admin first. Lanterns are shown without a name.",
   wishOkLit:"Your lantern is glowing in the sky! 🏮",
   wishErr:{no_visit:"Get a stamp at this place first.", limit:"You've made three wishes here today. Come back tomorrow!", bad_text:"A wish is 1–120 characters.", no_user:"No connection to the server.", banned:"Your account is blocked."},
+  areaOther:"Other area", areaLoading:"Loading area…",
+  errDayLimit:"That's plenty of stamps for today (30 a day). Come back tomorrow!", errDayLimitAdd:"You can't send more today. Please try again tomorrow.", nickBad:"Nicknames can't contain swear words, links or phone numbers.",
   privacyLink:"Privacy policy", privacyAgree:"By starting you agree to the"
 });
