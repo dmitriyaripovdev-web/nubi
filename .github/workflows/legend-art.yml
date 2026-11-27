@@ -1,0 +1,31 @@
+# Картинки легенд: GitHub сам скачивает их из Leonardo по ссылкам из img/legends/art-urls.txt,
+# делает большую картинку (960x548 webp) и миниатюру (168x168 webp) и сохраняет в репозиторий.
+name: Картинки легенд
+
+on:
+  push:
+    branches: [main]
+    paths: ["img/legends/art-urls.txt"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pillow==11.0.0
+      - run: python .github/scripts/legend_art.py
+      - name: Сохранить картинки
+        run: |
+          git config user.name "nubi-bot"
+          git config user.email "nubi-bot@users.noreply.github.com"
+          git add img/legends
+          git diff --cached --quiet && echo "Новых картинок нет" && exit 0
+          git commit -m "Картинки легенд из Leonardo"
+          git push
