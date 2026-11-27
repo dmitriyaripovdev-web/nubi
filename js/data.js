@@ -1,6 +1,6 @@
 // ============================================================
-// Данные приложения: регионы, челленджи, звания.
-// Сами легенды — в файлах legends-main.js и legends-hwaseong.js.
+// Данные приложения: районы, челленджи, звания.
+// Сами легенды и места — в папке data/ по районам (загружает js/datastore.js).
 // ============================================================
 
 // Радиус отметки в метрах: ближе — печать ставится
@@ -8,9 +8,23 @@ window.CHECKIN_RADIUS = 150;
 // Для мест с приблизительной точкой (approx:true) — радиус больше
 window.CHECKIN_RADIUS_APPROX = 1000;
 
+// Районы: 31 город и уезд Кёнгидо (код = папка в data/), потом другие провинции.
+// Коды — только латинские буквы, и не «u» (u_ — начало id народных легенд).
+window.GG_CITIES = ["hs", "sw", "os", "yi", "pt", "asg", "sn", "ay", "uw", "gp", "gc", "gm", "as", "sh", "bc", "gmp",
+  "gy", "pj", "yj", "uj", "dd", "yc", "pc", "nyj", "gr", "hn", "gj", "ich", "yz", "ypy", "gpy"];
 window.REGIONS = {
-  hs:{ko:"화성",ru:"Хвасон",en:"Hwaseong"},
-  gg:{ko:"경기",ru:"Кёнгидо",en:"Gyeonggi"}, se:{ko:"서울",ru:"Сеул",en:"Seoul"}, ic:{ko:"인천",ru:"Инчхон",en:"Incheon"},
+  hs:{ko:"화성",ru:"Хвасон",en:"Hwaseong"}, sw:{ko:"수원",ru:"Сувон",en:"Suwon"}, os:{ko:"오산",ru:"Осан",en:"Osan"},
+  yi:{ko:"용인",ru:"Ёнъин",en:"Yongin"}, pt:{ko:"평택",ru:"Пхёнтхэк",en:"Pyeongtaek"}, asg:{ko:"안성",ru:"Ансон",en:"Anseong"},
+  sn:{ko:"성남",ru:"Соннам",en:"Seongnam"}, ay:{ko:"안양",ru:"Анъян",en:"Anyang"}, uw:{ko:"의왕",ru:"Ыйван",en:"Uiwang"},
+  gp:{ko:"군포",ru:"Кунпхо",en:"Gunpo"}, gc:{ko:"과천",ru:"Кваччхон",en:"Gwacheon"}, gm:{ko:"광명",ru:"Кванмён",en:"Gwangmyeong"},
+  as:{ko:"안산",ru:"Ансан",en:"Ansan"}, sh:{ko:"시흥",ru:"Сихын",en:"Siheung"}, bc:{ko:"부천",ru:"Пучхон",en:"Bucheon"},
+  gmp:{ko:"김포",ru:"Кимпхо",en:"Gimpo"}, gy:{ko:"고양",ru:"Коян",en:"Goyang"}, pj:{ko:"파주",ru:"Пхаджу",en:"Paju"},
+  yj:{ko:"양주",ru:"Янджу",en:"Yangju"}, uj:{ko:"의정부",ru:"Ыйджонбу",en:"Uijeongbu"}, dd:{ko:"동두천",ru:"Тондучхон",en:"Dongducheon"},
+  yc:{ko:"연천",ru:"Ёнчхон",en:"Yeoncheon"}, pc:{ko:"포천",ru:"Пхочхон",en:"Pocheon"}, nyj:{ko:"남양주",ru:"Намъянджу",en:"Namyangju"},
+  gr:{ko:"구리",ru:"Кури",en:"Guri"}, hn:{ko:"하남",ru:"Ханам",en:"Hanam"}, gj:{ko:"광주",ru:"Кванджу",en:"Gwangju"},
+  ich:{ko:"이천",ru:"Ичхон",en:"Icheon"}, yz:{ko:"여주",ru:"Ёджу",en:"Yeoju"}, ypy:{ko:"양평",ru:"Янпхён",en:"Yangpyeong"},
+  gpy:{ko:"가평",ru:"Капхён",en:"Gapyeong"},
+  gg:{ko:"경기 (기타)",ru:"Кёнгидо (другое)",en:"Gyeonggi (other)"}, se:{ko:"서울",ru:"Сеул",en:"Seoul"}, ic:{ko:"인천",ru:"Инчхон",en:"Incheon"},
   gw:{ko:"강원",ru:"Канвондо",en:"Gangwon"}, cc:{ko:"충청",ru:"Чхунчхон",en:"Chungcheong"}, jl:{ko:"전라",ru:"Чолла",en:"Jeolla"},
   gb:{ko:"경북",ru:"Кёнсан-Пукто",en:"N. Gyeongsang"}, gn:{ko:"경남",ru:"Кёнсан-Намдо",en:"S. Gyeongsang"}, jj:{ko:"제주",ru:"Чеджу",en:"Jeju"}
 };
