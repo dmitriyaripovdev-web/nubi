@@ -8,7 +8,10 @@
 //  • 화성도시공사_오토캠핑장이용자수현황 (2025-12-31)
 // Лицензия: свободное использование (이용허락범위 제한 없음).
 // Недостающие координаты площадок проставлены через поиск Kakao (21.11.2026).
+// Файл района (data/<район>/): загружает js/datastore.js по мере надобности.
+// id мест получают приставку района: s12 → hs_s12.
 // ============================================================
+{
 
 // Телефоны управляющих отделов (чтобы не повторять в каждой строке)
 const SPORT_TEL = { "1": "031-355-1292", "2": "031-8059-3274" };
@@ -220,12 +223,7 @@ const CAMP_ROWS = [
 ["c2","매송오토캠핑장","매송면 어천리 164","031-293-9923",16997,37.258008,126.916051]
 ];
 
-// Превращаем строки в удобные объекты
-window.SPORT = SPORT_ROWS.map(([id, name, kinds, addr, lat, lng, tel, book, off]) => ({
-  id, name, addr: "화성시 " + addr, lat, lng, book: !!book, off,
-  tel: SPORT_TEL[tel] || tel,
-  kinds: Object.fromEntries(kinds.split(" ").map(s => { const m = s.match(/^([a-z]+)(\d+)$/); return [m[1], +m[2]]; }))
-}));
-window.FISH = FISH_ROWS.map(([id, name, type, fish, fee, cap, near, addr, lat, lng]) =>
-  ({ id, name, type, fish, fee, cap, near, addr: "화성시 " + addr, lat, lng }));
-window.CAMP = CAMP_ROWS.map(([id, name, addr, tel, guests, lat, lng]) => ({ id, name, addr: "화성시 " + addr, tel, guests, lat: lat ?? null, lng: lng ?? null }));
+// Отдаём строки приложению (в объекты их превращает js/datastore.js)
+const pre = r => ["hs_" + r[0], ...r.slice(1)];
+Data.put("places", { city: "화성시", tel: SPORT_TEL, sport: SPORT_ROWS.map(pre), fish: FISH_ROWS.map(pre), camp: CAMP_ROWS.map(pre) });
+}
