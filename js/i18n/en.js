@@ -91,9 +91,9 @@ Object.assign(I18N.en, {
         cult:["Contests","Local tournaments and limited-time challenges"]},
   navPlaces:"Places", navTalk:"Talk", demo:"Preview", nubiNow:"You're here",
   placesN:"{n} {n:place|places}", legendsN:"{n} {n:legend|legends}",
-  secDemoNote:"Sports, fishing and camping are a preview built on Hwaseong open data. Talk and booking open after Kakao login.",
-  srcNote:"Based on Hwaseong open data (Hwaseong Urban Corporation, city hall, 2025–2026). Call ahead before you go.",
-  srcShort:"Source: data.go.kr — Hwaseong Urban Corporation, Hwaseong City",
+  secDemoNote:"Sports, fishing and camping are a preview built on city open data. Talk and booking open after Kakao login.",
+  srcNote:"Based on city open data and city-hall sports facility lists (2025–2026). Call ahead before you go.",
+  srcShort:"Sources: data.go.kr, Hwaseong Urban Corporation and Hwaseong City, Paju City Hall",
   campNote:"For now only the city-run auto campsites are listed. Private campsites will come with the Korea Tourism Organization's GoCamping data.",
   nearMe:"📍 Nearest first", noneHere:"No places match this filter.", noMapPin:"No map pin — search the address in Kakao Map",
   bookOnly:"Bookable", bookTag:"bookable",
@@ -109,7 +109,7 @@ Object.assign(I18N.en, {
   talkH:"Talk", talkText:"Each section gets its own feed: find teammates, games today, place reviews, questions. Posting opens after Kakao login so the feed stays real people.",
   talkPh:"Write a post", talkSoon:"Opens after Kakao login", talkEmpty:"Nothing here yet. The first posts will show up here.",
   talkTopics:{sport:["Need players","Playing today","Reviews","Questions"], fish:["Catches","Go together","Reviews","Questions"], camp:["Reviews","Go together","Gear","Questions"]},
-  kinds:{soccer:"Soccer", futsal:"Futsal", tennis:"Tennis", basket:"Basketball", badm:"Badminton", base:"Baseball", pool:"Pool",
+  kinds:{pingpong:"Table tennis", climb:"Climbing wall", soccer:"Soccer", futsal:"Futsal", tennis:"Tennis", basket:"Basketball", badm:"Badminton", base:"Baseball", pool:"Pool",
          indoor:"Indoor gym", center:"Sports center", pgolf:"Park golf", jokgu:"Jokgu", gate:"Gateball", inline:"Inline skating",
          xgame:"X-park", archery:"Archery", multi:"Multi-court", etc:"Other"}
 });
