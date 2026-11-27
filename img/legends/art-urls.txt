@@ -1,2 +1,4 @@
 # Картинки легенд из Leonardo: <id легенды> <ссылка>. После сохранения GitHub сам скачает их
 # (.github/workflows/legend-art.yml). Чтобы перекачать готовую картинку, допишите в конце строки: заново
+pj_yongmi https://cdn.leonardo.ai/users/8b8a7171-f811-463d-a7f9-255d5f178325/generations/1f1ea66c-b4c1-6200-bea2-fc4c9abe8d88/google/nano-banana-2.1_Create_a_new_illustration_in_exactly_the_same_art_style_as_the_reference_images_-0.jpg
+pj_hwaseokjeong https://cdn.leonardo.ai/users/8b8a7171-f811-463d-a7f9-255d5f178325/generations/1f1ea66d-fadf-6740-9191-58b4c2e63c6f/nano-banana-2_Create_a_new_illustration_in_exactly_the_same_art_style_as_the_reference_images_-0.jpg
