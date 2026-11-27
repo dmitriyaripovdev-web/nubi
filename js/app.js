@@ -38,7 +38,7 @@ let srv = {
 for (const k in visits) if (typeof visits[k] === "number") visits[k] = { t: visits[k], test: true };
 
 // Состояние экрана (не сохраняется)
-let ui = { tab: sec === "walk" ? "walk" : "plist", openPlace: null, kind: "all", bookOnly: false, ftype: "all", openId: null, adding: false, region: "all", editing: false, confirmReset: false,
+let ui = { tab: sec === "walk" ? "walk" : "plist", openPlace: null, area: "all", kind: "all", bookOnly: false, ftype: "all", openId: null, adding: false, region: "all", editing: false, confirmReset: false,
            checkMsg: null, checking: false, draft: null, camMsg: null, mapFocus: null, busy: false, kakaoTaken: false };
 
 const app = document.getElementById("app");
@@ -58,6 +58,8 @@ const tr = obj => obj[lang] ?? obj.ko ?? Object.values(obj)[0];   // текст 
 const regionName = c => REGIONS[c] ? REGIONS[c][lang] : c;
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const all = () => LEGENDS.concat(srv.others, mine);
+// Всего легенд: во всех районах (даже не загруженных) + народные
+const totalLegends = () => Math.max(all().length, (Data.index ? Data.total("legends") : LEGENDS.length) + srv.others.length + mine.length);
 const byId = id => all().find(l => l.id === id);
 const count = () => Object.keys(visits).length;
 const titleById = id => TITLES.find(x => x.id === id);
@@ -69,6 +71,31 @@ const shortDate = s => new Date(s + "T00:00").toLocaleDateString(t("locale"), { 
 const kstDay = ts => new Date(ts + 9 * 3600e3).toISOString().slice(0, 10);
 const visitedToday = id => visits[id] && visits[id].day === kstDay(Date.now());
 const difficulty = l => (srv.places[l.id] && srv.places[l.id].difficulty) || l.difficulty || 20;
+
+// ===== Районы =====
+// Выбор другого района: список районов, где есть места (kind: legends / sport / fish / camp)
+function areaPicker(kind) {
+  if (!Data.index) return "";
+  const list = Data.areas().filter(a => Data.index.areas[a].n[kind] > 0)
+    .sort((a, b) => (GG_CITIES.indexOf(a) + 1 || 99) - (GG_CITIES.indexOf(b) + 1 || 99) || regionName(a).localeCompare(regionName(b)));
+  if (list.length < 2) return "";
+  return `<label class="chip area-pick">📍 ${t("areaOther")}<select data-area-pick aria-label="${t("areaOther")}">
+    <option value="">—</option>
+    ${list.map(a => `<option value="${a}">${esc(regionName(a))} · ${Data.index.areas[a].n[kind]}</option>`).join("")}
+  </select></label>`;
+}
+// Районы, которые человек выбирал сам, — загружаем их и при следующем запуске
+function rememberArea(a) {
+  const keep = [a, ...store.get("areas", []).filter(x => x !== a)].slice(0, 5);
+  store.set("areas", keep);
+}
+// Подгрузить районы и перерисовать, если появилось новое
+async function loadAreas(list) {
+  const got = await Data.loadMany(list);
+  if (got.some(Boolean)) { if (ui.tab === "map" || ui.tab === "pmap") drawMarkers(); else render(); }
+}
+// Районы, где стоят мои печати (чтобы в «Книге печатей» были их названия)
+const visitedAreas = () => [...new Set(Object.keys(visits).map(id => Data.areaOf(id)).filter(Boolean))];
 
 function toast(s, long) {
   const el = document.getElementById("toast");
@@ -165,7 +192,8 @@ async function tryCheckin(id) {
         low_accuracy: t("errAcc", { a: r.acc }),
         already_today: t("errAlready"),
         teleport: t("errTeleport"),
-        no_coords: t("noCoords")
+        no_coords: t("noCoords"),
+        day_limit: t("errDayLimit")
       })[r.reason] || t("errServer") };
       return render();
     }
@@ -276,17 +304,19 @@ function walkView() {
   if (ui.adding) return addView();
   if (ui.openId) return detailView(byId(ui.openId));
   const codes = ["all", ...new Set(all().map(l => l.region).filter(Boolean))];
+  if (ui.region !== "all" && ui.region !== "wish" && !codes.includes(ui.region)) codes.push(ui.region);
   let list = all().filter(l => ui.region === "all" || (ui.region === "wish" ? Wish.is(l.id) : l.region === ui.region));
   if (Geo.last) list = list.slice().sort((a, b) => (distTo(a) ?? 1e9) - (distTo(b) ?? 1e9));
   const next = CHALLENGES.filter(c => !progress(c).done)
     .sort((a, b) => progress(b).got / progress(b).total - progress(a).got / progress(a).total)[0];
   return topBar() + `
   <div class="top"><div class="brand">누비<small>${t("sub")}</small></div>
-    <div class="stampcount">${t("stamps")} <b>${count()}</b> / ${all().length}</div></div>
+    <div class="stampcount">${t("stamps")} <b>${count()}</b> / ${totalLegends()}</div></div>
   ${!srv.ready ? `<div class="msg">${t("offlineBanner")}</div>` : ""}
   ${next ? `<div class="mini">${chCard(next)}<button class="link" data-tab="chal">${t("seeAll")}</button></div>` : ""}
   <div class="filters">${codes.map(r => `<button class="chip" data-region="${r}" aria-pressed="${r === ui.region}">${r === "all" ? t("all") : esc(regionName(r))}</button>`).join("")}
-    <button class="chip lantern-chip" data-region="wish" aria-pressed="${ui.region === "wish"}">🏮 ${t("wishChip")}</button></div>
+    <button class="chip lantern-chip" data-region="wish" aria-pressed="${ui.region === "wish"}">🏮 ${t("wishChip")}</button>
+    ${areaPicker("legends")}</div>
   <div class="addrow"><button class="link" data-find>📋 ${t("findBtn")}</button><button class="link" data-add>${t("addBtn")}</button></div>
   <div class="list">${list.map(l => {
     const d = distTo(l);
@@ -445,22 +475,50 @@ function mapView() {
     <button class="mapbtn mapadd" data-add-from-map>${t("addBtn")}</button>
     <button class="mapbtn" data-locate>${t("myLoc")}</button></div>`;
 }
+// Общая основа карты: подложка, группы-кружки для близких точек, подгрузка районов при сдвиге
+function baseMap(center, zoom) {
+  map = L.map("map", { zoomControl: false }).setView(center, zoom);
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+  }).addTo(map);
+  // Близкие места собираются в кружок с числом (если библиотека кружков загрузилась)
+  map._nubi = L.markerClusterGroup
+    ? L.markerClusterGroup({ maxClusterRadius: 48, showCoverageOnHover: false, disableClusteringAtZoom: 15, spiderfyOnMaxZoom: false,
+        iconCreateFunction: c => L.divIcon({ className: "", html: `<div class="cluster"><span>${c.getChildCount()}</span></div>`, iconSize: [40, 40] }) })
+    : L.layerGroup();
+  map._nubi.addTo(map);
+  // Сдвинули карту в другой район — подгружаем его (только при достаточном приближении)
+  map.on("moveend", () => {
+    if (!map || map.getZoom() < 9 || !Data.index) return;
+    const b = map.getBounds();
+    const need = Data.areasIn(b.getSouth(), b.getWest(), b.getNorth(), b.getEast()).filter(a => !Data.loaded.has(a)).slice(0, 4);
+    if (need.length) loadAreas(need);
+  });
+}
+// Перерисовать точки на открытой карте (после подгрузки района), не сбрасывая её положение
+function drawMarkers(focusId) {
+  if (!map || !map._nubi) return;
+  map._nubi.clearLayers();
+  let focusMarker = null;
+  const items = ui.tab === "pmap" ? placesMarkers() : legendMarkers();
+  for (const [id, m] of items) { map._nubi.addLayer(m); if (id === focusId) focusMarker = m; }
+  if (focusMarker) map._nubi.zoomToShowLayer ? map._nubi.zoomToShowLayer(focusMarker, () => focusMarker.openPopup()) : focusMarker.openPopup();
+}
+function legendMarkers() {
+  return all().filter(l => pos(l)).map(l => {
+    const icon = L.divIcon({ className: "", html: `<div class="pin ${visits[l.id] ? "got" : ""} ${Wish.is(l.id) ? "wish" : ""}"></div>`, iconSize: [30, 30], iconAnchor: [15, 30], popupAnchor: [0, -28] });
+    const p = pos(l);
+    return [l.id, L.marker([p.lat, p.lng], { icon })
+      .bindPopup(`<b>${esc(tr(l.name))}</b><br>${esc(tr(l.place))}<br><button class="popbtn" data-open-map="${esc(l.id)}">→</button>`)];
+  });
+}
 function initMap() {
   if (typeof L === "undefined") return; // библиотека карты не загрузилась (нет интернета)
   const focus = ui.mapFocus && byId(ui.mapFocus);
   const fp = focus && pos(focus);
   const center = fp ? [fp.lat, fp.lng] : Geo.last ? [Geo.last.lat, Geo.last.lng] : [37.21, 126.99];
-  map = L.map("map", { zoomControl: false }).setView(center, fp ? 15 : 10);
-  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-  }).addTo(map);
-  all().filter(l => pos(l)).forEach(l => {
-    const icon = L.divIcon({ className: "", html: `<div class="pin ${visits[l.id] ? "got" : ""} ${Wish.is(l.id) ? "wish" : ""}"></div>`, iconSize: [30, 30], iconAnchor: [15, 30], popupAnchor: [0, -28] });
-    const p = pos(l);
-    const m = L.marker([p.lat, p.lng], { icon }).addTo(map)
-      .bindPopup(`<b>${esc(tr(l.name))}</b><br>${esc(tr(l.place))}<br><button class="popbtn" data-open-map="${esc(l.id)}">→</button>`);
-    if (focus && focus.id === l.id) m.openPopup();
-  });
+  baseMap(center, fp ? 15 : 10);
+  drawMarkers(focus ? focus.id : null);
   if (Geo.last) drawMe();
   ui.mapFocus = null;
 }
@@ -653,10 +711,11 @@ document.addEventListener("click", async e => {
   else if (d.ftype) { ui.ftype = d.ftype; render(); }
   else if (b.hasAttribute("data-near")) {
     b.disabled = true; b.textContent = t("locating");
-    try { await Geo.locate(); } catch (err) { toast(err === "denied" ? t("gpsDenied") : t("gpsErr")); }
+    try { await Geo.locate(); await Data.loadMany(Data.areasAt(Geo.last)); } catch (err) { toast(err === "denied" ? t("gpsDenied") : t("gpsErr")); }
     render();
   }
   else if (d.region) { ui.region = d.region; render(); }
+  else if (d.parea) { ui.area = d.parea; render(); }
   else if (d.board) { srv.boardKey = d.board; srv.board = null; render(); }
   else if (d.open) openLegend(d.open);
   else if (d.openFromMe) openLegend(d.openFromMe);
@@ -680,7 +739,7 @@ document.addEventListener("click", async e => {
   else if (d.checkin) tryCheckin(d.checkin);
   else if (d.ascent) startAscent(d.ascent);
   else if (b.hasAttribute("data-locate")) {
-    try { await Geo.locate(); drawMe(); map && map.setView([Geo.last.lat, Geo.last.lng], 15); }
+    try { await Geo.locate(); drawMe(); map && map.setView([Geo.last.lat, Geo.last.lng], 15); loadAreas(Data.areasAt(Geo.last)); }
     catch (err) { toast(err === "denied" ? t("gpsDenied") : t("gpsErr")); }
   }
   else if (b.hasAttribute("data-shoot")) {
@@ -758,6 +817,12 @@ document.addEventListener("click", async e => {
 
 // Переключатели
 document.addEventListener("change", e => {
+  // Выбрали другой район: загружаем и показываем только его
+  if (e.target.hasAttribute("data-area-pick") && e.target.value) {
+    const a = e.target.value; rememberArea(a);
+    Data.load(a).then(() => { if (sec === "walk") ui.region = a; else ui.area = a; render(); });
+    return;
+  }
   // Фото для карточки «Поделиться» и фото-доказательство владельца
   if (e.target.id === "share-pick" && e.target.files[0]) { Share.make(ui.openId, e.target.files[0]); e.target.value = ""; }
   if (e.target.id === "o-proof" && e.target.files[0]) Owner.pickProof(e.target.files[0]);
@@ -784,7 +849,7 @@ document.addEventListener("submit", async e => {
       try { await Server.createProfile(nick, lang); srv.ready = true; }
       catch (err) {
         ui.busy = false; render();
-        if (err === "taken") { document.getElementById("w-nick").value = nick; return toast(t("nickTaken")); }
+        if (err === "taken" || err === "bad") { document.getElementById("w-nick").value = nick; return toast(t(err === "bad" ? "nickBad" : "nickTaken")); }
         // Сервер недоступен — продолжаем без него, подключимся при следующем запуске
       }
     }
@@ -802,7 +867,7 @@ document.addEventListener("submit", async e => {
     if (nick.length < 2 || nick.length > 12) return toast(t("nickErr"));
     if (srv.ready) {
       try { await Server.updateProfile({ nick }); }
-      catch (err) { return toast(err === "taken" ? t("nickTaken") : t("errServer")); }
+      catch (err) { return toast(err === "taken" ? t("nickTaken") : err === "bad" ? t("nickBad") : t("errServer")); }
     }
     profile.nick = nick; store.set("profile", profile);
     ui.editing = false; srv.board = null; toast(t("toastSaved")); render(); return;
@@ -836,7 +901,7 @@ document.addEventListener("submit", async e => {
         await loadServerData();
         ui.busy = false; ui.adding = false; ui.draft = null; ui.camMsg = null;
         checkNewTitles(t("toastSubmitted")); go("walk");
-      } catch (err) { ui.busy = false; ui.camMsg = t("errServer"); keepForm(); }
+      } catch (err) { ui.busy = false; ui.camMsg = err === "day_limit" ? t("errDayLimitAdd") : t("errServer"); keepForm(); }
       return;
     }
     // Без сервера — сохраняем на телефоне, как раньше
@@ -879,6 +944,8 @@ async function loadServerData() {
   } catch (e) {}
   // Находки, которые не успели загрузиться
   for (const f of finds) if (!f.uploaded) uploadFind(f).catch(() => {});
+  // Печати с сервера могут быть в районах, которые ещё не загружены
+  await Data.loadMany(visitedAreas());
 }
 
 // ===== Запуск =====
@@ -891,6 +958,12 @@ function readAuthError() {
 }
 
 async function boot() {
+  // Сначала данные мест: оглавление и нужные районы (мои печати, выбранные раньше, ссылка ?l=)
+  const deepId = new URLSearchParams(location.search).get("l");
+  await Data.init(store.get("areas", []))
+    .then(() => Data.loadMany([...visitedAreas(), Data.areaOf(deepId)].filter(Boolean)));
+  // Первый запуск: запоминаем район по умолчанию, чтобы он грузился и дальше
+  if (!store.get("areas", []).length && Data.loaded.size) store.set("areas", [...Data.loaded].slice(0, 5));
   render();
   const authErr = readAuthError();
   const ok = await Server.init();
@@ -941,8 +1014,14 @@ async function boot() {
   // Тихо узнаём местоположение, если доступ уже разрешён, — чтобы показать расстояния
   if (profile && navigator.permissions) {
     navigator.permissions.query({ name: "geolocation" }).then(p => {
-      if (p.state === "granted") Geo.locate().then(() => { if (ui.tab !== "map" && ui.tab !== "pmap") render(); else drawMe(); }).catch(() => {});
+      if (p.state === "granted") Geo.locate().then(async () => {
+        await Data.loadMany(Data.areasAt(Geo.last));          // район, где человек сейчас
+        if (ui.tab !== "map" && ui.tab !== "pmap") render(); else { drawMarkers(); drawMe(); }
+      }).catch(() => {});
     }).catch(() => {});
   }
 }
 boot();
+
+// Service worker — нужен, чтобы приложение можно было установить на телефон и открывать без интернета
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
