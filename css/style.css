@@ -249,6 +249,7 @@ img.art.hero{aspect-ratio:16/9;height:auto}
 .item .meta{overflow-wrap:anywhere}
 .faint{opacity:.75;font-size:11.5px}
 .book-tag{font-family:var(--body);font-size:10.5px;color:var(--gold);border:1px solid var(--gold);border-radius:4px;padding:0 5px;margin-left:6px;vertical-align:2px;font-weight:700;white-space:nowrap}
+.book-tag.priv{color:var(--muted,#777);border-color:currentColor;font-weight:600}
 .chip.book[aria-pressed="true"]{background:var(--gold);border-color:var(--gold);color:var(--bg)}
 .chip:disabled{cursor:default;opacity:.8}
 .phero{width:100%;aspect-ratio:16/7;border-radius:14px;display:grid;place-items:center;font-size:64px;margin-bottom:14px;
