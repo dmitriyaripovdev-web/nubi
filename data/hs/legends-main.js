@@ -4,9 +4,9 @@
 //   fact   — как было на самом деле (историческая справка)
 //   find   — что найти на месте
 // lat/lng — координаты; null — точка ещё не уточнена.
+// Файл района (data/<район>/): загружает js/datastore.js по мере надобности.
 // ============================================================
-window.LEGENDS = window.LEGENDS || [];
-LEGENDS.push(
+Data.put("legends", [
 
 // ---------- Путь Чонджо ----------
 {id:"yongju", region:"hs", lat:37.2097, lng:127.0006,
@@ -58,7 +58,7 @@ LEGENDS.push(
   en:"A forest path links Yungneung and Geolleung. Walk it: it leads from father to son."}},
 
 // ---------- Сувон ----------
-{id:"hwaseong", region:"gg", lat:37.2819, lng:127.0136,
+{id:"hwaseong", region:"sw", lat:37.2819, lng:127.0136,
  name:{ko:"수원 화성", ru:"Крепость Хвасон", en:"Hwaseong Fortress"},
  place:{ko:"수원시 팔달구 (화성행궁 앞)", ru:"Сувон, у дворца Хвасон Хэнгун", en:"Suwon, by Hwaseong Haenggung"},
  legend:{
@@ -124,4 +124,4 @@ LEGENDS.push(
   ko:"제단 위에 홀로 서 있는 소사나무를 찾아보세요. 약 150살 된 나무로 2009년 천연기념물로 지정되었습니다.",
   ru:"Найдите на алтаре одинокое дерево — корейский граб сосанаму. Ему около 150 лет, в 2009 году его объявили памятником природы.",
   en:"Find the lone Korean hornbeam growing on the altar. About 150 years old, it was designated a Natural Monument in 2009."}}
-);
+]);
