@@ -92,11 +92,11 @@ Object.assign(I18N.en, {
   navPlaces:"Places", navTalk:"Talk", demo:"Preview", nubiNow:"You're here",
   placesN:"{n} {n:place|places}", legendsN:"{n} {n:legend|legends}",
   secDemoNote:"Sports, fishing and camping are a preview built on city open data. Talk and booking open after Kakao login.",
-  srcNote:"Based on city open data and city-hall sports facility lists (2025–2026). Call ahead before you go.",
+  srcNote:"Based on city open data and city-hall sports facility lists (2025–2026); private gyms from Kakao Map. Call ahead before you go.",
   srcShort:"Sources: data.go.kr, Hwaseong Urban Corporation and Hwaseong City, Paju City Hall, KTO GoCamping",
   campNote:"City-run auto campsites are shown with visitor numbers; private ones come from the Korea Tourism Organization's GoCamping register. Check booking and prices with each campsite.", campReg:"Registered on GoCamping",
   nearMe:"📍 Nearest first", noneHere:"No places match this filter.", noMapPin:"No map pin — search the address in Kakao Map",
-  bookOnly:"Bookable", bookTag:"bookable",
+  bookOnly:"Bookable", bookTag:"bookable", privTag:"private",
   bookingH:"Book on 공유누리", bookText:"This place is on Hwaseong's list of public facilities open for booking. Pick a date and time on the government portal 공유누리.", bookBtn:"Open 공유누리",
   gameH:"Get a game together", gameText:"You'll be able to post a game here and find teammates. Skill levels and manner ratings are planned.",
   fishGoH:"Find people to go with", campGoH:"Find people to go with", goText:"Share catches and reviews and find company here.", toTalk:"Open Talk",
@@ -109,7 +109,7 @@ Object.assign(I18N.en, {
   talkH:"Talk", talkText:"Each section gets its own feed: find teammates, games today, place reviews, questions. Posting opens after Kakao login so the feed stays real people.",
   talkPh:"Write a post", talkSoon:"Opens after Kakao login", talkEmpty:"Nothing here yet. The first posts will show up here.",
   talkTopics:{sport:["Need players","Playing today","Reviews","Questions"], fish:["Catches","Go together","Reviews","Questions"], camp:["Reviews","Go together","Gear","Questions"]},
-  kinds:{pingpong:"Table tennis", climb:"Climbing wall", soccer:"Soccer", futsal:"Futsal", tennis:"Tennis", basket:"Basketball", badm:"Badminton", base:"Baseball", pool:"Pool",
+  kinds:{gym:"Gym", bowl:"Bowling", golf:"Driving range", squash:"Squash", pingpong:"Table tennis", climb:"Climbing wall", soccer:"Soccer", futsal:"Futsal", tennis:"Tennis", basket:"Basketball", badm:"Badminton", base:"Baseball", pool:"Pool",
          indoor:"Indoor gym", center:"Sports center", pgolf:"Park golf", jokgu:"Jokgu", gate:"Gateball", inline:"Inline skating",
          xgame:"X-park", archery:"Archery", multi:"Multi-court", etc:"Other"}
 });
