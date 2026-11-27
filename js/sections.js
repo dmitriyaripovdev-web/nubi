@@ -89,7 +89,7 @@ function placeItem(p) {
   } else if (sec === "fish") {
     icon = "🎣";
     meta = `${I18N[lang].fishTypes[p.type]} · ${p.fish} · ${t("feeV", { p: num(p.fee) })}`;
-  } else { icon = "⛺"; meta = t("guests", { n: num(p.guests) }); }
+  } else { icon = "⛺"; meta = p.guests != null ? t("guests", { n: num(p.guests) }) : t("campReg"); } // нет числа гостей — частный кемпинг из реестра
   return `<button class="item" data-place="${esc(p.id)}">
     <span class="kthumb ${sec}">${icon}</span>
     <div><h3>${esc(p.name)}${p.book ? `<span class="book-tag">${t("bookTag")}</span>` : ""}${Owner.tags(p)}</h3>
@@ -112,9 +112,9 @@ function placeView(p) {
   const info = [`<div><span class="meta">${t("where")}</span><br>${esc(p.addr)}</div>`];
   if (sec === "fish") info.push(
     `<div><span class="meta">${t("fishLbl")}</span><br>${esc(p.fish)} · ${esc(I18N[lang].fishTypes[p.type])}</div>`,
-    `<div><span class="meta">${t("feeLbl")}</span><br>${t("feeV", { p: num(p.fee) })} · ${t("capV", { n: p.cap })}</div>`,
-    `<div><span class="meta">${t("nearLbl")}</span><br>${esc(p.near)}</div>`);
-  if (sec === "camp") info.push(`<div><span class="meta">${t("guestsLbl")}</span><br>${t("guests", { n: num(p.guests) })}</div>`);
+    `<div><span class="meta">${t("feeLbl")}</span><br>${t("feeV", { p: num(p.fee) })}${p.cap ? " · " + t("capV", { n: p.cap }) : ""}</div>`, // мест: 0 — нет данных
+    p.near ? `<div><span class="meta">${t("nearLbl")}</span><br>${esc(p.near)}</div>` : "");
+  if (sec === "camp" && p.guests != null) info.push(`<div><span class="meta">${t("guestsLbl")}</span><br>${t("guests", { n: num(p.guests) })}</div>`);
   if (p.off) info.push(`<div><span class="meta">${t("offLbl")}</span><br>${esc(I18N[lang].off[p.off] || p.off)}</div>`);
   if (p.tel) info.push(`<div><span class="meta">${t("telLbl")}</span><br><a href="tel:${esc(String(p.tel).replace(/[^\d+\-]/g, ""))}">${esc(p.tel)}</a></div>`);
 
