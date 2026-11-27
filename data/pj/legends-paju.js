@@ -5,13 +5,14 @@
 //   Корейская организация туризма (ktriptips / visitkorea): 파평용연, 반구정, 보광사
 //   Газеты: 경향신문 2001-06-28 (심학산), 경북매일 2014-08-21 (윤관 и карпы)
 // Координаты: поиск Kakao, сверены с адресами из источников.
+// wish:true — место, куда по традиции приходят молиться и загадывать желания (здесь можно повесить фонарик).
 // approx:true — гора или большая территория, печать в радиусе 1 км.
 // Файл района (data/<район>/): загружает js/datastore.js по мере надобности.
 // ============================================================
 Data.put("legends", [
 
 // ---------- Два будды Ёнми-ри ----------
-{id:"pj_yongmi", region:"pj", lat:37.754193, lng:126.864582, // Kakao: 파주용미리마애이불입상 (광탄면 용미리 산8)
+{id:"pj_yongmi", region:"pj", wish:true, lat:37.754193, lng:126.864582, // Kakao: 파주용미리마애이불입상 (광탄면 용미리 산8)
  name:{ko:"용미리 마애이불입상", ru:"Два каменных будды Ёнми-ри", en:"Twin Rock Buddhas of Yongmi-ri"},
  place:{ko:"파주시 광탄면 용미리", ru:"Пхаджу, Квантхан-мён, Ёнми-ри", en:"Yongmi-ri, Gwangtan-myeon, Paju"},
  legend:{
@@ -79,7 +80,7 @@ Data.put("legends", [
   en:"From Yun Gwan's tomb, find Sim Ji-won's grave next door and see how close the two are."}},
 
 // ---------- Гора Камаксан ----------
-{id:"pj_gamaksan", region:"pj", lat:37.941219, lng:126.969921, approx:true, // Kakao: 감악산 (적성면 객현리), высота 674,9 м
+{id:"pj_gamaksan", region:"pj", wish:true, lat:37.941219, lng:126.969921, approx:true, // Kakao: 감악산 (적성면 객현리), высота 674,9 м
  name:{ko:"감악산", ru:"Гора Камаксан", en:"Gamaksan"},
  place:{ko:"파주시 적성면 · 양주 · 연천 경계", ru:"Пхаджу, Чоксон-мён, на границе с Янджу и Ёнчхоном", en:"Jeokseong-myeon, Paju, on the Yangju–Yeoncheon border"},
  legend:{
@@ -96,7 +97,7 @@ Data.put("legends", [
   en:"Find the blank stele on the summit. Run your hand over it — not a single character remains."}},
 
 // ---------- Гора Симхаксан: где нашли журавлей ----------
-{id:"pj_simhaksan", region:"pj", lat:37.706816, lng:126.695561, approx:true, // Kakao: 심학산 (산남동 산42), высота 194 м
+{id:"pj_simhaksan", region:"pj", wish:true, lat:37.706816, lng:126.695561, approx:true, // Kakao: 심학산 (산남동 산42), высота 194 м
  name:{ko:"심학산", ru:"Гора Симхаксан", en:"Simhaksan"},
  place:{ko:"파주시 교하동 · 동패동 · 산남동", ru:"Пхаджу, район Кёха (Тонпхэ-дон, Саннам-дон)", en:"Gyoha area (Dongpae-dong, Sannam-dong), Paju"},
  legend:{
@@ -147,7 +148,7 @@ Data.put("legends", [
   en:"At the visitor centre, look for the story of the tile inscribed “Hyeeumwon” — the single tile that revealed it all."}},
 
 // ---------- Храм Погванса и можжевельник Ёнджо ----------
-{id:"pj_bogwangsa", region:"pj", lat:37.752951, lng:126.92001, // Kakao: 보광사 대웅보전 (광탄면 영장리 13)
+{id:"pj_bogwangsa", region:"pj", wish:true, lat:37.752951, lng:126.92001, // Kakao: 보광사 대웅보전 (광탄면 영장리 13)
  name:{ko:"보광사", ru:"Храм Погванса", en:"Bogwangsa Temple"},
  place:{ko:"파주시 광탄면 영장리 (고령산)", ru:"Пхаджу, Квантхан-мён, гора Корёнсан", en:"Goryeongsan, Gwangtan-myeon, Paju"},
  legend:{
