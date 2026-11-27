@@ -5,6 +5,7 @@
 //   новости мэрии Пхаджу «파주에서 쉬고 있는 조선시대 여류 문학가들» (адрес 다율동 519-7).
 // Не вошли: места внутри ДМЗ и за рекой (판문교, 덕진당, 장단), места без точного адреса,
 //   сюжеты с насилием и самоубийством (не для семейного приложения).
+// wish:true — место, куда по традиции приходят молиться и загадывать желания (здесь можно повесить фонарик).
 // approx:true — деревня, гора или большая территория, печать в радиусе 1 км.
 // Файл района (data/<район>/): загружает js/datastore.js по мере надобности.
 // ============================================================
@@ -130,7 +131,7 @@ Data.put("legends", [
   en:"Find the sign and the red hongsalmun gate at the entrance: beyond them lies the spot chosen by the scholar who foresaw the sack of rice."}},
 
 // ---------- Храм Ёнсанса: где прятался король ----------
-{id:"pj_yongsangsa", region:"pj", lat:37.798234, lng:126.766261, // Kakao: 용상사 (월롱면 덕은리 268-1), на склоне горы Воллонсан
+{id:"pj_yongsangsa", region:"pj", wish:true, lat:37.798234, lng:126.766261, // Kakao: 용상사 (월롱면 덕은리 268-1), на склоне горы Воллонсан
  name:{ko:"용상사와 월롱산", ru:"Храм Ёнсанса на горе Воллонсан", en:"Yongsangsa Temple on Wollongsan"},
  place:{ko:"파주시 월롱면 덕은리", ru:"Пхаджу, Воллон-мён, Догын-ри", en:"Deogeun-ri, Wollong-myeon, Paju"},
  legend:{
@@ -283,7 +284,7 @@ Data.put("legends", [
   en:"The lowest grave is Hongrang's; above it lies Choe Gyeong-chang with his wife. Find the willow poem on the stone."}},
 
 // ---------- Хризантемы горы Чанмёнсан ----------
-{id:"pj_jangmyeongsan", region:"pj", lat:37.751946, lng:126.728984, approx:true, // Kakao: 장명산 (파주시 오도동)
+{id:"pj_jangmyeongsan", region:"pj", wish:true, lat:37.751946, lng:126.728984, approx:true, // Kakao: 장명산 (파주시 오도동)
  name:{ko:"장명산 구절초", ru:"Хризантемы горы Чанмёнсан", en:"The Chrysanthemums of Jangmyeongsan"},
  place:{ko:"파주시 오도동 (교하)", ru:"Пхаджу, Одо-дон (Кёха)", en:"Odo-dong, Gyoha, Paju"},
  legend:{
