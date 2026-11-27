@@ -10,12 +10,12 @@ const SEC_LIVE = { walk: true, sport: true, fish: true, camp: true, cult: false 
 const SEC_ICON = { walk: "📜", sport: "⚽", fish: "🎣", camp: "⛺", cult: "🏆" };
 
 // Порядок видов спорта в фильтре и картинка для каждого
-const KIND_ORDER = ["soccer", "futsal", "tennis", "basket", "badm", "base", "pool", "pingpong", "climb", "indoor", "center", "pgolf",
+const KIND_ORDER = ["soccer", "futsal", "tennis", "basket", "badm", "base", "pool", "pingpong", "climb", "gym", "bowl", "golf", "squash", "indoor", "center", "pgolf",
   "jokgu", "gate", "inline", "xgame", "archery", "multi", "etc"];
-const KIND_ICON = { soccer: "⚽", futsal: "⚽", tennis: "🎾", basket: "🏀", badm: "🏸", base: "⚾", pool: "🏊", pingpong: "🏓", climb: "🧗",
+const KIND_ICON = { soccer: "⚽", futsal: "⚽", tennis: "🎾", basket: "🏀", badm: "🏸", base: "⚾", pool: "🏊", pingpong: "🏓", climb: "🧗", gym: "💪", bowl: "🎳", golf: "🏌️", squash: "🎾",
   indoor: "🏟️", center: "🏋️", pgolf: "⛳", jokgu: "🏐", gate: "🏑", inline: "🛼", xgame: "🛹", archery: "🏹", multi: "🏟️", etc: "🤸" };
 // Главная картинка места: сначала самое «заметное»
-const KIND_MAIN = ["pool", "center", "soccer", "base", "tennis", "futsal", "basket", "badm", "indoor", "climb", "pingpong", "pgolf",
+const KIND_MAIN = ["pool", "center", "soccer", "base", "tennis", "futsal", "basket", "badm", "indoor", "climb", "pingpong", "gym", "bowl", "golf", "squash", "pgolf",
   "archery", "jokgu", "gate", "inline", "xgame", "multi", "etc"];
 
 // Списки мест по разделам (только загруженные районы)
@@ -92,7 +92,7 @@ function placeItem(p) {
   } else { icon = "⛺"; meta = p.guests != null ? t("guests", { n: num(p.guests) }) : t("campReg"); } // нет числа гостей — частный кемпинг из реестра
   return `<button class="item" data-place="${esc(p.id)}">
     <span class="kthumb ${sec}">${icon}</span>
-    <div><h3>${esc(p.name)}${p.book ? `<span class="book-tag">${t("bookTag")}</span>` : ""}${Owner.tags(p)}</h3>
+    <div><h3>${esc(p.name)}${p.book ? `<span class="book-tag">${t("bookTag")}</span>` : ""}${p.priv ? `<span class="book-tag priv">${t("privTag")}</span>` : ""}${Owner.tags(p)}</h3>
       <div class="meta">${esc(meta)}</div>
       <div class="meta">${esc(p.addr)}</div>
       ${d != null ? `<div class="dist">${t("distAway", { d: Geo.format(d, lang) })}</div>` : p.lat == null ? `<div class="meta faint">${t("noMapPin")}</div>` : ""}
