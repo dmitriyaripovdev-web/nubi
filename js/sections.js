@@ -1,7 +1,7 @@
 // ============================================================
-// 누비 — разделы «Спорт», «Рыбалка», «Кемпинг» (демо на открытых данных Хвасона)
+// 누비 — разделы «Спорт», «Рыбалка», «Кемпинг» (на открытых данных)
 // У каждого раздела своя нижняя панель: Места · Карта · Общение · Профиль · Нуби
-// Данные мест — в js/places-hwaseong.js
+// Данные мест — в data/<район>/places.js (загружает js/datastore.js)
 // ============================================================
 
 // Какие разделы есть и какие из них уже открываются
@@ -18,8 +18,10 @@ const KIND_ICON = { soccer: "⚽", futsal: "⚽", tennis: "🎾", basket: "🏀"
 const KIND_MAIN = ["pool", "center", "soccer", "base", "tennis", "futsal", "basket", "badm", "indoor", "pgolf",
   "archery", "jokgu", "gate", "inline", "xgame", "multi", "etc"];
 
-// Списки мест по разделам
+// Списки мест по разделам (только загруженные районы)
 const secPlaces = s => s === "sport" ? SPORT : s === "fish" ? FISH : s === "camp" ? CAMP : [];
+// Район места — по началу id («hs_s12» → hs)
+const placeArea = p => Data.areaOf(p.id);
 const placeById = id => SPORT.find(p => p.id === id) || FISH.find(p => p.id === id) || CAMP.find(p => p.id === id);
 const placeDist = p => Geo.last && p.lat != null ? Geo.distance(Geo.last, p) : null;
 const num = n => Number(n).toLocaleString(t("locale"));
@@ -31,7 +33,7 @@ const kakaoLink = p => p.lat != null
 
 // Шапка раздела: «누비 / Спорт» и сколько мест
 function secTop(s) {
-  const n = secPlaces(s).length;
+  const n = Data.index ? Data.total(s) : secPlaces(s).length;
   return `<div class="top"><div class="brand">누비<small>${esc(I18N[lang].secs[s][0])}</small></div>
     <div class="stampcount">${t("placesN", { n })}</div></div>`;
 }
@@ -41,6 +43,15 @@ function placesView() {
   if (ui.openPlace) return placeView(placeById(ui.openPlace));
   const s = sec;
   let list = secPlaces(s).slice();
+  // Районы: загруженные + выбор другого
+  const areas = [...new Set(list.map(placeArea).filter(Boolean))];
+  if (ui.area !== "all" && !areas.includes(ui.area)) ui.area = "all";
+  if (ui.area !== "all") list = list.filter(p => placeArea(p) === ui.area);
+  const pick = areaPicker(s);
+  const areaChips = areas.length < 2 && !pick ? "" : `<div class="filters">
+    <button class="chip" data-parea="all" aria-pressed="${ui.area === "all"}">${t("all")}</button>
+    ${areas.length > 1 ? areas.map(a => `<button class="chip" data-parea="${a}" aria-pressed="${ui.area === a}">${esc(regionName(a))}</button>`).join("") : ""}
+    ${pick}</div>`;
   let chips = "";
   if (s === "sport") {
     const kinds = KIND_ORDER.filter(k => list.some(p => p.kinds[k]));
@@ -64,6 +75,7 @@ function placesView() {
   return topBar() + secTop(s) + `
   <div class="msg">${t(s === "camp" ? "campNote" : "srcNote")}</div>
   <div class="addrow">${Geo.last ? "" : `<button class="link" data-near>${t("nearMe")}</button>`}</div>
+  ${areaChips}
   ${chips}
   <div class="list">${list.length ? list.map(placeItem).join("") : `<p class="meta">${t("noneHere")}</p>`}</div>`;
 }
@@ -78,7 +90,7 @@ function placeItem(p) {
     icon = "🎣";
     meta = `${I18N[lang].fishTypes[p.type]} · ${p.fish} · ${t("feeV", { p: num(p.fee) })}`;
   } else { icon = "⛺"; meta = t("guests", { n: num(p.guests) }); }
-  return `<button class="item" data-place="${p.id}">
+  return `<button class="item" data-place="${esc(p.id)}">
     <span class="kthumb ${sec}">${icon}</span>
     <div><h3>${esc(p.name)}${p.book ? `<span class="book-tag">${t("bookTag")}</span>` : ""}${Owner.tags(p)}</h3>
       <div class="meta">${esc(meta)}</div>
@@ -103,8 +115,8 @@ function placeView(p) {
     `<div><span class="meta">${t("feeLbl")}</span><br>${t("feeV", { p: num(p.fee) })} · ${t("capV", { n: p.cap })}</div>`,
     `<div><span class="meta">${t("nearLbl")}</span><br>${esc(p.near)}</div>`);
   if (sec === "camp") info.push(`<div><span class="meta">${t("guestsLbl")}</span><br>${t("guests", { n: num(p.guests) })}</div>`);
-  if (p.off) info.push(`<div><span class="meta">${t("offLbl")}</span><br>${esc(I18N[lang].off[p.off])}</div>`);
-  if (p.tel) info.push(`<div><span class="meta">${t("telLbl")}</span><br><a href="tel:${p.tel}">${p.tel}</a></div>`);
+  if (p.off) info.push(`<div><span class="meta">${t("offLbl")}</span><br>${esc(I18N[lang].off[p.off] || p.off)}</div>`);
+  if (p.tel) info.push(`<div><span class="meta">${t("telLbl")}</span><br><a href="tel:${esc(String(p.tel).replace(/[^\d+\-]/g, ""))}">${esc(p.tel)}</a></div>`);
 
   return topBar() + `<button class="back" data-back-place>${t("back")}</button>
   <div class="detail">
@@ -116,8 +128,8 @@ function placeView(p) {
     <div class="place info">${info.join("")}</div>
     <div class="links">
       <a href="${kakaoLink(p)}" target="_blank" rel="noopener">${t("kakao")}</a>
-      ${p.lat != null ? `<button data-placemap="${p.id}">${t("showMap")}</button>` : ""}
-      ${p.tel ? `<a href="tel:${p.tel}">${t("call")}</a>` : ""}
+      ${p.lat != null ? `<button data-placemap="${esc(p.id)}">${t("showMap")}</button>` : ""}
+      ${p.tel ? `<a href="tel:${esc(String(p.tel).replace(/[^\d+\-]/g, ""))}">${t("call")}</a>` : ""}
     </div>
     ${p.book ? `<div class="card soft"><h3>${t("bookingH")}</h3><p class="meta">${t("bookText")}</p>
       <a class="btn linkbtn" href="https://www.eshare.go.kr/" target="_blank" rel="noopener">${t("bookBtn")}</a></div>` : ""}
@@ -132,26 +144,27 @@ function placeView(p) {
 // ===== Вкладка «Карта» раздела =====
 function placesMapView() {
   const all = secPlaces(sec), on = all.filter(p => p.lat != null).length;
+  // (на карте видны загруженные районы; сдвиньте карту — подгрузятся соседние)
   return topBar() + `<div class="mapwrap"><div id="map"></div>
     ${on < all.length ? `<div class="mapnote">${t("noCoordsN", { n: all.length - on })}</div>` : ""}
     <button class="mapbtn" data-locate>${t("myLoc")}</button></div>`;
+}
+// Точки мест раздела для карты (рисует drawMarkers из app.js)
+function placesMarkers() {
+  return secPlaces(sec).filter(p => p.lat != null).map(p => {
+    const ic = sec === "sport" ? KIND_ICON[mainKind(p)] : sec === "fish" ? "🎣" : "⛺";
+    const icon = L.divIcon({ className: "", html: `<div class="kpin ${sec}${p.book ? " book" : ""}"><span>${ic}</span></div>`,
+      iconSize: [34, 34], iconAnchor: [17, 34], popupAnchor: [0, -30] });
+    return [p.id, L.marker([p.lat, p.lng], { icon })
+      .bindPopup(`<b>${esc(p.name)}</b><br>${esc(p.addr)}<br><button class="popbtn" data-place="${esc(p.id)}">→</button>`)];
+  });
 }
 function initPlacesMap() {
   if (typeof L === "undefined") return;
   const focus = ui.mapFocus && placeById(ui.mapFocus);
   const center = focus && focus.lat != null ? [focus.lat, focus.lng] : Geo.last ? [Geo.last.lat, Geo.last.lng] : [37.17, 126.92];
-  map = L.map("map", { zoomControl: false }).setView(center, focus ? 16 : 11);
-  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-  }).addTo(map);
-  secPlaces(sec).filter(p => p.lat != null).forEach(p => {
-    const ic = sec === "sport" ? KIND_ICON[mainKind(p)] : sec === "fish" ? "🎣" : "⛺";
-    const icon = L.divIcon({ className: "", html: `<div class="kpin ${sec}${p.book ? " book" : ""}"><span>${ic}</span></div>`,
-      iconSize: [34, 34], iconAnchor: [17, 34], popupAnchor: [0, -30] });
-    const m = L.marker([p.lat, p.lng], { icon }).addTo(map)
-      .bindPopup(`<b>${esc(p.name)}</b><br>${esc(p.addr)}<br><button class="popbtn" data-place="${p.id}">→</button>`);
-    if (focus && focus.id === p.id) m.openPopup();
-  });
+  baseMap(center, focus ? 16 : 11);
+  drawMarkers(focus ? focus.id : null);
   if (Geo.last) drawMe();
   ui.mapFocus = null;
 }
