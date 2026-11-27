@@ -3,8 +3,11 @@
 // Ключ publishable — открытый, его можно хранить в приложении.
 // Все очки и проверки считает сервер (функции в nubi-server/01_schema.sql).
 // ============================================================
-window.SUPABASE_URL = "https://bbxjpvbpyaixqzklrawy.supabase.co";
-window.SUPABASE_KEY = "sb_publishable_FsJueD00h5TOYBtpyMaXMQ_HzXWzV0x";
+// Сервер в регионе Сеул (переехали 28.11.2026 со старого проекта bbxjpvbpyaixqzklrawy)
+window.SUPABASE_URL = "https://wkqiijukqaeksmfpiwuj.supabase.co";
+window.SUPABASE_KEY = "sb_publishable_AEaY74w44LkJNMuYTuclYQ_708fq-DI";
+// Метка сервера: если сессия в телефоне выдана другим сервером — один раз обновляем её
+const NUBI_SERVER_TAG = "wkqiijukqaeksmfpiwuj";
 
 window.Server = {
   db: null,
@@ -18,7 +21,16 @@ window.Server = {
       this.db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
         auth: { persistSession: true, autoRefreshToken: true, storageKey: "nubi_auth" }
       });
-      const { data } = await this.db.auth.getSession();
+      let { data } = await this.db.auth.getSession();
+      // Переезд сервера: старый токен новому серверу не подходит.
+      // Сессии перенесены, поэтому обновляем токен по refresh_token — аккаунт и очки сохраняются.
+      let tag = null; try { tag = localStorage.getItem("nubi_srv"); } catch (e) {}
+      if (data.session && tag !== NUBI_SERVER_TAG) {
+        const r = await this.db.auth.refreshSession().catch(() => null);
+        if (r && r.data && r.data.session) data = { session: r.data.session };
+        else { await this.db.auth.signOut({ scope: "local" }).catch(() => {}); data = { session: null }; }
+      }
+      try { localStorage.setItem("nubi_srv", NUBI_SERVER_TAG); } catch (e) {}
       this.user = data.session ? data.session.user : null;
       // Свежие данные аккаунта (в т.ч. привязан ли Kakao)
       if (this.user) { const r = await this.db.auth.getUser().catch(() => null); if (r && r.data && r.data.user) this.user = r.data.user; }
