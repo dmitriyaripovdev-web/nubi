@@ -176,9 +176,9 @@ function talkView() {
   return topBar() + secTop(sec) + `<h2 class="sec-h">${t("talkH")}</h2>
   <div class="filters">${topics.map((x, i) => `<button class="chip" aria-pressed="${i === 0}" disabled>${esc(x)}</button>`).join("")}</div>
   <div class="card">
-    <p style="margin:0">${t("talkText")}</p>
+    <p style="margin:0">${t(Server.isKakao() ? "talkTextIn" : "talkText")}</p>
     <textarea placeholder="${t("talkPh")}" disabled></textarea>
-    <button class="btn" disabled>${t("talkSoon")}</button>
+    <button class="btn" disabled>${t(Server.isKakao() ? "talkSoonIn" : "talkSoon")}</button>
   </div>
   <div class="empty-feed"><span>💬</span><p class="meta">${t("talkEmpty")}</p></div>`;
 }
@@ -193,7 +193,7 @@ function sectionsView() {
       <span class="stxt"><b>${esc(s[k][0])}</b><span class="meta">${esc(s[k][1])}</span>${cnt(k) ? `<span class="meta">${cnt(k)}</span>` : ""}</span>
       <em>${k === sec ? t("nubiNow") : !SEC_LIVE[k] ? t("soon") : k === "walk" ? t("inUse") : t("demo")}</em>
     </button>`).join("")}</div>
-  <p class="note">${t("secDemoNote")}</p>`;
+  <p class="note">${t(Server.isKakao() ? "secDemoNoteIn" : "secDemoNote")}</p>`;
 }
 
 // ===== Нижняя панель: своя для каждого раздела =====

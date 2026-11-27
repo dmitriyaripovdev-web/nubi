@@ -120,6 +120,14 @@ Object.assign(I18N.en, {
   kakaoIn:"You're signed in with Kakao. Just pick a nickname for Nubi.",
   accountH:"Account", kakaoLinked:"Kakao connected",
   accountKakao:"Sign in with Kakao on another phone and your stamps and points will be there.",
+  // Выход из аккаунта и тексты для уже вошедших через Kakao
+  logout:"Sign out",
+  logoutQ:"Sign out? Your stamps and points stay in your Kakao account — sign in again and everything comes back.",
+  logoutYes:"Sign out",
+  loggedOut:"You signed out",
+  talkTextIn:"Each section will have its own feed: finding a team, games today, place reviews, questions. You're already signed in with Kakao — you can post as soon as the feed opens.",
+  talkSoonIn:"Coming soon",
+  secDemoNoteIn:"Sport, fishing and camping are a demo on open city data. Chat and booking are coming soon — you're already signed in with Kakao, nothing else to do.",
   kakaoOk:"Kakao connected",
   kakaoTaken:"This Kakao account is already connected to another Nubi profile. You can sign in to that profile, but the temporary records on this phone won't move over.",
   kakaoSwitch:"Sign in to that profile", kakaoErr:"Kakao login failed: {e}"

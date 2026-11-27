@@ -568,7 +568,11 @@ const KAKAO_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="curre
 function accountCard() {
   if (!srv.ready) return `<p class="meta">${t("offlineBanner")}</p>`;
   if (Server.isKakao()) return `<h3 class="sub-h">${t("accountH")}</h3>
-    <div class="card"><p style="margin:0"><b>✅ ${t("kakaoLinked")}</b></p><p class="meta" style="margin:0">${t("accountKakao")}</p></div>`;
+    <div class="card"><p style="margin:0"><b>✅ ${t("kakaoLinked")}</b></p><p class="meta" style="margin:0">${t("accountKakao")}</p>
+    ${ui.confirmLogout
+      ? `<p class="meta" style="margin:0">${t("logoutQ")}</p>
+         <div class="row"><button class="btn" data-logout-yes>${t("logoutYes")}</button><button class="btn ghost" data-logout-no>${t("cancel")}</button></div>`
+      : `<button class="btn ghost" data-logout>${t("logout")}</button>`}</div>`;
   return `<h3 class="sub-h">${t("accountH")}</h3>
   <div class="card">
     <p class="meta" style="margin:0">${t("accountAnon")}</p>
@@ -801,6 +805,19 @@ document.addEventListener("click", async e => {
         await Server.signInKakao();
       }
     } catch (err) { b.disabled = false; toast(t("kakaoErr", { e: String(err) }), true); }
+  }
+  // --- Выход из аккаунта Kakao: печати остаются на сервере, с телефона убираем ---
+  else if (b.hasAttribute("data-logout")) { ui.confirmLogout = true; render(); }
+  else if (b.hasAttribute("data-logout-no")) { ui.confirmLogout = false; render(); }
+  else if (b.hasAttribute("data-logout-yes")) {
+    ["visits", "mine", "profile", "seenTitles", "testMode", "markMode", "finds", "ascent"].forEach(store.del);
+    Photos.clear().catch(() => {});
+    if (Server.db) await Server.db.auth.signOut({ scope: "local" }).catch(() => {});
+    Server.user = null; srv = { ...srv, ready: false, others: [], totals: null, board: null, keeper: {} };
+    Owner.info = null; Owner.claims = null;
+    finds = []; visits = {}; mine = []; profile = null; seen = []; testMode = false; markMode = false; ascent = null;
+    ui.confirmLogout = false; toast(t("loggedOut"), true);
+    go("walk");
   }
   else if (b.hasAttribute("data-reset")) { ui.confirmReset = true; render(); }
   else if (b.hasAttribute("data-reset-no")) { ui.confirmReset = false; render(); }
