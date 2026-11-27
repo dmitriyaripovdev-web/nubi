@@ -77,7 +77,7 @@ const placeName = id => {
   const p = sportPlace(id);
   return p ? p.name : id;
 };
-// Места разделов «Спорт», «Рыбалка», «Кемпинг» (из js/places-hwaseong.js)
+// Места разделов «Спорт», «Рыбалка», «Кемпинг» (из data/<район>/places.js)
 const sportPlaces = () => [...(window.SPORT || []), ...(window.FISH || []), ...(window.CAMP || [])];
 const sportPlace = id => sportPlaces().find(p => p.id === id);
 const flagTag = f => f ? `<div class="warn">⚠ ${tx("flag")}: ${esc((ADM_TXT[admLang].flags || {})[f] || f)}</div>` : "";
@@ -327,7 +327,9 @@ function initCardMap(el) {
   const r = A.rows.find(x => x.id === el.dataset.amap); if (!r) return;
   const m = L.map(el, { zoomControl: false, attributionControl: false }).setView([r.lat, r.lng], 16);
   L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(m);
-  const mk = L.marker([r.lat, r.lng], { draggable: !!el.dataset.edit }).addTo(m);
+  // своя метка (картинки Leaflet по умолчанию не нужны)
+  const icon = L.divIcon({ className: "", html: '<div class="pin"></div>', iconSize: [30, 30], iconAnchor: [15, 30] });
+  const mk = L.marker([r.lat, r.lng], { icon, draggable: !!el.dataset.edit }).addTo(m);
   mk.on("dragend", () => { const p = mk.getLatLng(); setPoint(r.id, p.lat, p.lng, false); });
   marks[r.id] = { map: m, mk };
   if (el.dataset.cur) {
@@ -535,6 +537,8 @@ function gate(msg, withLogin) {
   if (!Server.user || !Server.isKakao()) return gate(tx("login"), true);
   const { data: isAdm } = await db().rpc("is_admin");
   if (!isAdm) return gate(tx("noAccess"));
+  // Названия мест: в админке загружаем все районы
+  await Data.init([]); await Data.loadMany(Data.areas());
   await load();
   fixMissingPhotos().catch(() => {});
 })();
