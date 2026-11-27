@@ -3,8 +3,9 @@
 // Источник всех текстов: «디지털화성시문화대전» (grandculture.net/hwaseong), раздел «설화».
 // Координаты: OpenStreetMap. approx:true — точка деревни/горы, печать работает в радиусе 1 км,
 // точное место уточняется в режиме разметки.
+// Файл района (data/<район>/): загружает js/datastore.js по мере надобности.
 // ============================================================
-window.LEGENDS.push(
+Data.put("legends", [
 
 // GC08601307
 {id:"ssangbongsan", region:"hs", lat:37.0924778, lng:126.8189972,
@@ -192,4 +193,4 @@ window.LEGENDS.push(
   ko:"마을 입구 효자각 안의 현판과 비석을 찾아보세요.",
   ru:"Найдите у въезда в деревню павильон с доской и стелой.",
   en:"Find the plaque and stele in the shrine at the village entrance."}}
-);
+]);
