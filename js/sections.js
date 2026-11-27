@@ -10,12 +10,12 @@ const SEC_LIVE = { walk: true, sport: true, fish: true, camp: true, cult: false 
 const SEC_ICON = { walk: "📜", sport: "⚽", fish: "🎣", camp: "⛺", cult: "🏆" };
 
 // Порядок видов спорта в фильтре и картинка для каждого
-const KIND_ORDER = ["soccer", "futsal", "tennis", "basket", "badm", "base", "pool", "indoor", "center", "pgolf",
+const KIND_ORDER = ["soccer", "futsal", "tennis", "basket", "badm", "base", "pool", "pingpong", "climb", "indoor", "center", "pgolf",
   "jokgu", "gate", "inline", "xgame", "archery", "multi", "etc"];
-const KIND_ICON = { soccer: "⚽", futsal: "⚽", tennis: "🎾", basket: "🏀", badm: "🏸", base: "⚾", pool: "🏊",
+const KIND_ICON = { soccer: "⚽", futsal: "⚽", tennis: "🎾", basket: "🏀", badm: "🏸", base: "⚾", pool: "🏊", pingpong: "🏓", climb: "🧗",
   indoor: "🏟️", center: "🏋️", pgolf: "⛳", jokgu: "🏐", gate: "🏑", inline: "🛼", xgame: "🛹", archery: "🏹", multi: "🏟️", etc: "🤸" };
 // Главная картинка места: сначала самое «заметное»
-const KIND_MAIN = ["pool", "center", "soccer", "base", "tennis", "futsal", "basket", "badm", "indoor", "pgolf",
+const KIND_MAIN = ["pool", "center", "soccer", "base", "tennis", "futsal", "basket", "badm", "indoor", "climb", "pingpong", "pgolf",
   "archery", "jokgu", "gate", "inline", "xgame", "multi", "etc"];
 
 // Списки мест по разделам (только загруженные районы)
