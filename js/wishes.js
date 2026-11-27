@@ -97,7 +97,8 @@ window.Wish = {
       || ["wishGoto", "lclose", "lnext", "lstop", "lstarsOff"].some(k => d[k] !== undefined);
   },
 
-  is(id) { return WISH_IDS.has(id); },
+  // Место для желаний: из списка выше или легенда с пометкой wish:true в файле района
+  is(id) { return WISH_IDS.has(id) || !!LEGENDS.find(l => l.id === id && l.wish); },
 
   // Значок в списке легенд
   tag(id) { return this.is(id) ? `<span class="lantern-tag" title="${esc(t("wishPlace"))}">🏮</span>` : ""; },
