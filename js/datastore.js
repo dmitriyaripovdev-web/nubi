@@ -102,8 +102,8 @@ window.Data = {
     const have = new Set([...SPORT, ...FISH, ...CAMP].map(p => p.id));
     const kinds = s => Object.fromEntries(String(s || "").split(" ").filter(Boolean)
       .map(x => { const m = x.match(/^([a-z]+)(\d+)$/); return m ? [m[1], +m[2]] : [x, 1]; }));
-    for (const [id, name, k, addr, lat, lng, t, book, off] of d.sport || [])
-      if (!have.has(id)) SPORT.push({ id, name, addr: city + addr, lat, lng, book: !!book, off, tel: tel[t] || t, kinds: kinds(k) });
+    for (const [id, name, k, addr, lat, lng, t, book, off, priv] of d.sport || [])  // priv=1 — частный (коммерческий) зал
+      if (!have.has(id)) SPORT.push({ id, name, addr: city + addr, lat, lng, book: !!book, off, priv: !!priv, tel: tel[t] || t, kinds: kinds(k) });
     for (const [id, name, type, fish, fee, cap, near, addr, lat, lng] of d.fish || [])
       if (!have.has(id)) FISH.push({ id, name, type, fish, fee, cap, near, addr: city + addr, lat, lng });
     for (const [id, name, addr, t, guests, lat, lng] of d.camp || [])
