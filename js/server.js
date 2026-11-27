@@ -67,14 +67,16 @@ window.Server = {
   async createProfile(nick, lang) {
     await this.ensureUser();
     const { error } = await this.db.from("profiles").insert({ id: this.user.id, nick, lang });
-    if (error) throw (error.code === "23505" ? "taken" : error.message);
+    if (error) throw this.nickErr(error);
   },
 
   async updateProfile(fields) {
     if (!this.user) return;
     const { error } = await this.db.from("profiles").update(fields).eq("id", this.user.id);
-    if (error) throw (error.code === "23505" ? "taken" : error.message);
+    if (error) throw this.nickErr(error);
   },
+  // Ошибки ника: "taken" — занят, "bad" — мат, ссылка или телефон (проверяет сервер)
+  nickErr(error) { return error.code === "23505" ? "taken" : /bad_nick/.test(error.message || "") ? "bad" : error.message; },
 
   // Мои печати с сервера: { id места: {t, walked} }
   async myVisits() {
@@ -148,7 +150,7 @@ window.Server = {
       id, lang: l.lang, region: l.region, name: l.name, place: l.place, story: l.story,
       lat: shot.lat, lng: shot.lng, photo_path, photo_at: new Date(shot.time).toISOString()
     });
-    if (error) throw error.message;
+    if (error) throw /day_limit/.test(error.message || "") ? "day_limit" : error.message;
     return id;
   },
 
