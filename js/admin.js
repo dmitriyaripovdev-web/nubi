@@ -44,7 +44,14 @@ const ADM_TXT = {
     act: { role: "Роль", "user_legends.update": "Легенда", "finds.update": "Табличка", "pin_suggestions.update": "Точка",
       "wishes.update": "Фонарик", "wishes.delete": "Фонарик удалён", "reports.update": "Жалоба", "places.update": "Место",
       "place_claims.update": "Заявка владельца", "place_info.update": "Инфо места", "profiles.update": "Блокировка" },
-    logEmpty: "Пока записей нет"
+    logEmpty: "Пока записей нет",
+    mergeBtn: "Перенести в другой аккаунт", delBtn: "Удалить аккаунт",
+    mergeTo: "Ник аккаунта Kakao, куда перенести", mergeFind: "Найти",
+    mergeQ: "Перенести всё из «{a}» в «{b}»? Печати, очки, легенды, таблички и фонарики перейдут, а «{a}» будет удалён.",
+    delQ: "Удалить аккаунт «{a}»? Его одобренные легенды останутся на карте, остальное удалится. Отменить нельзя.",
+    noKakaoNick: "Аккаунт Kakao с таким ником не найден",
+    userRes: { ok: "Готово", self: "Себя нельзя", same: "Это тот же аккаунт", no_user: "Игрок не найден", no_target: "Аккаунт не найден", target_not_kakao: "Переносить можно только в аккаунт с Kakao", has_role: "Сначала снимите с него роль в «Команде»" },
+    actMerge: "Перенос аккаунта", actDel: "Аккаунт удалён"
   },
   ko: {
     title: "관리자", stats: "개요", legends: "전설", finds: "안내판", pins: "위치", wishes: "소원",
@@ -81,7 +88,14 @@ const ADM_TXT = {
     act: { role: "권한", "user_legends.update": "전설", "finds.update": "안내판", "pin_suggestions.update": "위치",
       "wishes.update": "소원등", "wishes.delete": "소원등 삭제", "reports.update": "신고", "places.update": "장소",
       "place_claims.update": "장소 주인 신청", "place_info.update": "장소 정보", "profiles.update": "차단" },
-    logEmpty: "아직 기록이 없습니다"
+    logEmpty: "아직 기록이 없습니다",
+    mergeBtn: "다른 계정으로 옮기기", delBtn: "계정 삭제",
+    mergeTo: "옮길 카카오 계정의 닉네임", mergeFind: "찾기",
+    mergeQ: "'{a}'의 모든 기록을 '{b}'(으)로 옮길까요? 도장, 점수, 전설, 안내판, 소원등이 옮겨지고 '{a}'는 삭제됩니다.",
+    delQ: "'{a}' 계정을 삭제할까요? 승인된 전설은 지도에 남고 나머지는 삭제됩니다. 되돌릴 수 없습니다.",
+    noKakaoNick: "그 닉네임의 카카오 계정을 찾지 못했습니다",
+    userRes: { ok: "완료", self: "자신은 안 됩니다", same: "같은 계정입니다", no_user: "사용자를 찾을 수 없습니다", no_target: "계정을 찾을 수 없습니다", target_not_kakao: "카카오 계정으로만 옮길 수 있습니다", has_role: "먼저 '팀'에서 권한을 해제하세요" },
+    actMerge: "계정 이전", actDel: "계정 삭제됨"
   }
 };
 let admLang = (() => { try { return localStorage.getItem("nubi_admin_lang") || "ru"; } catch (e) { return "ru"; } })();
@@ -110,8 +124,12 @@ const distM = (a, b) => { const R = 6371e3, r = Math.PI / 180, x = (b.lng - a.ln
 // ---------- Состояние ----------
 const A = { tab: "stats", filter: "pending", rows: [], stats: null, places: {}, open: null, rejecting: null, maps: [], q: "", info: {},
   role: null,        // моя роль: owner | admin
-  confirmRole: null  // "id:роль" — ждём подтверждения смены роли
+  confirmRole: null, // "id:роль" — ждём подтверждения смены роли
+  merging: null,     // id аккаунта, который переносим (открыто поле ника)
+  mergeTo: null,     // {id, nick} — найденный аккаунт Kakao, ждём подтверждения
+  confirmDel: null   // id аккаунта, ждём подтверждения удаления
 };
+const fill = (s, o) => s.replace(/\{(\w+)\}/g, (m, k) => o[k] ?? m);
 const isOwner = () => A.role === "owner";
 const roleName = r => tx(r === "owner" ? "roleOwner" : r === "admin" ? "roleAdmin" : "roleMod");
 const db = () => Server.db;
@@ -244,6 +262,17 @@ function roleBtn(id, role, label) {
   return `<button class="btn ${role ? "ok" : "no"}" data-arole="${id}" data-to="${role}">${tx(label)}</button>`;
 }
 
+// Перенос и удаление аккаунта (только владелец; сервер проверяет ещё раз)
+function ownerUserTools(r) {
+  if (A.confirmDel === r.id) return `<div class="warn">${esc(fill(tx("delQ"), { a: r.nick }))}</div>
+    <div class="arow"><button class="btn no" data-adel="${r.id}" data-go="1">${tx("yes")}</button><button class="btn" data-acancel>${tx("no")}</button></div>`;
+  if (A.merging === r.id && A.mergeTo) return `<div class="warn">${esc(fill(tx("mergeQ"), { a: r.nick, b: A.mergeTo.nick }))}</div>
+    <div class="arow"><button class="btn ok" data-amerge-go="${r.id}">${tx("yes")}</button><button class="btn" data-acancel>${tx("no")}</button></div>`;
+  if (A.merging === r.id) return `<label>${tx("mergeTo")}<input id="mt-${r.id}" maxlength="20"></label>
+    <div class="arow"><button class="btn ok" data-amerge-find="${r.id}">${tx("mergeFind")}</button><button class="btn" data-acancel>${tx("no")}</button></div>`;
+  return `<div class="arow"><button class="btn" data-amerge="${r.id}">${tx("mergeBtn")}</button><button class="btn no" data-adel="${r.id}">${tx("delBtn")}</button></div>`;
+}
+
 // Карточка одной записи
 function cardView(r) {
   const pend = r.status === "pending";
@@ -303,6 +332,7 @@ function cardView(r) {
     <div class="ameta">${tx("stampsN")}: <b>${r.stamps}</b> · ${tx("legendsN")}: <b>${r.legends}</b> · ${tx("wishesN")}: <b>${r.wishes}</b></div>
     ${r.role ? "" : `<div class="arow"><button class="btn ${r.banned ? "ok" : "no"}" data-aban="${r.id}" data-on="${r.banned ? "" : 1}">${tx(r.banned ? "unban" : "ban")}</button>
       ${isOwner() && !r.banned ? (r.kakao ? roleBtn(r.id, "admin", "makeAdmin") : `<span class="ameta">${tx("needKakao")}</span>`) : ""}</div>`}
+    ${isOwner() && !r.role && r.id !== (Server.user && Server.user.id) ? ownerUserTools(r) : ""}
   </div>`;
 
   if (A.tab === "team") {
@@ -318,10 +348,12 @@ function cardView(r) {
     const d = r.details || {};
     const what = r.action === "role"
       ? `${esc(d.nick || "")}: ${d.from ? roleName(d.from) : "—"} → ${d.to ? roleName(d.to) : "—"}`
+      : r.action === "merge" ? `${esc(d.from)} → ${esc(d.to)} (${tx("stampsN")} ${d.visits ?? 0}, ${tx("legendsN")} ${d.legends ?? 0}, ${tx("wishesN")} ${d.wishes ?? 0})`
+      : r.action === "delete_user" ? `${esc(d.nick || "—")}${d.kakao ? " · Kakao" : ""}`
       : Object.entries(d).map(([k, v]) => `${esc(k)}: ${esc(typeof v === "string" ? v : JSON.stringify(v))}`).join(" · ");
     return `<div class="acard">
     <div class="ameta">${dt(r.at)} · <b>${esc(r.actor_nick || "—")}</b></div>
-    <div><b>${esc((tx("act") || {})[r.action] || r.action)}</b>${r.action !== "role" && r.target ? ` <span class="ameta">${esc(r.target)}</span>` : ""}</div>
+    <div><b>${esc(r.action === "merge" ? tx("actMerge") : r.action === "delete_user" ? tx("actDel") : (tx("act") || {})[r.action] || r.action)}</b>${!["role", "merge", "delete_user"].includes(r.action) && r.target ? ` <span class="ameta">${esc(r.target)}</span>` : ""}</div>
     <div class="ameta" style="overflow-wrap:anywhere">${what}</div>
   </div>`;
   }
@@ -504,6 +536,32 @@ document.addEventListener("click", async e => {
   });
   else if (d.aq !== undefined) { A.q = val("aq"); await load(); }
   else if (b.hasAttribute("data-arole-no")) { A.confirmRole = null; draw(); }
+  // --- Перенос и удаление аккаунтов (владелец) ---
+  else if (b.hasAttribute("data-acancel")) { A.merging = null; A.mergeTo = null; A.confirmDel = null; draw(); }
+  else if (d.amerge) { A.merging = d.amerge; A.mergeTo = null; A.confirmDel = null; draw(); }
+  else if (d.amergeFind) {
+    const nick = val("mt-" + d.amergeFind).trim();
+    if (!nick) return;
+    const { data } = await db().rpc("admin_users", { p_q: nick, p_limit: 20 });
+    const hit = (data || []).find(u => u.kakao && u.nick.toLowerCase() === nick.toLowerCase() && u.id !== d.amergeFind);
+    if (!hit) return toast(tx("noKakaoNick"));
+    A.mergeTo = { id: hit.id, nick: hit.nick }; draw();
+  }
+  else if (d.amergeGo) {
+    const to = A.mergeTo; A.merging = null; A.mergeTo = null;
+    try {
+      const { data, error } = await db().rpc("owner_merge_users", { p_from: d.amergeGo, p_to: to.id });
+      if (error) throw error; toast((tx("userRes") || {})[data] || data); await load();
+    } catch (e) { toast(tx("err") + (e.message || e)); }
+  }
+  else if (d.adel) {
+    if (!d.go) { A.confirmDel = d.adel; A.merging = null; draw(); return; }
+    A.confirmDel = null;
+    try {
+      const { data, error } = await db().rpc("owner_delete_user", { p_user: d.adel });
+      if (error) throw error; toast((tx("userRes") || {})[data] || data); await load();
+    } catch (e) { toast(tx("err") + (e.message || e)); }
+  }
   else if (d.arole !== undefined) {
     if (!d.go) { A.confirmRole = d.arole + ":" + (d.to || ""); draw(); return; }
     A.confirmRole = null;
