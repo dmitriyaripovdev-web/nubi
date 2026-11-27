@@ -567,7 +567,9 @@ const KAKAO_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="curre
 // Блок «Аккаунт» в профиле: временный аккаунт → предложить Kakao; уже Kakao → галочка
 function accountCard() {
   if (!srv.ready) return `<p class="meta">${t("offlineBanner")}</p>`;
-  if (Server.isKakao()) return `<h3 class="sub-h">${t("accountH")}</h3>
+  if (Server.isKakao()) return (srv.role === "owner" || srv.role === "admin" ? `<h3 class="sub-h">${t("adminH")}</h3>
+    <div class="card"><p class="meta" style="margin:0">${t(srv.role === "owner" ? "adminOwnerNote" : "adminNote")}</p>
+      <a class="btn" href="admin.html">🛠 ${t("adminOpen")}</a></div>` : "") + `<h3 class="sub-h">${t("accountH")}</h3>
     <div class="card"><p style="margin:0"><b>✅ ${t("kakaoLinked")}</b></p><p class="meta" style="margin:0">${t("accountKakao")}</p>
     ${ui.confirmLogout
       ? `<p class="meta" style="margin:0">${t("logoutQ")}</p>
@@ -816,7 +818,7 @@ document.addEventListener("click", async e => {
     Server.user = null; srv = { ...srv, ready: false, others: [], totals: null, board: null, keeper: {} };
     Owner.info = null; Owner.claims = null;
     finds = []; visits = {}; mine = []; profile = null; seen = []; testMode = false; markMode = false; ascent = null;
-    ui.confirmLogout = false; toast(t("loggedOut"), true);
+    srv.role = null; ui.confirmLogout = false; toast(t("loggedOut"), true);
     go("walk");
   }
   else if (b.hasAttribute("data-reset")) { ui.confirmReset = true; render(); }
@@ -995,6 +997,8 @@ async function boot() {
     if (/identity_already_exists|already/i.test(authErr.code + authErr.desc)) { ui.kakaoTaken = true; ui.tab = "me"; }
     else toast(t("kakaoErr", { e: authErr.desc || authErr.code }), true);
   } else if (kakaoTry && Server.isKakao()) toast(t("kakaoOk"), true);
+  // Роль в команде (владелец/админ) — показать кнопку админ-панели в профиле
+  if (ok && Server.isKakao()) Server.db.rpc("my_role").then(r => { srv.role = r.data && r.data.role; if (srv.role && ui.tab === "me") render(); }).catch(() => {});
   if (ok && profile) {
     try {
       // Старый игрок без аккаунта на сервере — создаём аккаунт с тем же ником

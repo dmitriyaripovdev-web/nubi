@@ -1,9 +1,10 @@
 // ============================================================
 // 누비 — АДМИНКА (admin.html)
-// Вход через Kakao. Пускает только тех, у кого в профиле is_admin = true —
-// это проверяет сервер (функция is_admin и права в 07_АДМИНКА_И_ЖЕЛАНИЯ.sql),
+// Вход через Kakao. Пускает только владельца (owner) и админов (admin) —
+// это проверяет сервер (функции is_admin / is_owner, 14_РОЛИ_И_ЖУРНАЛ.sql),
 // поэтому чужой человек, даже зная адрес, ничего не увидит и не изменит.
-// Разделы: Обзор · Легенды · Таблички · Точки · Желания · Игроки · Владельцы · Жалобы · Места
+// Разделы: Обзор · Легенды · Таблички · Точки · Желания · Игроки · Владельцы · Жалобы · Места · Команда · Журнал
+// Назначать и снимать админов может только владелец (кнопки в «Команде» и «Игроках»).
 // ============================================================
 
 // ---------- Языки админки: русский и корейский ----------
@@ -32,7 +33,18 @@ const ADM_TXT = {
     placeSearch: "Найти место (спорт, рыбалка, кемпинг)", access: "Вход", accNone: "— не указано —",
     accFree: "Свободный вход", accBooking: "По записи", accResidents: "Только для жильцов", owner: "Владелец",
     removeOwner: "Снять владельца", flag: "Автофильтр", flags: { link: "ссылка", phone: "телефон", email: "почта", bad: "мат", reports: "жалобы" },
-    typeMore: "Введите хотя бы 2 буквы"
+    typeMore: "Введите хотя бы 2 буквы",
+    team: "Команда", log: "Журнал", roleOwner: "владелец", roleAdmin: "админ", roleMod: "модератор",
+    makeAdmin: "Сделать админом", makeOwner: "Сделать владельцем", toAdmin: "Понизить до админа", removeRole: "Снять роль",
+    sure: "Точно?", yes: "Да", no: "Нет", you: "это вы",
+    teamNote: "Админы проверяют легенды, таблички, точки, фонарики и жалобы. Владелец ещё назначает и снимает админов. Роль работает только при входе через Kakao.",
+    addHint: "Добавить человека: откройте «Игроки», найдите ник и нажмите «Сделать админом».",
+    needKakao: "нужен вход через Kakao",
+    roleRes: { ok: "Готово", not_kakao: "Сначала человек должен войти через Kakao", banned: "Человек заблокирован", last_owner: "Нельзя снять последнего владельца", no_user: "Игрок не найден", bad_role: "Неизвестная роль", need_region: "Укажите город" },
+    act: { role: "Роль", "user_legends.update": "Легенда", "finds.update": "Табличка", "pin_suggestions.update": "Точка",
+      "wishes.update": "Фонарик", "wishes.delete": "Фонарик удалён", "reports.update": "Жалоба", "places.update": "Место",
+      "place_claims.update": "Заявка владельца", "place_info.update": "Инфо места", "profiles.update": "Блокировка" },
+    logEmpty: "Пока записей нет"
   },
   ko: {
     title: "관리자", stats: "개요", legends: "전설", finds: "안내판", pins: "위치", wishes: "소원",
@@ -58,7 +70,18 @@ const ADM_TXT = {
     placeSearch: "장소 찾기 (운동, 낚시, 캠핑)", access: "이용", accNone: "— 미정 —",
     accFree: "자유 이용", accBooking: "예약제", accResidents: "주민 전용", owner: "주인",
     removeOwner: "주인 해제", flag: "자동 필터", flags: { link: "링크", phone: "전화번호", email: "이메일", bad: "욕설", reports: "신고" },
-    typeMore: "2글자 이상 입력하세요"
+    typeMore: "2글자 이상 입력하세요",
+    team: "팀", log: "기록", roleOwner: "소유자", roleAdmin: "관리자", roleMod: "지역 관리자",
+    makeAdmin: "관리자로 지정", makeOwner: "소유자로 지정", toAdmin: "관리자로 변경", removeRole: "권한 해제",
+    sure: "확실한가요?", yes: "예", no: "아니요", you: "나",
+    teamNote: "관리자는 전설, 안내판, 위치, 소원등, 신고를 확인합니다. 소유자는 관리자를 지정하고 해제할 수도 있습니다. 권한은 카카오 로그인 상태에서만 작동합니다.",
+    addHint: "사람 추가: '사용자'에서 닉네임을 찾아 '관리자로 지정'을 누르세요.",
+    needKakao: "카카오 로그인 필요",
+    roleRes: { ok: "완료", not_kakao: "먼저 카카오로 로그인해야 합니다", banned: "차단된 사용자입니다", last_owner: "마지막 소유자는 해제할 수 없습니다", no_user: "사용자를 찾을 수 없습니다", bad_role: "알 수 없는 권한", need_region: "지역을 입력하세요" },
+    act: { role: "권한", "user_legends.update": "전설", "finds.update": "안내판", "pin_suggestions.update": "위치",
+      "wishes.update": "소원등", "wishes.delete": "소원등 삭제", "reports.update": "신고", "places.update": "장소",
+      "place_claims.update": "장소 주인 신청", "place_info.update": "장소 정보", "profiles.update": "차단" },
+    logEmpty: "아직 기록이 없습니다"
   }
 };
 let admLang = (() => { try { return localStorage.getItem("nubi_admin_lang") || "ru"; } catch (e) { return "ru"; } })();
@@ -85,7 +108,12 @@ const dt = s => s ? new Date(s).toLocaleString(admLang === "ko" ? "ko-KR" : "ru-
 const distM = (a, b) => { const R = 6371e3, r = Math.PI / 180, x = (b.lng - a.lng) * r * Math.cos((a.lat + b.lat) / 2 * r), y = (b.lat - a.lat) * r; return Math.round(Math.hypot(x, y) * R); };
 
 // ---------- Состояние ----------
-const A = { tab: "stats", filter: "pending", rows: [], stats: null, places: {}, open: null, rejecting: null, maps: [], q: "", info: {} };
+const A = { tab: "stats", filter: "pending", rows: [], stats: null, places: {}, open: null, rejecting: null, maps: [], q: "", info: {},
+  role: null,        // моя роль: owner | admin
+  confirmRole: null  // "id:роль" — ждём подтверждения смены роли
+};
+const isOwner = () => A.role === "owner";
+const roleName = r => tx(r === "owner" ? "roleOwner" : r === "admin" ? "roleAdmin" : "roleMod");
 const db = () => Server.db;
 
 // ---------- Загрузка данных раздела ----------
@@ -146,6 +174,12 @@ async function load() {
       const w = wIds.length ? await db().from("wishes").select("id, text, place_id, status, flag").in("id", wIds) : { data: [] };
       const l = lIds.length ? await db().from("user_legends").select("id, name, story, status").in("id", lIds) : { data: [] };
       for (const g of A.rows) g.item = (g.kind === "wish" ? w.data : l.data).find(x => x.id === g.target) || null;
+    } else if (A.tab === "team") {
+      const { data, error } = await db().rpc("admin_staff");
+      if (error) throw error; A.rows = data || [];
+    } else if (A.tab === "log") {
+      const { data, error } = await db().from("admin_log").select("*").order("at", { ascending: false }).limit(200);
+      if (error) throw error; A.rows = data || [];
     } else if (A.tab === "places") {
       const { data, error } = await db().from("place_info").select("*, profiles(nick)").limit(2000);
       if (error) throw error;
@@ -165,17 +199,18 @@ function draw() {
   const root = document.getElementById("adm");
   const p = (A.stats && A.stats.pending) || {};
   const tabs = [["stats", ""], ["legends", p.legends], ["finds", p.finds], ["pins", p.pins], ["wishes", p.wishes],
-    ["claims", p.claims], ["reports", p.reports], ["people", ""], ["places", ""]];
+    ["claims", p.claims], ["reports", p.reports], ["people", ""], ["places", ""], ["team", ""], ["log", ""]];
   const withFilter = ["legends", "finds", "pins", "wishes", "claims"].includes(A.tab);
   root.innerHTML = `
-    <div class="adm-top"><h1>누비<small>${tx("title")}</small></h1>
+    <div class="adm-top"><h1><a href="./" style="color:inherit;text-decoration:none">← 누비</a><small>${tx("title")}</small></h1>
       <div class="lang"><button data-alang="ru" aria-pressed="${admLang === "ru"}">RU</button><button data-alang="ko" aria-pressed="${admLang === "ko"}">한</button></div></div>
     <div class="adm-tabs">${tabs.map(([k, n]) => `<button data-atab="${k}" aria-pressed="${A.tab === k}">${tx(k)}${n ? `<span class="badge">${n}</span>` : ""}</button>`).join("")}</div>
     ${A.tab === "people" || A.tab === "places" ? `<div class="search"><input id="aq" value="${esc(A.q)}" placeholder="${esc(tx(A.tab === "people" ? "userSearch" : "placeSearch"))}"><button data-aq>${tx("find")}</button></div>` : ""}
     ${withFilter ? `<div class="sub-tabs">${["pending", "approved", "rejected"].map(f =>
       `<button data-afilter="${f}" aria-pressed="${A.filter === f}">${tx(A.tab === "wishes" && f === "rejected" ? "hidden" : f)}</button>`).join("")}</div>` : ""}
+    ${A.tab === "team" ? `<p class="ameta">${tx("teamNote")}${isOwner() ? " " + tx("addHint") : ""}</p>` : ""}
     <div id="body">${A.tab === "stats" ? statsView() : A.rows.length ? A.rows.map(cardView).join("")
-      : `<p class="center ameta">${A.tab === "places" && A.q.trim().length < 2 && A.q ? tx("typeMore") : tx("empty")}</p>`}</div>
+      : `<p class="center ameta">${A.tab === "log" ? tx("logEmpty") : A.tab === "places" && A.q.trim().length < 2 && A.q ? tx("typeMore") : tx("empty")}</p>`}</div>
     <p class="ameta center"><a href="./">${tx("openApp")}</a> · <button class="link" data-logout>${tx("logout")}</button></p>`;
   // мини-карты у карточек
   document.querySelectorAll("[data-amap]").forEach(el => initCardMap(el));
@@ -198,6 +233,15 @@ function statsView() {
       `<div style="height:${Math.round(d.n / max * 100)}%" title="${d.d}: ${d.n}"><span>${String(d.d).slice(5)}</span></div>`).join("") : `<span class="ameta">—</span>`}</div></div>
     <h3 class="sub-h">${tx("top")}</h3>
     <div class="card">${(s.top_places || []).map((t, i) => `<div>${i + 1}. ${esc(placeName(t.id))} — <b>${t.n}</b></div>`).join("") || "—"}</div>`;
+}
+
+// Кнопка смены роли: первое нажатие — «Точно?», второе — меняем
+function roleBtn(id, role, label) {
+  const key = id + ":" + role;
+  if (A.confirmRole === key) return `<span class="ameta">${tx("sure")}</span>
+    <button class="btn ${role ? "ok" : "no"}" data-arole="${id}" data-to="${role}" data-go="1">${tx("yes")}</button>
+    <button class="btn" data-arole-no>${tx("no")}</button>`;
+  return `<button class="btn ${role ? "ok" : "no"}" data-arole="${id}" data-to="${role}">${tx(label)}</button>`;
 }
 
 // Карточка одной записи
@@ -254,11 +298,33 @@ function cardView(r) {
   }
 
   if (A.tab === "people") return `<div class="acard">
-    <h3>${esc(r.nick)} ${r.is_admin ? `<span class="badge">${tx("adminTag")}</span>` : ""} ${r.banned ? `<span class="warn">${tx("bannedTag")}</span>` : ""}</h3>
+    <h3>${esc(r.nick)} ${r.role ? `<span class="badge">${roleName(r.role)}</span>` : ""} ${r.banned ? `<span class="warn">${tx("bannedTag")}</span>` : ""}</h3>
     <div class="ameta">${r.kakao ? "Kakao" : tx("anon")} · ${tx("regAt")} ${dt(r.created_at)} · ${tx("lastAt")} ${dt(r.last_at)}</div>
     <div class="ameta">${tx("stampsN")}: <b>${r.stamps}</b> · ${tx("legendsN")}: <b>${r.legends}</b> · ${tx("wishesN")}: <b>${r.wishes}</b></div>
-    ${r.is_admin ? "" : `<div class="arow"><button class="btn ${r.banned ? "ok" : "no"}" data-aban="${r.id}" data-on="${r.banned ? "" : 1}">${tx(r.banned ? "unban" : "ban")}</button></div>`}
+    ${r.role ? "" : `<div class="arow"><button class="btn ${r.banned ? "ok" : "no"}" data-aban="${r.id}" data-on="${r.banned ? "" : 1}">${tx(r.banned ? "unban" : "ban")}</button>
+      ${isOwner() && !r.banned ? (r.kakao ? roleBtn(r.id, "admin", "makeAdmin") : `<span class="ameta">${tx("needKakao")}</span>`) : ""}</div>`}
   </div>`;
+
+  if (A.tab === "team") {
+    const me = r.id === (Server.user && Server.user.id);
+    return `<div class="acard">
+    <h3>${esc(r.nick)} <span class="badge">${roleName(r.role)}</span>${r.role_region ? ` <span class="ameta">${esc(r.role_region)}</span>` : ""}${me ? ` <span class="ameta">(${tx("you")})</span>` : ""}</h3>
+    <div class="ameta">${r.kakao ? "Kakao" : tx("needKakao")} · ${tx("lastAt")} ${dt(r.last_at)}</div>
+    ${isOwner() ? `<div class="arow">${r.role === "admin" ? roleBtn(r.id, "owner", "makeOwner") : ""}${r.role === "owner" && !me ? roleBtn(r.id, "admin", "toAdmin") : ""}${roleBtn(r.id, "", "removeRole")}</div>` : ""}
+  </div>`;
+  }
+
+  if (A.tab === "log") {
+    const d = r.details || {};
+    const what = r.action === "role"
+      ? `${esc(d.nick || "")}: ${d.from ? roleName(d.from) : "—"} → ${d.to ? roleName(d.to) : "—"}`
+      : Object.entries(d).map(([k, v]) => `${esc(k)}: ${esc(typeof v === "string" ? v : JSON.stringify(v))}`).join(" · ");
+    return `<div class="acard">
+    <div class="ameta">${dt(r.at)} · <b>${esc(r.actor_nick || "—")}</b></div>
+    <div><b>${esc((tx("act") || {})[r.action] || r.action)}</b>${r.action !== "role" && r.target ? ` <span class="ameta">${esc(r.target)}</span>` : ""}</div>
+    <div class="ameta" style="overflow-wrap:anywhere">${what}</div>
+  </div>`;
+  }
 
   if (A.tab === "claims") {
     const pl = sportPlace(r.place_id);
@@ -437,6 +503,19 @@ document.addEventListener("click", async e => {
     if (error) throw error;
   });
   else if (d.aq !== undefined) { A.q = val("aq"); await load(); }
+  else if (b.hasAttribute("data-arole-no")) { A.confirmRole = null; draw(); }
+  else if (d.arole !== undefined) {
+    if (!d.go) { A.confirmRole = d.arole + ":" + (d.to || ""); draw(); return; }
+    A.confirmRole = null;
+    try {
+      const { data, error } = await db().rpc("owner_set_role", { p_user: d.arole, p_role: d.to || null, p_region: null });
+      if (error) throw error;
+      toast((tx("roleRes") || {})[data] || data);
+      // сняли роль с себя — дальше админка закрыта
+      if (data === "ok" && d.arole === (Server.user && Server.user.id)) return location.reload();
+      await load();
+    } catch (e) { toast(tx("err") + (e.message || e)); }
+  }
   else if (d.aban) act(async () => {
     const { error } = await db().rpc("admin_set_ban", { p_user: d.aban, p_ban: !!d.on });
     if (error) throw error;
@@ -537,6 +616,8 @@ function gate(msg, withLogin) {
   if (!Server.user || !Server.isKakao()) return gate(tx("login"), true);
   const { data: isAdm } = await db().rpc("is_admin");
   if (!isAdm) return gate(tx("noAccess"));
+  const { data: mr } = await db().rpc("my_role");
+  A.role = mr && mr.role;
   // Названия мест: в админке загружаем все районы
   await Data.init([]); await Data.loadMany(Data.areas());
   await load();
