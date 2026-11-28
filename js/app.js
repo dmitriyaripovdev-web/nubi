@@ -12,7 +12,14 @@ const store = {
 // ===== Состояние =====
 let visits  = store.get("visits", {});      // id места -> {t: время, test, server, day}
 let mine    = store.get("mine", []);        // легенды, добавленные без сервера (старые)
-let lang    = store.get("lang", DEFAULT_LANG);
+let lang    = store.get("lang", guessLang());
+// Первый запуск: язык берём из настроек телефона (корейский / русский / иначе английский)
+function guessLang() {
+  const l = ((navigator.languages && navigator.languages[0]) || navigator.language || "").toLowerCase().slice(0, 2);
+  if (l === "ko") return "ko";
+  if (["ru", "uk", "be", "kk", "ky"].includes(l)) return "ru";
+  return l ? "en" : DEFAULT_LANG;
+}
 let profile = store.get("profile", null);   // {nick, title}
 let seen    = store.get("seenTitles", []);  // звания, о которых уже показали уведомление
 let testMode = store.get("testMode", false);

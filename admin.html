@@ -1,7 +1,9 @@
 <!doctype html>
-<html lang="ru">
+<html lang="ru" translate="no" class="notranslate">
 <head>
 <meta charset="utf-8">
+<!-- Не даём Chrome/Safari автоматически «переводить» приложение: у нас свои языки (한/RU/EN) -->
+<meta name="google" content="notranslate">
 <!-- Защита: страница может загружать код только со своего сайта, а данные — только с нашего сервера -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com https://dapi.kakao.com https://*.kakaocdn.net https://*.daumcdn.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.daumcdn.net https://*.kakaocdn.net https://*.tile.openstreetmap.org https://tile.openstreetmap.org https://wkqiijukqaeksmfpiwuj.supabase.co; connect-src 'self' https://dapi.kakao.com https://wkqiijukqaeksmfpiwuj.supabase.co wss://wkqiijukqaeksmfpiwuj.supabase.co; media-src 'self' blob:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
