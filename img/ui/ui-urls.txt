@@ -7,3 +7,4 @@ bg-sky https://cdn.leonardo.ai/users/8b8a7171-f811-463d-a7f9-255d5f178325/genera
 bg-well https://cdn.leonardo.ai/users/8b8a7171-f811-463d-a7f9-255d5f178325/generations/1f1eadb6-eed5-6120-8173-31a2b2bfb538/google/nano-banana-2.1_Create_a_new_illustration_in_exactly_the_same_art_style_as_the_reference_images_-0.jpg wide
 bg-rope https://cdn.leonardo.ai/users/8b8a7171-f811-463d-a7f9-255d5f178325/generations/1f1eadb7-8903-6490-b063-62559a3eb8ad/google/nano-banana-2.1_Create_a_new_illustration_in_exactly_the_same_art_style_as_the_reference_images_-0.jpg wide
 bg-fence https://cdn.leonardo.ai/users/8b8a7171-f811-463d-a7f9-255d5f178325/generations/1f1eadb7-a6cb-6cc0-844a-499c9b7e09aa/google/nano-banana-2.1_Create_a_new_illustration_in_exactly_the_same_art_style_as_the_reference_images_-0.jpg wide
+# значки: обрезка по краям 11%
