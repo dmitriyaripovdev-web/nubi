@@ -519,3 +519,7 @@ a.btn{display:block;text-align:center;text-decoration:none;box-sizing:border-box
 .aled .btn.danger{color:#ffb4a8}
 .aled-d{text-align:center;color:#cfd6e6;margin:0}
 .aled-b .btn{white-space:nowrap;font-size:14px}
+/* Камера: кнопка селфи */
+.cam video.mirror{transform:scaleX(-1)}
+.cam-right{justify-self:end;display:flex;align-items:center;gap:10px}
+.cam-flip{width:46px;height:46px;border-radius:50%;border:2px solid rgba(255,255,255,.6);background:rgba(255,255,255,.12);color:#fff;font-size:22px;cursor:pointer}

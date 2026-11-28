@@ -47,12 +47,13 @@ window.Camera = {
   shoot(texts) {
     return new Promise(async (resolve, reject) => {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return reject("camErr");
-      let stream;
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { ideal: "environment" }, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false
-        });
-      } catch (e) { return reject(e && e.name === "NotAllowedError" ? "camDenied" : "camErr"); }
+      // Камера: задняя (environment) или передняя для селфи (user)
+      let facing = "environment", stream;
+      const open = f => navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: f }, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false
+      });
+      try { stream = await open(facing); }
+      catch (e) { return reject(e && e.name === "NotAllowedError" ? "camDenied" : "camErr"); }
 
       // Сразу начинаем определять координаты, пока человек наводит камеру
       const gps = Geo.locate();
@@ -65,7 +66,7 @@ window.Camera = {
         <div class="cam-bar">
           <button type="button" class="cam-cancel">${texts.cancel}</button>
           <button type="button" class="cam-shutter" aria-label="${texts.shutter}"></button>
-          <span class="cam-status">${texts.locating}</span>
+          <span class="cam-right"><button type="button" class="cam-flip" aria-label="Selfie">🔄</button><span class="cam-status">${texts.locating}</span></span>
         </div>`;
       document.body.appendChild(box);
       const video = box.querySelector("video");
@@ -74,6 +75,15 @@ window.Camera = {
       gps.then(() => status.textContent = "📍 GPS ✓").catch(() => status.textContent = "📍 GPS ✗");
 
       const close = () => { stream.getTracks().forEach(t => t.stop()); box.remove(); };
+      // Переворот камеры (селфи). Передняя показывается зеркально — как в обычной камере телефона.
+      box.querySelector(".cam-flip").onclick = async () => {
+        const next = facing === "environment" ? "user" : "environment";
+        stream.getTracks().forEach(t => t.stop());
+        try { stream = await open(next); facing = next; }
+        catch (e) { try { stream = await open(facing); } catch (e2) { close(); return reject("camErr"); } }
+        video.srcObject = stream;
+        video.classList.toggle("mirror", facing === "user");
+      };
 
       box.querySelector(".cam-cancel").onclick = () => { close(); resolve(null); };
       box.querySelector(".cam-shutter").onclick = async () => {
@@ -83,7 +93,10 @@ window.Camera = {
         const k = Math.min(1, 1280 / Math.max(w, h));
         const c = document.createElement("canvas");
         c.width = Math.round(w * k); c.height = Math.round(h * k);
-        c.getContext("2d").drawImage(video, 0, 0, c.width, c.height);
+        const cx = c.getContext("2d");
+        // селфи сохраняем так же, как его видно на экране (зеркально)
+        if (facing === "user") { cx.translate(c.width, 0); cx.scale(-1, 1); }
+        cx.drawImage(video, 0, 0, c.width, c.height);
         const photo = c.toDataURL("image/jpeg", 0.75);
         const quality = Camera.quality(c);
         const time = Date.now();
