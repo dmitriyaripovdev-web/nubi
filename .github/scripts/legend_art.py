@@ -55,8 +55,8 @@ if os.path.exists(ui_list):
         req = urllib.request.Request(url, headers={"User-Agent": "nubi-art"})
         im = Image.open(io.BytesIO(urllib.request.urlopen(req, timeout=60).read())).convert("RGB")
         if kind == "icon":
-            # значок: вырезаем середину (~66%), чтобы предмет занимал почти весь кружок
-            W, H = im.size; m = int(min(W, H) * 0.17)
+            # значок: вырезаем середину (~78%), чтобы предмет занимал почти весь кружок
+            W, H = im.size; m = int(min(W, H) * 0.11)
             im = im.crop((m, m, W - m, H - m))
         (crop_to(im, 256, 256) if kind == "icon" else crop_to(im, 960, 536)).save(out, "WEBP", quality=84)
         print("готово (ui):", name)
