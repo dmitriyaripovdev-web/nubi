@@ -523,3 +523,4 @@ a.btn{display:block;text-align:center;text-decoration:none;box-sizing:border-box
 .cam video.mirror{transform:scaleX(-1)}
 .cam-right{justify-self:end;display:flex;align-items:center;gap:10px}
 .cam-flip{width:46px;height:46px;border-radius:50%;border:2px solid rgba(255,255,255,.6);background:rgba(255,255,255,.12);color:#fff;font-size:22px;cursor:pointer}
+.aled-top span{display:flex;gap:4px;flex:0 0 auto}

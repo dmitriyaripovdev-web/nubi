@@ -126,7 +126,9 @@ window.Album = {
 
   // ===== Фильтры (рисует телефон, без интернета) =====
   async compose(img, l, filter, scale, date) {
-    const W = Math.round(this.W * scale), H = Math.round(this.H * scale), k = scale;
+    // Горизонтальный снимок — горизонтальная карточка (1350×1080), иначе вертикальная (1080×1350)
+    const land = (img.naturalWidth || img.width) > (img.naturalHeight || img.height) * 1.1;
+    const W = Math.round((land ? this.H : this.W) * scale), H = Math.round((land ? this.W : this.H) * scale), k = scale;
     const c = document.createElement("canvas"); c.width = W; c.height = H;
     const ctx = c.getContext("2d");
     const name = tr(l.name);
@@ -134,7 +136,7 @@ window.Album = {
       // Фото в рамке на бумаге, подпись снизу — как наши иллюстрации
       ctx.fillStyle = "#f3ead6"; ctx.fillRect(0, 0, W, H);
       this.noise(ctx, W, H, 0.05);
-      const x = 60 * k, y = 60 * k, w = W - 120 * k, h = 1000 * k;
+      const x = 60 * k, y = 60 * k, w = W - 120 * k, h = H - 350 * k;
       Share.cover(ctx, img, x, y, w, h);
       this.tone(ctx, x, y, w, h, "paper", 0.6);
       ctx.strokeStyle = "#2b3a63"; ctx.lineWidth = 6 * k; ctx.strokeRect(x - 14 * k, y - 14 * k, w + 28 * k, h + 28 * k);
@@ -206,14 +208,15 @@ window.Album = {
 
   // ===== Экран выбора фильтра (поверх приложения) =====
   async editor(l, shot) {
-    const img = await Share.img(shot.photo);
+    let img = await Share.img(shot.photo);
     await Share.fonts();
     const date = Share.dateStr(shot.time);
     let filter = store.get("albFilter", "paper");
     if (!this.FILTERS.includes(filter)) filter = "paper";
     const box = document.createElement("div");
     box.className = "aled";
-    box.innerHTML = `<div class="aled-top"><b>${esc(tr(l.name))}</b><button class="aled-x" data-a="cancel" aria-label="✕">✕</button></div>
+    box.innerHTML = `<div class="aled-top"><b>${esc(tr(l.name))}</b>
+        <span><button class="aled-x" data-a="rot" aria-label="${t("albRotate")}">↻</button><button class="aled-x" data-a="cancel" aria-label="✕">✕</button></span></div>
       <div class="aled-pic"><img alt=""></div>
       <div class="aled-f">${this.FILTERS.map(f => `<button data-f="${f}"><img alt=""><span>${t("albF_" + f)}</span></button>`).join("")}</div>
       <div class="aled-b">
@@ -232,16 +235,28 @@ window.Album = {
       big.src = await ready;
     };
     // маленькие образцы фильтров
-    for (const f of this.FILTERS) {
-      const c = await this.compose(img, l, f, 0.16, date);
-      box.querySelector(`[data-f="${f}"] img`).src = c.toDataURL("image/jpeg", 0.7);
-    }
+    const thumbs = async () => {
+      for (const f of this.FILTERS) {
+        const c = await this.compose(img, l, f, 0.16, date);
+        box.querySelector(`[data-f="${f}"] img`).src = c.toDataURL("image/jpeg", 0.7);
+      }
+    };
+    await thumbs();
     show();
     box.onclick = async e => {
       const b = e.target.closest("button"); if (!b) return;
       if (b.dataset.f) { filter = b.dataset.f; store.set("albFilter", filter); return show(); }
       const a = b.dataset.a; if (!a) return;
       if (a === "cancel") { box.remove(); return; }
+      // Повернуть снимок на 90° по часовой (если телефон не понял, как его держали)
+      if (a === "rot") {
+        const w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+        const c = document.createElement("canvas"); c.width = h; c.height = w;
+        const cx = c.getContext("2d"); cx.translate(h / 2, w / 2); cx.rotate(Math.PI / 2); cx.drawImage(img, -w / 2, -h / 2);
+        img = c;
+        show(); thumbs();
+        return;
+      }
       box.querySelectorAll("button").forEach(x => x.disabled = true);
       const out = await ready;
       const item = { id: crypto.randomUUID(), place: l.id, filter, t: shot.time, lat: shot.lat, lng: shot.lng, synced: false };

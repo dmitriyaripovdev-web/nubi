@@ -55,8 +55,9 @@ window.Share = {
   },
   // Картинка «по размеру рамки» (обрезаем лишнее по краям)
   cover(ctx, img, x, y, w, h) {
-    const k = Math.max(w / img.naturalWidth, h / img.naturalHeight);
-    const iw = img.naturalWidth * k, ih = img.naturalHeight * k;
+    const nw = img.naturalWidth || img.width, nh = img.naturalHeight || img.height;
+    const k = Math.max(w / nw, h / nh);
+    const iw = nw * k, ih = nh * k;
     ctx.save(); ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip();
     ctx.drawImage(img, x + (w - iw) / 2, y + (h - ih) / 2, iw, ih);
     ctx.restore();
