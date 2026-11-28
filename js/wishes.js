@@ -102,7 +102,7 @@ window.Wish = {
 
   // Обрабатывает ли Wish это нажатие
   handles(d) {
-    return !!(d.wishSend || d.wkind || d.cheer || d.fulfill || d.lopen || d.lcatch || d.lbrowse || d.lstars || d.lreport)
+    return !!(d.wishSend || d.wkind || d.cheer || d.fulfill || d.lopen || d.lcatch || d.lbrowse || d.lstars || d.lreport || d.wshare || d.wshareLast)
       || ["wishGoto", "lclose", "lnext", "lstop", "lstarsOff"].some(k => d[k] !== undefined);
   },
 
@@ -148,6 +148,9 @@ window.Wish = {
       ${fly && fly !== "coin" ? `<div class="fly fly-${fly}">${WISH_ICON[fly]}</div>` : ""}
       <h3>✨ ${t("wishH")}</h3>
       <p class="meta" style="margin:0 0 10px">${t("hint_" + k)}</p>
+      ${this.last && this.last.place_id === l.id ? `<div class="wish-shared">
+        <span>${WISH_ICON[this.last.kind] || "🏮"} ${t("wishShareAsk")}</span>
+        <button class="btn share-btn" data-wshare-last="1">📤 ${t("shareMini")}</button></div>` : ""}
       ${kinds}
       ${form}
       ${wall == null ? `<h3 class="wall-h">${t("skyH")}</h3><p class="meta">…</p>` : this.places(l.id, wall, k, fly === "coin")}
@@ -307,7 +310,8 @@ window.Wish = {
         <div><b>${WISH_ICON[w.kind] || "🏮"} ${esc(w.text)}</b>
           <span class="meta">${l ? esc(tr(l.name)) : esc(w.place_id)} · ${dateFmt(w.created_at)} · ${esc(st[w.status] || w.status)}${w.status === "approved" ? " · 🙏 " + w.cheers : ""}</span>
           ${ask ? `<span class="dist">${t("fulfillAsk")}</span>` : ""}</div>
-        ${w.fulfilled_at ? `<span class="ldone">${t("fulfilledTag")}</span>` : `<button class="wear" data-fulfill="${w.id}">${t("fulfillBtn")}</button>`}
+        <div class="tbtns">${w.fulfilled_at ? `<span class="ldone">${t("fulfilledTag")}</span>` : `<button class="wear" data-fulfill="${w.id}">${t("fulfillBtn")}</button>`}
+        <button class="wear share-mini" data-wshare="${w.id}" aria-label="${t("shareMini")}">📤</button></div>
       </div>`; }).join("")}</div>` : `<p class="meta">${t("noWishes")}</p>`}`;
   },
 
@@ -354,6 +358,9 @@ window.Wish = {
       if (c) { c.scrollIntoView({ behavior: "smooth", block: "center" }); c.classList.add("pulse"); setTimeout(() => c.classList.remove("pulse"), 1800); }
       return true;
     }
+    // Поделиться желанием: только что загаданным или из «Моих желаний»
+    if (d.wshareLast) { if (this.last) Share.wish(this.last); return true; }
+    if (d.wshare) { const w = (this.mine || []).find(x => String(x.id) === d.wshare); if (w) Share.wish(w); return true; }
     if (d.wkind) { this.kindSel[d.place] = d.wkind; this.open = null; render(); return true; }
     if (d.wishSend) {
       const place = d.wishSend, kind = d.kind || "lantern";
@@ -375,6 +382,7 @@ window.Wish = {
         else {
           this.mine = undefined; delete this.walls[place];
           this.fly = { place, kind }; setTimeout(() => { this.fly = null; }, 2600);
+          this.last = { place_id: place, kind, text, is_public: pub, created_at: new Date().toISOString() };
           toast(kind === "coin" ? t("coinOk") : r.status === "approved" ? t("ok_" + kind) : r.status === "pending" ? t("wishOkPublic") : t("wishOkPrivate"), true);
         }
       } catch (e) { toast(t("wishErrAny"), true); }

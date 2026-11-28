@@ -485,3 +485,12 @@ a.btn{display:block;text-align:center;text-decoration:none;box-sizing:border-box
 .city-item[aria-pressed="true"]::after{content:"✓";margin-left:6px}
 .city-item.near{font-weight:600}
 @media (prefers-reduced-motion: reduce){.sheet{animation:none}}
+/* Поделиться: кнопки */
+.sharerow{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.sharerow .share-btn{margin-top:0;flex:1 1 auto}
+.tbtns{display:flex;gap:6px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
+.share-mini{white-space:nowrap}
+.ch .share-mini{margin-top:10px}
+.wish-shared{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+  background:rgba(192,57,43,.08);border:1px solid rgba(192,57,43,.25);border-radius:12px;padding:10px 12px;margin:0 0 12px}
+.wish-shared .share-btn{margin-top:0;width:auto;padding:8px 14px}

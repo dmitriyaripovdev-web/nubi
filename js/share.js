@@ -1,14 +1,20 @@
 // ============================================================
-// 누비 — «Поделиться»: фотокарточка с печатью места
-// Человек выбирает своё фото (или видео) — приложение рисует карточку:
-// фото, сверху красная печать места с датой, внизу название и ссылка на 누비.
-// Всё делается на телефоне: фото никуда не загружается.
+// 누비 — «Поделиться»: карточки для соцсетей и мессенджеров
+// 1) Печать: карточка с картинкой легенды и красной печатью (или со своим фото).
+// 2) Желание: фонарик / ленточка / замочек / монетка у места желаний.
+// 3) Челлендж пройден и новое звание.
+// Карточка рисуется на телефоне (canvas 1080×1350), никуда не загружается.
+// Дальше — меню «Поделиться» телефона (KakaoTalk, Instagram, Telegram…),
+// а если телефон так не умеет — картинка сохраняется, текст со ссылкой копируется.
 // ============================================================
 
 window.Share = {
   W: 1080, H: 1350,
+  serif: "'Gowun Batang', 'Noto Serif KR', serif",
+  sans: "'IBM Plex Sans KR', system-ui, sans-serif",
   base() { return location.origin + location.pathname.replace(/[^/]*$/, ""); },
-  link(id) { return this.base() + "?l=" + encodeURIComponent(id); },
+  link(id) { return this.base() + (id ? "?l=" + encodeURIComponent(id) : ""); },
+  host() { return this.base().replace(/^https?:\/\//, "").replace(/\/$/, ""); },
 
   // Перенос строки по ширине (для корейского — по символам, иначе по словам)
   wrap(ctx, text, maxW, maxLines) {
@@ -24,90 +30,234 @@ window.Share = {
     return lines;
   },
 
+  img(src) {
+    return new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = src; });
+  },
   async loadImage(file) {
     const url = URL.createObjectURL(file);
-    try { return await new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = url; }); }
-    finally { setTimeout(() => URL.revokeObjectURL(url), 1000); }
+    try { return await this.img(url); } finally { setTimeout(() => URL.revokeObjectURL(url), 1000); }
   },
-
-  // Рисуем карточку и возвращаем файл JPEG
-  async draw(l, file) {
-    const { W, H } = this, c = document.createElement("canvas");
-    c.width = W; c.height = H;
-    const ctx = c.getContext("2d");
-    try { await document.fonts.load("700 40px 'Gowun Batang'"); } catch (e) {}
-    const img = await this.loadImage(file);
-    // фото на весь кадр (обрезаем лишнее по краям)
-    const k = Math.max(W / img.naturalWidth, H / img.naturalHeight);
+  // Картинка места: нарисованная иллюстрация, фото пользовательской легенды или SVG-рисунок
+  async artOf(l) {
+    if (!l) return null;
+    const tries = [];
+    if (l.artUrl) tries.push(l.artUrl);
+    if (l.photoUrl) tries.push(l.photoUrl);
+    tries.push(`img/legends/${l.id}.webp`);
+    for (const src of tries) { try { return await this.img(src); } catch (e) {} }
+    if (Art.SCENES && Art.SCENES[l.id]) {
+      try { return await this.img("data:image/svg+xml;charset=utf-8," + encodeURIComponent(Art.svg(l.id))); } catch (e) {}
+    }
+    return null;
+  },
+  async fonts() {
+    try { await Promise.all([document.fonts.load(`700 40px ${this.serif}`), document.fonts.load(`500 30px ${this.sans}`)]); } catch (e) {}
+  },
+  // Картинка «по размеру рамки» (обрезаем лишнее по краям)
+  cover(ctx, img, x, y, w, h) {
+    const k = Math.max(w / img.naturalWidth, h / img.naturalHeight);
     const iw = img.naturalWidth * k, ih = img.naturalHeight * k;
-    ctx.drawImage(img, (W - iw) / 2, (H - ih) / 2, iw, ih);
-    // затемнение снизу для текста
-    const g = ctx.createLinearGradient(0, H * 0.5, 0, H);
-    g.addColorStop(0, "rgba(10,14,30,0)"); g.addColorStop(1, "rgba(10,14,30,0.85)");
-    ctx.fillStyle = g; ctx.fillRect(0, H * 0.5, W, H * 0.5);
-
-    const name = tr(l.name), v = visits[l.id];
-    const date = new Date(v ? v.t : Date.now()).toLocaleDateString(t("locale"));
-    const serif = "'Gowun Batang', 'Noto Serif KR', serif", sans = "'IBM Plex Sans KR', system-ui, sans-serif";
-
-    // ── Печать (красная, слегка повёрнута, как настоящий штамп) ──
+    ctx.save(); ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip();
+    ctx.drawImage(img, x + (w - iw) / 2, y + (h - ih) / 2, iw, ih);
+    ctx.restore();
+  },
+  // Красная печать (как штамп, слегка повёрнута)
+  seal(ctx, cx, cy, size, name, date, foot) {
+    const s = size / 320;
     ctx.save();
-    ctx.translate(W - 210, 230); ctx.rotate(-0.12);
-    ctx.globalAlpha = 0.92;
-    ctx.fillStyle = "rgba(255,248,240,0.82)";
+    ctx.translate(cx, cy); ctx.rotate(-0.12); ctx.scale(s, s);
+    ctx.globalAlpha = 0.95;
+    ctx.fillStyle = "rgba(255,248,240,0.9)";
     ctx.beginPath(); ctx.roundRect(-160, -160, 320, 320, 26); ctx.fill();
     ctx.strokeStyle = "#C0392B"; ctx.lineWidth = 10;
     ctx.beginPath(); ctx.roundRect(-150, -150, 300, 300, 22); ctx.stroke();
     ctx.lineWidth = 3; ctx.beginPath(); ctx.roundRect(-132, -132, 264, 264, 16); ctx.stroke();
     ctx.fillStyle = "#C0392B"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    ctx.font = `700 44px ${serif}`;
+    ctx.font = `700 44px ${this.serif}`;
     const sl = this.wrap(ctx, name, 230, 3);
     const top = -((sl.length - 1) * 50) / 2 - 30;
-    sl.forEach((s, i) => ctx.fillText(s, 0, top + i * 50));
-    ctx.font = `700 30px ${sans}`; ctx.fillText(date, 0, 66);
-    ctx.font = `700 34px ${serif}`; ctx.fillText("누비 · 도장", 0, 116);
+    sl.forEach((x, i) => ctx.fillText(x, 0, top + i * 50));
+    ctx.font = `700 30px ${this.sans}`; ctx.fillText(date, 0, 66);
+    ctx.font = `700 34px ${this.serif}`; ctx.fillText(foot || "누비 · 도장", 0, 116);
     ctx.restore();
+  },
+  // Полоса внизу: логотип и адрес
+  footer(ctx, dark) {
+    const { W, H } = this;
+    ctx.save();
+    ctx.fillStyle = dark ? "#1f2a44" : "rgba(255,255,255,.14)"; ctx.fillRect(0, H - 96, W, 96);
+    ctx.fillStyle = "#fff"; ctx.textBaseline = "alphabetic";
+    ctx.textAlign = "left"; ctx.font = `700 40px ${this.serif}`; ctx.fillText("누비", 60, H - 34);
+    ctx.font = `400 28px ${this.sans}`; ctx.textAlign = "right"; ctx.globalAlpha = 0.85;
+    ctx.fillText(this.host(), W - 60, H - 38);
+    ctx.restore();
+  },
+  async toFile(c, name) {
+    const blob = await new Promise(ok => c.toBlob(ok, "image/jpeg", 0.9));
+    return new File([blob], `nubi-${String(name).replace(/[^\w-]/g, "")}.jpg`, { type: "image/jpeg" });
+  },
+  // На печати — короткое корейское имя места (как на настоящем штампе)
+  sealName(l) { return String((l.name && l.name.ko) || tr(l.name)).split(/\s+[—–-]\s+/)[0]; },
+  dateStr(d) { return new Date(d || Date.now()).toLocaleDateString(t("locale")); },
 
-    // ── Название и подпись внизу ──
+  // ── Карточка без своего фото: сверху картинка места, снизу «бумага» с текстом ──
+  // o: {art, eyebrow, title, lines[], quote, seal:{name,date,foot}, badge, name}
+  async card(o) {
+    const { W, H } = this, c = document.createElement("canvas");
+    c.width = W; c.height = H;
+    const ctx = c.getContext("2d");
+    await this.fonts();
+    const artH = 760;
+    // фон-бумага
+    ctx.fillStyle = "#f3ead6"; ctx.fillRect(0, 0, W, H);
+    if (o.art) this.cover(ctx, o.art, 0, 0, W, artH);
+    else { const g = ctx.createLinearGradient(0, 0, 0, artH); g.addColorStop(0, "#2b3a63"); g.addColorStop(1, "#c9a86a"); ctx.fillStyle = g; ctx.fillRect(0, 0, W, artH); }
+    // мягкий переход картинки в бумагу
+    const g = ctx.createLinearGradient(0, artH - 120, 0, artH);
+    g.addColorStop(0, "rgba(243,234,214,0)"); g.addColorStop(1, "rgba(243,234,214,1)");
+    ctx.fillStyle = g; ctx.fillRect(0, artH - 120, W, 120);
+
+    // значок (фонарик, ленточка…) или печать поверх картинки
+    if (o.seal) this.seal(ctx, W - 220, artH - 150, 330, o.seal.name, o.seal.date, o.seal.foot);
+    if (o.badge) {
+      ctx.save();
+      ctx.beginPath(); ctx.arc(W - 190, artH - 130, 120, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(255,248,240,.94)"; ctx.fill();
+      ctx.lineWidth = 8; ctx.strokeStyle = "#C0392B"; ctx.stroke();
+      ctx.font = `120px system-ui, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
+      ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(o.badge, W - 190, artH - 122);
+      ctx.restore();
+    }
+
+    // текст
+    let y = artH + 40;
+    ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+    if (o.eyebrow) { ctx.fillStyle = "#C0392B"; ctx.font = `700 32px ${this.sans}`; ctx.fillText(o.eyebrow.toUpperCase(), 60, y + 10); y += 30; }
+    ctx.fillStyle = "#1f2a44"; ctx.font = `700 70px ${this.serif}`;
+    const tl = this.wrap(ctx, o.title, W - 120, 2);
+    tl.forEach(s => { y += 80; ctx.fillText(s, 60, y); });
+    if (o.quote) {
+      y += 30;
+      ctx.font = `500 42px ${this.serif}`; ctx.fillStyle = "#5b4a2e";
+      const ql = this.wrap(ctx, "“" + o.quote + "”", W - 160, 3);
+      ctx.fillStyle = "#C0392B"; ctx.fillRect(60, y + 4, 6, ql.length * 54);
+      ctx.fillStyle = "#5b4a2e";
+      ql.forEach(s => { y += 54; ctx.fillText(s, 84, y); });
+    }
+    ctx.font = `500 34px ${this.sans}`; ctx.fillStyle = "#5c6378";
+    for (const line of (o.lines || [])) {
+      if (y > H - 150) break;
+      const ll = this.wrap(ctx, line, W - 120, 2);
+      ll.forEach(s => { y += 50; ctx.fillText(s, 60, y); });
+    }
+    this.footer(ctx, true);
+    return this.toFile(c, o.name || "card");
+  },
+
+  // ── Отправка: меню «Поделиться» телефона, иначе — сохранить картинку и скопировать текст ──
+  async send(file, text) {
+    try {
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], text, title: "누비" });
+        return;
+      }
+    } catch (e) { if (e && e.name === "AbortError") return; }
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(file); a.download = file.name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    if (navigator.clipboard) navigator.clipboard.writeText(text).catch(() => {});
+    toast(t("shareSaved"), true);
+  },
+  async run(make, text) {
+    toast(t("shareMaking"));
+    let file;
+    try { file = await make(); } catch (e) { return toast(t("shareErr2"), true); }
+    await this.send(file, text);
+  },
+
+  // ===== 1. Печать =====
+  stamp(id) {
+    const l = byId(id); if (!l) return;
+    const v = visits[l.id], date = this.dateStr(v && v.t);
+    const name = tr(l.name);
+    return this.run(async () => this.card({
+      art: await this.artOf(l), eyebrow: t("cardStamp"), title: name,
+      lines: [`📍 ${regionName(l.region)} · ${date}`, t("cardStampTotal", { n: count() })],
+      seal: { name: this.sealName(l), date }, name: l.id
+    }), t("shareText", { n: name }) + "\n" + this.link(l.id));
+  },
+
+  // Печать на своём фото (или видео как есть)
+  async drawPhoto(l, file) {
+    const { W, H } = this, c = document.createElement("canvas");
+    c.width = W; c.height = H;
+    const ctx = c.getContext("2d");
+    await this.fonts();
+    const img = await this.loadImage(file);
+    this.cover(ctx, img, 0, 0, W, H);
+    const g = ctx.createLinearGradient(0, H * 0.5, 0, H);
+    g.addColorStop(0, "rgba(10,14,30,0)"); g.addColorStop(1, "rgba(10,14,30,0.85)");
+    ctx.fillStyle = g; ctx.fillRect(0, H * 0.5, W, H * 0.5);
+    const name = tr(l.name), v = visits[l.id], date = this.dateStr(v && v.t);
+    this.seal(ctx, W - 210, 230, 320, this.sealName(l), date);
     ctx.fillStyle = "#fff"; ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
     ctx.shadowColor = "rgba(0,0,0,.45)"; ctx.shadowBlur = 12;
-    ctx.font = `700 76px ${serif}`;
+    ctx.font = `700 76px ${this.serif}`;
     const nl = this.wrap(ctx, name, W - 120, 2);
     let y = H - 210 - (nl.length - 1) * 86;
     nl.forEach(s => { ctx.fillText(s, 60, y); y += 86; });
-    ctx.font = `500 34px ${sans}`; ctx.globalAlpha = 0.9;
+    ctx.font = `500 34px ${this.sans}`; ctx.globalAlpha = 0.9;
     ctx.fillText(`📍 ${regionName(l.region)} · ${date}`, 60, H - 140);
     ctx.shadowBlur = 0; ctx.globalAlpha = 1;
-    // полоса с логотипом и адресом
-    ctx.fillStyle = "rgba(255,255,255,.14)"; ctx.fillRect(0, H - 96, W, 96);
-    ctx.fillStyle = "#fff"; ctx.font = `700 40px ${serif}`; ctx.fillText("누비", 60, H - 34);
-    ctx.font = `400 28px ${sans}`; ctx.textAlign = "right"; ctx.globalAlpha = 0.85;
-    ctx.fillText(this.base().replace(/^https?:\/\//, "").replace(/\/$/, ""), W - 60, H - 38);
-    ctx.globalAlpha = 1;
-
-    const blob = await new Promise(ok => c.toBlob(ok, "image/jpeg", 0.9));
-    return new File([blob], `nubi-${String(l.id).replace(/[^\w-]/g, "")}.jpg`, { type: "image/jpeg" });
+    this.footer(ctx, false);
+    return this.toFile(c, l.id);
   },
-
-  // Выбран файл: фото → карточка, видео → как есть, с текстом и ссылкой
   async make(id, file) {
     const l = byId(id); if (!l || !file) return;
     const text = t("shareText", { n: tr(l.name) }) + "\n" + this.link(id);
     toast(t("shareMaking"));
     let out;
-    try { out = file.type.startsWith("video/") ? file : await this.draw(l, file); }
+    try { out = file.type.startsWith("video/") ? file : await this.drawPhoto(l, file); }
     catch (e) { return toast(t("shareErr")); }
-    try {
-      if (navigator.canShare && navigator.canShare({ files: [out] })) {
-        await navigator.share({ files: [out], text, title: "누비" });
-        return;
-      }
-    } catch (e) { if (e && e.name === "AbortError") return; }
-    // Телефон не умеет делиться файлом — сохраняем карточку, текст копируем
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(out); a.download = out.name; document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
-    if (navigator.clipboard) navigator.clipboard.writeText(text).catch(() => {});
-    toast(t("shareSaved"), true);
+    await this.send(out, text);
+  },
+
+  // ===== 2. Желание =====
+  // w: {place_id, kind, text, is_public, created_at}
+  wish(w) {
+    const l = byId(w.place_id); if (!l) return;
+    const kind = w.kind || "lantern", name = tr(l.name);
+    // Текст желания показываем, только если оно открытое (монетка — всегда секрет)
+    const quote = kind !== "coin" && w.is_public ? w.text : null;
+    return this.run(async () => this.card({
+      art: await this.artOf(l), eyebrow: t("cardWish_" + kind), title: name, quote,
+      lines: [quote ? `📍 ${regionName(l.region)} · ${this.dateStr(w.created_at)}` : t("cardWishSecret"),
+              ...(quote ? [] : [`📍 ${regionName(l.region)} · ${this.dateStr(w.created_at)}`]), t("cardWishJoin")],
+      badge: WISH_ICON[kind] || "🏮", name: "wish-" + l.id
+    }), t("wishShareText_" + kind, { n: name }) + "\n" + this.link(l.id));
+  },
+
+  // ===== 3. Челлендж и звание =====
+  challenge(cid) {
+    const c = CHALLENGES.find(x => x.id === cid); if (!c) return;
+    const ids = c.ids || [], first = ids.map(byId).find(Boolean);
+    const title = titleById(c.reward);
+    const places = ids.map(byId).filter(Boolean).map(l => "✓ " + tr(l.name));
+    return this.run(async () => this.card({
+      art: await this.artOf(first), eyebrow: t("cardCh"), title: tr(c.name),
+      lines: [...places.slice(0, 4), title ? t("cardChTitle", { t: tr(title.name) }) : ""].filter(Boolean),
+      badge: "🏆", name: "ch-" + c.id
+    }), t("chShareText", { n: tr(c.name) }) + "\n" + this.link());
+  },
+  title(tid) {
+    const x = titleById(tid); if (!x) return;
+    const ch = x.kind === "challenge" && CHALLENGES.find(c => c.id === x.ch);
+    const l = ch ? (ch.ids || []).map(byId).find(Boolean)
+      : all().filter(v => visits[v.id]).sort((a, b) => (visits[b.id].t || 0) - (visits[a.id].t || 0))[0];
+    return this.run(async () => this.card({
+      art: await this.artOf(l), eyebrow: t("cardTitle"), title: tr(x.name),
+      lines: [tr(x.desc), t("cardStampTotal", { n: count() })],
+      badge: "🎖️", name: "title-" + x.id
+    }), t("titleShareText", { n: tr(x.name) }) + "\n" + this.link());
   }
 };

@@ -318,6 +318,7 @@ function chCard(c) {
     <div class="steps">${Array.from({ length: p.total }, (_, i) => `<span class="${i < p.got ? "on" : ""}"></span>`).join("")}</div>
     <p>${p.done ? t("chDone") : esc(tr(c.desc)) + ` (${p.got}/${p.total})`}</p>
     <div class="reward">${t("reward", { t: esc(tr(titleById(c.reward).name)) })}</div>
+    ${p.done ? `<button class="wear share-mini" data-share-ch="${esc(c.id)}">📤 ${t("shareMini")}</button>` : ""}
   </section>`;
 }
 
@@ -427,7 +428,10 @@ function detailView(l) {
     <div class="story">${body}</div>
     ${v ? `<div class="bigseal">${esc(tr(l.name))}<br>${t("sealBig")}</div>
        <p class="note">${t("visited", { d: dateFmt(v.t) })}${v.test ? ` <span class="testtag">${t("testStamp")}</span>` : ""}${v.offline ? ` <span class="testtag">${t("offlineTag")}</span>` : ""}</p>
-       <button class="btn ghost share-btn" data-share-pick>📸 ${t("shareBtn")}</button>
+       <div class="sharerow">
+         <button class="btn share-btn" data-share-stamp="${esc(l.id)}">📤 ${t("shareStampBtn")}</button>
+         <button class="btn ghost share-btn" data-share-pick>📸 ${t("sharePhotoBtn")}</button>
+       </div>
        <input type="file" id="share-pick" accept="image/*,video/*" hidden>
        <p class="note">${t("shareHint")}</p>` : ""}
     ${checkBtn}
@@ -675,7 +679,7 @@ function meView() {
     const on = hasTitle(x), worn = on && profile.title === x.id;
     return `<div class="title ${on ? "on" : ""} ${worn ? "worn" : ""}"><div class="rank">${on ? "✓" : titleProg(x)}</div>
       <div><h3>${esc(tr(x.name))}</h3><p>${esc(tr(x.desc))}</p></div>
-      ${on ? (worn ? `<button class="wear" disabled>${t("worn")}</button>` : `<button class="wear" data-wear="${x.id}">${t("wear")}</button>`) : "<span></span>"}</div>`;
+      ${on ? `<div class="tbtns">${worn ? `<button class="wear" disabled>${t("worn")}</button>` : `<button class="wear" data-wear="${x.id}">${t("wear")}</button>`}<button class="wear share-mini" data-share-title="${x.id}" aria-label="${t("shareMini")}">📤</button></div>` : "<span></span>"}</div>`;
   }).join("")}</div>
 
   <h3 class="sub-h">${t("bookH")}</h3>
@@ -803,6 +807,9 @@ document.addEventListener("click", async e => {
     render();
   }
   else if (d.sharefind) shareFind(d.sharefind);
+  else if (d.shareStamp) Share.stamp(d.shareStamp);
+  else if (d.shareCh) Share.challenge(d.shareCh);
+  else if (d.shareTitle) Share.title(d.shareTitle);
   else if (d.delfind) { finds = finds.filter(f => f.id !== d.delfind); store.set("finds", finds); if (ui.viewFind === d.delfind) ui.viewFind = null; render(); }
   else if (b.hasAttribute("data-add")) { ui.adding = true; ui.draft = null; ui.camMsg = null; render(); window.scrollTo(0, 0); }
   else if (b.hasAttribute("data-add-from-map")) {
