@@ -37,8 +37,10 @@ const WISH_IDS = new Set([
 
 // ===== Запросы к серверу =====
 Object.assign(Server, {
-  async makeWish(place, text, isPublic, kind) {
-    const { data, error } = await this.db.rpc("make_wish", { p_place: place, p_text: text, p_public: isPublic, p_kind: kind || "lantern" });
+  // here — свежая точка GPS: желание загадывают только на месте
+  async makeWish(place, text, isPublic, kind, here) {
+    const { data, error } = await this.db.rpc("make_wish", { p_place: place, p_text: text, p_public: isPublic, p_kind: kind || "lantern",
+      p_lat: here && here.lat, p_lng: here && here.lng, p_acc: here && here.acc });
     if (error) throw error.message;
     return data;
   },
@@ -70,6 +72,11 @@ Object.assign(Server, {
   },
   async cheerWish(id) {
     const { data, error } = await this.db.rpc("cheer_wish", { p_wish: id });
+    if (error) throw error.message;
+    return data;
+  },
+  async unfulfillWish(id) {
+    const { data, error } = await this.db.rpc("unfulfill_wish", { p_wish: id });
     if (error) throw error.message;
     return data;
   },
@@ -106,7 +113,7 @@ window.Wish = {
 
   // Обрабатывает ли Wish это нажатие
   handles(d) {
-    return !!(d.wishSend || d.wkind || d.cheer || d.fulfill || d.lopen || d.lcatch || d.lbrowse || d.lstars || d.lreport || d.wshare || d.wshareLast || d.wcareClose)
+    return !!(d.wishSend || d.wkind || d.cheer || d.fulfill || d.lopen || d.lcatch || d.lbrowse || d.lstars || d.lreport || d.wshare || d.wshareLast || d.wcareClose || d.unfulfill)
       || ["wishGoto", "lclose", "lnext", "lstop", "lstarsOff"].some(k => d[k] !== undefined);
   },
 
@@ -317,7 +324,7 @@ window.Wish = {
         <div><b>${wishIco(w.kind, "sm")} ${esc(w.text)}</b>
           <span class="meta">${l ? esc(tr(l.name)) : esc(w.place_id)} · ${dateFmt(w.created_at)} · ${esc(st[w.status] || w.status)}${w.status === "approved" ? " · 🙏 " + w.cheers : ""}</span>
           ${ask ? `<span class="dist">${t("fulfillAsk")}</span>` : ""}</div>
-        <div class="tbtns">${w.fulfilled_at ? `<span class="ldone">${t("fulfilledTag")}</span>` : `<button class="wear" data-fulfill="${w.id}">${t("fulfillBtn")}</button>`}
+        <div class="tbtns">${w.fulfilled_at ? `<span class="ldone">${t("fulfilledTag")}</span><button class="wear" data-unfulfill="${w.id}">↩ ${t("unfulfillBtn")}</button>` : `<button class="wear" data-fulfill="${w.id}">${t("fulfillBtn")}</button>`}
         <button class="wear share-mini" data-wshare="${w.id}" aria-label="${t("shareMini")}">📤</button></div>
       </div>`; }).join("")}</div>` : `<p class="meta">${t("noWishes")}</p>`}`;
   },
@@ -385,8 +392,13 @@ window.Wish = {
       if (!text) { toast(t("wishEmptyText")); return true; }
       ui.busy = true; b.disabled = true;
       try {
-        const r = await Server.makeWish(place, text, pub, kind);
-        if (!r || !r.ok) { toast((I18N[lang].wishErr || I18N.ko.wishErr)[r && r.reason] || t("wishErrAny"), true); }
+        // Где человек сейчас: желание можно загадать только на месте
+        let here = null;
+        try { here = await Geo.locate(); }
+        catch (err) { toast(err === "denied" ? t("gpsDenied") : t("gpsErr"), true); ui.busy = false; render(); return true; }
+        const r = await Server.makeWish(place, text, pub, kind, here);
+        if (r && !r.ok && r.reason === "too_far") toast(t("wishTooFar", { d: Geo.format(r.dist, lang), r: r.radius }), true);
+        else if (!r || !r.ok) { toast((I18N[lang].wishErr || I18N.ko.wishErr)[r && r.reason] || t("wishErrAny"), true); }
         else {
           this.mine = undefined; delete this.walls[place];
           this.fly = { place, kind }; setTimeout(() => { this.fly = null; }, 2600);
@@ -453,7 +465,21 @@ window.Wish = {
       render();
       return true;
     }
+    if (d.unfulfill) {
+      b.disabled = true;
+      try {
+        await Server.unfulfillWish(d.unfulfill);
+        for (const w of this.mine || []) if (w.id === d.unfulfill) w.fulfilled_at = null;
+        for (const k in this.walls) delete this.walls[k];
+        this.stars = {};
+        toast(t("unfulfilledOk"), true);
+      } catch (e) { b.disabled = false; }
+      render();
+      return true;
+    }
     if (d.fulfill) {
+      // защита от случайного нажатия: первое нажатие спрашивает «Точно сбылось?»
+      if (b.dataset.sure !== "1") { b.dataset.sure = "1"; b.textContent = t("fulfillSure"); return true; }
       b.disabled = true;
       try {
         await Server.fulfillWish(d.fulfill);

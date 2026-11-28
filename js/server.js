@@ -133,7 +133,7 @@ window.Server = {
 
   // Координаты мест с сервера (там они уточняются после модерации)
   async places() {
-    const { data } = await this.db.from("places").select("id, lat, lng, approx, difficulty");
+    const { data } = await this.db.from("places").select("id, lat, lng, approx, difficulty, radius");
     return data || [];
   },
 

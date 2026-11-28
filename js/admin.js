@@ -32,7 +32,7 @@ const ADM_TXT = {
     approveClaim: "Сделать владельцем", reportsN: "жалоб", hideIt: "Скрыть", keepIt: "Оставить", reasons: "Причины",
     placeSearch: "Найти место (спорт, рыбалка, кемпинг)", access: "Вход", accNone: "— не указано —",
     accFree: "Свободный вход", accBooking: "По записи", accResidents: "Только для жильцов", owner: "Владелец",
-    removeOwner: "Снять владельца", flag: "Автофильтр", flags: { link: "ссылка", phone: "телефон", email: "почта", bad: "мат", harm: "смерть / угрозы — проверить, не нужна ли помощь", reports: "жалобы" },
+    removeOwner: "Снять владельца", unfulfill: "Вернуть на небо", delWish: "Удалить", flag: "Автофильтр", flags: { link: "ссылка", phone: "телефон", email: "почта", bad: "мат", harm: "смерть / угрозы — проверить, не нужна ли помощь", reports: "жалобы" },
     typeMore: "Введите хотя бы 2 буквы",
     team: "Команда", log: "Журнал", roleOwner: "владелец", roleAdmin: "админ", roleMod: "модератор",
     makeAdmin: "Сделать админом", makeOwner: "Сделать владельцем", toAdmin: "Понизить до админа", removeRole: "Снять роль",
@@ -76,7 +76,7 @@ const ADM_TXT = {
     approveClaim: "주인으로 인증", reportsN: "신고", hideIt: "숨기기", keepIt: "유지", reasons: "사유",
     placeSearch: "장소 찾기 (운동, 낚시, 캠핑)", access: "이용", accNone: "— 미정 —",
     accFree: "자유 이용", accBooking: "예약제", accResidents: "주민 전용", owner: "주인",
-    removeOwner: "주인 해제", flag: "자동 필터", flags: { link: "링크", phone: "전화번호", email: "이메일", bad: "욕설", harm: "죽음·위협 — 도움이 필요한지 확인", reports: "신고" },
+    removeOwner: "주인 해제", unfulfill: "하늘로 되돌리기", delWish: "삭제", flag: "자동 필터", flags: { link: "링크", phone: "전화번호", email: "이메일", bad: "욕설", harm: "죽음·위협 — 도움이 필요한지 확인", reports: "신고" },
     typeMore: "2글자 이상 입력하세요",
     team: "팀", log: "기록", roleOwner: "소유자", roleAdmin: "관리자", roleMod: "지역 관리자",
     makeAdmin: "관리자로 지정", makeOwner: "소유자로 지정", toAdmin: "관리자로 변경", removeRole: "권한 해제",
@@ -407,6 +407,9 @@ function cardView(r) {
     <div class="arow">
       ${r.status !== "approved" ? `<button class="btn ok" data-awish="${r.id}" data-st="approved">${tx("light")}</button>` : ""}
       ${r.status !== "hidden" ? `<button class="btn no" data-awish="${r.id}" data-st="hidden">${tx("hide")}</button>` : ""}
+      ${r.fulfilled_at ? `<button class="btn" data-awunful="${r.id}">↩ ${tx("unfulfill")}</button>` : ""}
+      ${A.confirmWish === r.id ? `<button class="btn no" data-awdel="${r.id}" data-go="1">${tx("yes")}: ${tx("delWish")}</button><button class="btn" data-acancel>${tx("no")}</button>`
+        : `<button class="btn no" data-awdel="${r.id}">🗑 ${tx("delWish")}</button>`}
     </div>
   </div>`;
 }
@@ -537,7 +540,7 @@ document.addEventListener("click", async e => {
   else if (d.aq !== undefined) { A.q = val("aq"); await load(); }
   else if (b.hasAttribute("data-arole-no")) { A.confirmRole = null; draw(); }
   // --- Перенос и удаление аккаунтов (владелец) ---
-  else if (b.hasAttribute("data-acancel")) { A.merging = null; A.mergeTo = null; A.confirmDel = null; draw(); }
+  else if (b.hasAttribute("data-acancel")) { A.merging = null; A.mergeTo = null; A.confirmDel = null; A.confirmWish = null; draw(); }
   else if (d.amerge) { A.merging = d.amerge; A.mergeTo = null; A.confirmDel = null; draw(); }
   else if (d.amergeFind) {
     const nick = val("mt-" + d.amergeFind).trim();
@@ -600,6 +603,16 @@ document.addEventListener("click", async e => {
     const { error } = await db().rpc("admin_set_owner", { p_place: d.aunown, p_user: null });
     if (error) throw error;
   });
+  // Желание: вернуть из «сбывшихся» на небо / удалить совсем (с подтверждением)
+  else if (d.awunful) act(async () => {
+    const { error } = await db().from("wishes").update({ fulfilled_at: null }).eq("id", d.awunful);
+    if (error) throw error;
+  });
+  else if (d.awdel && !d.go) { A.confirmWish = d.awdel; draw(); }
+  else if (d.awdel && d.go) { A.confirmWish = null; act(async () => {
+    const { error } = await db().from("wishes").delete().eq("id", d.awdel);
+    if (error) throw error;
+  }); }
   else if (d.awish) act(async () => {
     const { error } = await db().from("wishes").update({ status: d.st }).eq("id", d.awish);
     if (error) throw error;

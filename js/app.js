@@ -301,7 +301,8 @@ function pos(l) {
   return l.lat != null ? { lat: l.lat, lng: l.lng } : null;
 }
 function isApprox(l) { const s = srv.places[l.id]; return !pins[l.id] && (s ? s.approx : l.approx); }
-function radius(l) { return isApprox(l) ? CHECKIN_RADIUS_APPROX : CHECKIN_RADIUS; }
+// Радиус печати: у маленьких мест (алтарь, дерево, колодец) свой, поменьше — его задаёт сервер
+function radius(l) { const s = srv.places[l.id]; if (s && s.radius && !pins[l.id]) return s.radius; return isApprox(l) ? CHECKIN_RADIUS_APPROX : CHECKIN_RADIUS; }
 function distTo(l) { const p = pos(l); return Geo.last && p ? Geo.distance(Geo.last, p) : null; }
 
 // ===== Общие части экранов =====
