@@ -161,20 +161,14 @@ window.Share = {
     return this.toFile(c, o.name || "card");
   },
 
-  // ── Отправка: меню «Поделиться» телефона, иначе — сохранить картинку и скопировать текст ──
+  // ── Отправка: окно с готовой карточкой и выбором — KakaoTalk или другие приложения ──
+  // KakaoTalk получает «карточку-ссылку» (картинка + кнопка «누비에서 보기»), по ней открывается место.
+  // Меню телефона (navigator.share) в Kakao передаёт только картинку, без ссылки, поэтому Kakao — отдельно.
   async send(file, text) {
-    try {
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({ files: [file], text, title: "누비" });
-        return;
-      }
-    } catch (e) {
-      if (e && e.name === "AbortError") return;
-      // Телефон не дал открыть меню: картинка готовилась слишком долго и «нажатие» устарело.
-      // Показываем готовую карточку с кнопкой — новое нажатие откроет меню сразу.
-      if (e && e.name === "NotAllowedError") return this.sheet(file, text);
-    }
-    this.fallback(file, text);
+    const lines = String(text || "").split("\n");
+    const link = lines.find(x => /^https?:\/\//.test(x)) || this.link();
+    const title = lines.filter(x => x && !/^https?:\/\//.test(x)).join(" ") || "누비";
+    this.sheet(file, text, { title, link });
   },
   fallback(file, text) {
     const a = document.createElement("a");
@@ -183,23 +177,73 @@ window.Share = {
     if (navigator.clipboard) navigator.clipboard.writeText(text).catch(() => {});
     toast(t("shareSaved"), true);
   },
-  // Готовая карточка и большая кнопка «Поделиться»
-  sheet(file, text) {
+  // Kakao JavaScript SDK (загружается только когда нужен)
+  KAKAO_KEY: "fd89d2754b520199da2095c73b142935",
+  kakao() {
+    if (this._kakao) return this._kakao;
+    this._kakao = new Promise((ok, no) => {
+      if (window.Kakao && Kakao.Share) return ok(Kakao);
+      const sc = document.createElement("script");
+      sc.src = "https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js";
+      sc.integrity = "sha384-DKYJZ8NLiK8MN4/C5P2dtSmLQ4KwPaoqAfyA/DfmEc1VDxu4yyC7wy6K1Hs90nka";
+      sc.crossOrigin = "anonymous";
+      sc.onload = () => ok(Kakao); sc.onerror = no;
+      document.head.appendChild(sc);
+    }).then(K => { if (!K.isInitialized()) K.init(this.KAKAO_KEY); return K; });
+    this._kakao.catch(() => { this._kakao = null; });
+    return this._kakao;
+  },
+  // Окно: карточка + «KakaoTalk» / «Другие приложения» / «Сохранить»
+  sheet(file, text, meta) {
     const url = URL.createObjectURL(file);
+    const isImg = file.type.startsWith("image/");
     const box = document.createElement("div");
     box.className = "aled";
-    box.innerHTML = `<div class="aled-top"><b>누비</b><button class="aled-x" data-a="close" aria-label="✕">✕</button></div>
-      <div class="aled-pic"><img alt="" src="${url}"></div>
-      <div class="aled-b"><button class="btn" data-a="go">📤 ${t("shareMini")}</button></div>`;
+    box.innerHTML = `<div class="aled-top"><b>${t("shareMini")}</b><button class="aled-x" data-a="close" aria-label="✕">✕</button></div>
+      <div class="aled-pic">${isImg ? `<img alt="" src="${url}">` : `<video src="${url}" controls playsinline></video>`}</div>
+      <div class="aled-b">
+        ${isImg ? `<button class="btn kakao-btn" data-a="kakao" disabled>💬 ${t("shareKakao")}</button>` : ""}
+        <button class="btn ghost" data-a="go">📤 ${t("shareOther")}</button>
+        <button class="btn ghost" data-a="save">💾 ${t("albSave")}</button>
+      </div>`;
     document.body.appendChild(box);
     const done = () => { box.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000); };
+    // Картинку заранее загружаем на сервер Kakao — тогда кнопка откроет KakaoTalk сразу
+    let kimg = null;
+    const kb = box.querySelector("[data-a=kakao]");
+    if (kb) {
+      kb.textContent = "💬 …";
+      this.kakao().then(K => K.Share.uploadImage({ file: [file] }))
+        .then(r => { kimg = r.infos.original; kb.disabled = false; kb.textContent = "💬 " + t("shareKakao"); })
+        .catch(() => { kb.remove(); });
+    }
     box.onclick = async e => {
       const b = e.target.closest("button"); if (!b) return;
-      if (b.dataset.a === "close") return done();
-      if (b.dataset.a === "go") {
-        try { await navigator.share({ files: [file], text, title: "누비" }); done(); }
-        catch (err) { if (!err || err.name !== "AbortError") { done(); this.fallback(file, text); } }
+      const a = b.dataset.a;
+      if (a === "close") return done();
+      if (a === "kakao" && kimg) {
+        try {
+          Kakao.Share.sendDefault({
+            objectType: "feed",
+            content: {
+              title: meta.title, description: t("shareKakaoDesc"),
+              imageUrl: kimg.url.replace(/^http:/, "https:"), imageWidth: kimg.width, imageHeight: kimg.height,
+              link: { mobileWebUrl: meta.link, webUrl: meta.link }
+            },
+            buttons: [{ title: t("shareKakaoBtn"), link: { mobileWebUrl: meta.link, webUrl: meta.link } }]
+          });
+          done();
+        } catch (err) { toast(t("shareErr2"), true); }
+        return;
       }
+      if (a === "go") {
+        try {
+          if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], text, title: "누비" }); done(); return; }
+        } catch (err) { if (err && err.name === "AbortError") return; }
+        done(); this.fallback(file, text);
+        return;
+      }
+      if (a === "save") { done(); this.fallback(file, text); }
     };
   },
   async run(make, text) {
