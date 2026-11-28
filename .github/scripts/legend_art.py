@@ -36,3 +36,23 @@ for line in open(os.path.join(DIR, "art-urls.txt"), encoding="utf-8"):
     print("готово:", lid)
     made += 1
 print("картинок сделано:", made)
+
+# ----- Картинки интерфейса (значки желаний, фоны блоков) -----
+# Список img/ui/ui-urls.txt, строка: <имя> <ссылка> <icon|wide> [заново]
+#   icon — квадрат 256×256 (значок), wide — 960×536 (фон блока)
+UI = "img/ui"
+ui_list = os.path.join(UI, "ui-urls.txt")
+if os.path.exists(ui_list):
+    for line in open(ui_list, encoding="utf-8"):
+        parts = line.split()
+        if len(parts) < 3 or parts[0].startswith("#"):
+            continue
+        name, url, kind = parts[0], parts[1], parts[2]
+        again = len(parts) > 3 and parts[3] == "заново"
+        out = os.path.join(UI, name + ".webp")
+        if os.path.exists(out) and not again:
+            continue
+        req = urllib.request.Request(url, headers={"User-Agent": "nubi-art"})
+        im = Image.open(io.BytesIO(urllib.request.urlopen(req, timeout=60).read())).convert("RGB")
+        (crop_to(im, 256, 256) if kind == "icon" else crop_to(im, 960, 536)).save(out, "WEBP", quality=84)
+        print("готово (ui):", name)

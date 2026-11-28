@@ -5,7 +5,7 @@ name: Картинки легенд
 on:
   push:
     branches: [main]
-    paths: ["img/legends/art-urls.txt"]
+    paths: ["img/legends/art-urls.txt", "img/ui/ui-urls.txt"]
   workflow_dispatch:
 
 permissions:
@@ -25,7 +25,7 @@ jobs:
         run: |
           git config user.name "nubi-bot"
           git config user.email "nubi-bot@users.noreply.github.com"
-          git add img/legends
+          git add img/legends img/ui
           git diff --cached --quiet && echo "Новых картинок нет" && exit 0
           git commit -m "Картинки легенд из Leonardo"
           git push
