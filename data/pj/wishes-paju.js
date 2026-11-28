@@ -1,0 +1,9 @@
+// ============================================================
+// Места желаний без легенды (spot:true, wish:true): почему именно здесь,
+// с каких пор и как здесь загадывают. Тексты — своими словами по источникам:
+// сайты городов и провинции, 한국민족문화대백과, новости (ссылки в комментариях).
+// wk — обычай места по умолчанию: lantern | ribbon | lock | coin.
+// ============================================================
+Data.put("legends", [
+{"id": "pj_mangbae", "region": "pj", "lat": 37.889437, "lng": 126.739658, "approx": false, "spot": true, "wish": true, "wk": "ribbon", "name": {"ko": "임진각 망배단", "ru": "Алтарь Мангбэдан в Имджингаке", "en": "Mangbaedan, Imjingak"}, "place": {"ko": "파주시 문산읍 임진각 평화누리", "ru": "Пхаджу, Мунсан, парк Имджингак", "en": "Imjingak, Munsan, Paju"}, "why": {"ko": "북녘 고향에 갈 수 없는 실향민들이 고향 쪽을 향해 절을 올리는 곳입니다. 바로 옆 자유의 다리 철책에는 평화와 만남을 비는 리본이 가득합니다.", "ru": "Здесь беженцы, которые не могут вернуться на родину на Севере, кланяются в сторону родных мест. На ограде у соседнего «Моста свободы» — тысячи ленточек с пожеланиями мира и встречи с близкими.", "en": "Here refugees who cannot return to their homes in the North bow towards them. On the fence by the nearby Freedom Bridge hang thousands of ribbons wishing for peace and reunion."}, "since": {"ko": "망배단은 1980년대에 세워졌고, 설과 추석이면 이산가족이 모여 차례를 지냅니다.", "ru": "Алтарь построили в 1980-х; на Соллаль и Чхусок сюда приезжают разлучённые семьи, чтобы провести обряд поминовения.", "en": "The altar was built in the 1980s; on Lunar New Year and Chuseok separated families gather here for memorial rites."}, "how": {"ko": "리본에 평화와 통일, 그리운 사람과의 만남을 바라는 마음을 적어 철책에 묶습니다.", "ru": "На ленточке пишут пожелание мира, объединения или встречи с близкими и привязывают её к ограде.", "en": "Write a wish for peace, reunification or meeting loved ones on a ribbon and tie it to the fence."}},
+]);

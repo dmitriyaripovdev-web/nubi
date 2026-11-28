@@ -6,7 +6,15 @@
 // или грубое слово — сначала проверка в админке).
 // Для больших мест (сотни желаний в день): на небе до 300 огней, «Поймать» и «Листать»
 // берут случайные фонарики с сервера, сбывшиеся уходят в «Созвездие сбывшихся».
+// Четыре способа загадать (пока бесплатно): 🏮 фонарик — на небо, 🎀 ленточка — на верёвку,
+// 🔒 замочек (для двоих) — на решётку, 🪙 монетка — в колодец (тайное желание, текст видит только автор).
 // ============================================================
+
+const WISH_KINDS = ["lantern", "ribbon", "lock", "coin"];
+const WISH_ICON = { lantern: "🏮", ribbon: "🎀", lock: "🔒", coin: "🪙" };
+// Цвета ленточек и замочков — из нашей палитры (киноварь, индиго, сосна, охра, слива, небелёный холст)
+const RIBBON_COLORS = ["#C8402F", "#2B4C86", "#2D7A66", "#D9962B", "#7E4A8E", "#E9DFC8"];
+const LOCK_COLORS = ["#C9A24A", "#B8B8B8", "#C8402F", "#2B4C86", "#2D7A66"];
 
 // Места, где по традиции загадывают желания (храмы, алтари, деревья-хранители, рассветы)
 const WISH_IDS = new Set([
@@ -25,8 +33,8 @@ const WISH_IDS = new Set([
 
 // ===== Запросы к серверу =====
 Object.assign(Server, {
-  async makeWish(place, text, isPublic) {
-    const { data, error } = await this.db.rpc("make_wish", { p_place: place, p_text: text, p_public: isPublic });
+  async makeWish(place, text, isPublic, kind) {
+    const { data, error } = await this.db.rpc("make_wish", { p_place: place, p_text: text, p_public: isPublic, p_kind: kind || "lantern" });
     if (error) throw error.message;
     return data;
   },
@@ -68,7 +76,7 @@ Object.assign(Server, {
   },
   async myWishes() {
     const { data, error } = await this.db.from("wishes")
-      .select("id, place_id, text, is_public, status, cheers, fulfilled_at, created_at")
+      .select("id, place_id, text, is_public, status, cheers, fulfilled_at, created_at, kind")
       .eq("user_id", this.user.id).order("created_at", { ascending: false }).limit(200);
     if (error) throw error.message;
     return data || [];
@@ -87,55 +95,123 @@ window.Wish = {
   pool: new Map(),  // все фонарики, которые уже приходили с сервера: id -> фонарик
   stars: {},        // id места -> сбывшиеся (созвездие)
   consty: null,     // id места, где открыто «Созвездие сбывшихся»
+  kindSel: {},      // id места -> выбранный способ (lantern | ribbon | lock | coin)
 
   // Запоминаем фонарики в общем списке (чтобы открыть любой по id)
   keep(list) { return list.map(w => { const old = this.pool.get(w.id); if (old) return Object.assign(old, w); this.pool.set(w.id, w); return w; }); },
 
   // Обрабатывает ли Wish это нажатие
   handles(d) {
-    return !!(d.wishSend || d.cheer || d.fulfill || d.lopen || d.lcatch || d.lbrowse || d.lstars || d.lreport)
+    return !!(d.wishSend || d.wkind || d.cheer || d.fulfill || d.lopen || d.lcatch || d.lbrowse || d.lstars || d.lreport)
       || ["wishGoto", "lclose", "lnext", "lstop", "lstarsOff"].some(k => d[k] !== undefined);
   },
 
   // Место для желаний: из списка выше или легенда с пометкой wish:true в файле района
   is(id) { return WISH_IDS.has(id) || !!LEGENDS.find(l => l.id === id && l.wish); },
 
-  // Значок в списке легенд
-  tag(id) { return this.is(id) ? `<span class="lantern-tag" title="${esc(t("wishPlace"))}">🏮</span>` : ""; },
+  // Значок в списке легенд (у места желаний — значок его обычая)
+  tag(id) {
+    if (!this.is(id)) return "";
+    const l = LEGENDS.find(x => x.id === id);
+    return `<span class="lantern-tag" title="${esc(t("wishPlace"))}">${WISH_ICON[l && l.wk] || "🏮"}</span>`;
+  },
+  // Выбранный способ: сначала выбор человека, потом обычай места
+  kindOf(l) { return this.kindSel[l.id] || (WISH_KINDS.includes(l.wk) ? l.wk : "lantern"); },
 
   // Блок на странице легенды
   card(l) {
     if (!this.is(l.id)) return "";
-    const v = visits[l.id];
+    const v = visits[l.id], k = this.kindOf(l), id = esc(l.id);
+    // Выбор способа: фонарик · ленточка · замочек · монетка
+    const kinds = `<div class="wkinds">${WISH_KINDS.map(x => `<button class="wkind" data-wkind="${x}" data-place="${id}" aria-pressed="${x === k}">
+        <span aria-hidden="true">${WISH_ICON[x]}</span>${t("k_" + x)}</button>`).join("")}</div>`;
     let form;
     if (!srv.ready) form = `<p class="meta">${t("offlineBanner")}</p>`;
     else if (!v || v.test || v.offline) form = `<ol class="wsteps">
         <li>${t("wishStep1")}</li><li>${t("wishStep2")}</li><li>${t("wishStep3")}</li></ol>
       <button class="btn lantern-btn" data-wish-goto>📍 ${t("wishGoStamp")}</button>`;
-    else form = `<textarea id="wish-text" maxlength="120" rows="2" placeholder="${esc(t("wishPh"))}"></textarea>
-      <label class="wcheck"><input type="checkbox" id="wish-public"> <span>${t("wishPublic")}</span></label>
-      <button class="btn lantern-btn" data-wish-send="${esc(l.id)}" ${ui.busy ? "disabled" : ""}>🏮 ${t("wishSend")}</button>
+    else {
+      const fields = k === "lock"
+        ? `<div class="lockrow"><input id="wish-a" maxlength="12" placeholder="${esc(t("lockA"))}"><span aria-hidden="true">♥</span>
+             <input id="wish-b" maxlength="12" placeholder="${esc(t("lockB"))}"></div>
+           <textarea id="wish-text" maxlength="60" rows="2" placeholder="${esc(t("lockPh"))}"></textarea>`
+        : `<textarea id="wish-text" maxlength="120" rows="2" placeholder="${esc(t(k === "coin" ? "coinPh" : k === "ribbon" ? "ribbonPh" : "wishPh"))}"></textarea>`;
+      const pub = k === "coin" ? `<p class="note">🤫 ${t("coinPrivate")}</p>`
+        : `<label class="wcheck"><input type="checkbox" id="wish-public"> <span>${t(k === "lantern" ? "wishPublic" : k === "ribbon" ? "ribbonPublic" : "lockPublic")}</span></label>`;
+      form = `${fields}${pub}
+      <button class="btn lantern-btn k-${k}" data-wish-send="${id}" data-kind="${k}" ${ui.busy ? "disabled" : ""}>${WISH_ICON[k]} ${t("send_" + k)}</button>
       <p class="note">${t("wishRules")}</p>`;
+    }
     const wall = this.walls[l.id];
+    const fly = this.fly && this.fly.place === l.id ? this.fly.kind : null;
     return `<section class="wishbox">
-      ${this.fly === l.id ? `<div class="fly">🏮</div>` : ""}
-      <h3>🏮 ${t("wishH")}</h3>
-      <p class="meta" style="margin:0 0 10px">${t("wishIntro")}</p>
+      ${fly && fly !== "coin" ? `<div class="fly fly-${fly}">${WISH_ICON[fly]}</div>` : ""}
+      <h3>✨ ${t("wishH")}</h3>
+      <p class="meta" style="margin:0 0 10px">${t("hint_" + k)}</p>
+      ${kinds}
       ${form}
-      <h3 class="wall-h">${t("skyH")}</h3>
-      ${wall == null ? `<p class="meta">…</p>` : this.skyBlock(l.id, wall)}
+      ${wall == null ? `<h3 class="wall-h">${t("skyH")}</h3><p class="meta">…</p>` : this.places(l.id, wall, k, fly === "coin")}
     </section>`;
+  },
+
+  // Что висит у места: небо фонариков, верёвка с ленточками, решётка замочков, колодец монеток.
+  // Пустые блоки не показываем — кроме того, куда сейчас собираются повесить.
+  places(place, wall, k, coinFly) {
+    const of = kind => wall.filter(w => (w.kind || "lantern") === kind);
+    const lan = of("lantern"), rib = of("ribbon"), loc = of("lock");
+    const coins = (this.stats[place] || {}).coins || 0;
+    const blocks = {};
+    if (lan.length || k === "lantern" || !(rib.length || loc.length || coins))
+      blocks.lantern = `<h3 class="wall-h">${t("skyH")}</h3>` + this.skyBlock(place, lan, rib.length + loc.length);
+    if (rib.length || k === "ribbon")
+      blocks.ribbon = `<h3 class="wall-h">🎀 ${t("ropeH")}</h3>` + (rib.length ? this.rope(place, rib) : `<p class="meta">${t("ropeEmpty")}</p>`) + this.openedHere(place, "ribbon");
+    if (loc.length || k === "lock")
+      blocks.lock = `<h3 class="wall-h">🔒 ${t("fenceH")}</h3>` + (loc.length ? this.fence(place, loc) : `<p class="meta">${t("fenceEmpty")}</p>`) + this.openedHere(place, "lock");
+    if (coins || k === "coin" || coinFly)
+      blocks.coin = `<h3 class="wall-h">🪙 ${t("wellH")}</h3>
+        <div class="well ${coinFly ? "splash" : ""}"><div class="water" aria-hidden="true">${coinFly ? `<span class="coin-drop">🪙</span><i></i><i></i>` : ""}</div>
+        <p class="meta">${coins ? t("coinsN", { n: coins }) : t("wellEmpty")}</p></div>`;
+    // сначала то, что выбрано сейчас, потом остальное
+    return [k, ...WISH_KINDS.filter(x => x !== k)].map(x => blocks[x] || "").join("");
+  },
+
+  // Открытая ленточка или замочек — крупно под своим блоком
+  openedHere(place, kind) {
+    const o = this.open && this.open.place === place ? this.pool.get(this.open.id) : null;
+    if (!o || (o.kind || "lantern") !== kind) return "";
+    return `<div class="opened">${this.lantern(o, true)}${this.reportLink(o)}<button class="link" data-lclose>${t("closeBtn")}</button></div>`;
+  },
+
+  // Верёвка с ленточками: цвет, длина и наклон — из id, у каждой ленточки своё место
+  rope(place, list) {
+    return `<div class="rope">${list.slice(0, 80).map(w => {
+      const h = this.hash(w.id);
+      return `<button class="ribbon ${w.mine ? "mine" : ""} ${this.open && this.open.id === w.id ? "sel" : ""}" data-lopen="${w.id}" data-place="${esc(place)}"
+        aria-label="${esc(w.text)}" style="--rc:${RIBBON_COLORS[h % RIBBON_COLORS.length]};--rl:${30 + (h >>> 4) % 24}px;--rt:${((h >>> 9) % 13) - 6}deg;animation-delay:-${(h % 30) / 10}s"></button>`;
+    }).join("")}</div>`;
+  },
+
+  // Решётка с замочками
+  fence(place, list) {
+    return `<div class="fence">${list.slice(0, 80).map(w => {
+      const h = this.hash(w.id);
+      return `<button class="lockpin ${w.mine ? "mine" : ""} ${this.open && this.open.id === w.id ? "sel" : ""}" data-lopen="${w.id}" data-place="${esc(place)}"
+        aria-label="${esc(w.text)}" style="--lc:${LOCK_COLORS[h % LOCK_COLORS.length]};--lt:${((h >>> 7) % 17) - 8}deg"></button>`;
+    }).join("")}</div>`;
   },
 
   // ===== Небо фонариков =====
   // Место огонька на небе считаем из id — у каждого фонарика своё постоянное место
   hash(str) { let h = 2166136261; for (const c of str) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; },
 
-  skyBlock(place, wall) {
+  // others — сколько ленточек и замочков в общем счёте сервера (на небе их не считаем)
+  skyBlock(place, wall, others) {
     const st = this.stats[place] || {};
-    const line = `<p class="meta sky-stats">${t("skyStats", { a: st.lit ?? wall.length, b: st.today ?? 0, c: st.flown ?? 0 })}</p>`;
+    const lit = st.lit == null ? wall.length : Math.max(wall.length, st.lit - (others || 0));
+    const line = `<p class="meta sky-stats">${t("skyStats", { a: lit, b: st.today ?? 0, c: st.flown ?? 0 })}</p>`;
     const starsBtn = st.stars ? `<button class="btn ghost stars-btn" data-lstars="${esc(place)}">✨ ${t("starsBtn", { n: st.stars })}</button>` : "";
-    const opened = this.open && this.open.place === place ? this.pool.get(this.open.id) : null;
+    let opened = this.open && this.open.place === place ? this.pool.get(this.open.id) : null;
+    if (opened && this.consty !== place && (opened.kind || "lantern") !== "lantern") opened = null;
     const openedHtml = opened ? `<div class="opened">${this.lantern(opened, true)}${this.reportLink(opened)}<button class="link" data-lclose>${t("closeBtn")}</button></div>` : "";
     // «Созвездие сбывшихся»
     if (this.consty === place) {
@@ -205,9 +281,10 @@ window.Wish = {
 
   // Один фонарик на стене
   lantern(w, big, countOnly) {
-    return `<div class="lantern ${big ? "big" : ""} ${w.fulfilled ? "done" : ""} ${w.mine ? "mine" : ""}">
+    const k = w.kind || "lantern";
+    return `<div class="lantern k-${k} ${big ? "big" : ""} ${w.fulfilled ? "done" : ""} ${w.mine ? "mine" : ""}">
       <span class="lglow" aria-hidden="true"></span>
-      <p>${esc(w.text)}</p>
+      <p>${k !== "lantern" ? `<span class="lkind" aria-hidden="true">${WISH_ICON[k]}</span> ` : ""}${esc(w.text)}</p>
       <div class="lfoot">
         ${w.fulfilled ? `<span class="ldone">${t("fulfilledTag")}</span>` : w.mine ? `<span class="meta">${t("mineTag")}</span>` : ""}
         ${w.mine || countOnly ? `<span class="meta">🙏 ${w.cheers}</span>`
@@ -227,7 +304,7 @@ window.Wish = {
       const l = byId(w.place_id);
       const ask = !w.fulfilled_at && new Date(w.created_at).getTime() < old;
       return `<div class="mywish ${w.fulfilled_at ? "done" : ""}">
-        <div><b>${esc(w.text)}</b>
+        <div><b>${WISH_ICON[w.kind] || "🏮"} ${esc(w.text)}</b>
           <span class="meta">${l ? esc(tr(l.name)) : esc(w.place_id)} · ${dateFmt(w.created_at)} · ${esc(st[w.status] || w.status)}${w.status === "approved" ? " · 🙏 " + w.cheers : ""}</span>
           ${ask ? `<span class="dist">${t("fulfillAsk")}</span>` : ""}</div>
         ${w.fulfilled_at ? `<span class="ldone">${t("fulfilledTag")}</span>` : `<button class="wear" data-fulfill="${w.id}">${t("fulfillBtn")}</button>`}
@@ -277,19 +354,28 @@ window.Wish = {
       if (c) { c.scrollIntoView({ behavior: "smooth", block: "center" }); c.classList.add("pulse"); setTimeout(() => c.classList.remove("pulse"), 1800); }
       return true;
     }
+    if (d.wkind) { this.kindSel[d.place] = d.wkind; this.open = null; render(); return true; }
     if (d.wishSend) {
-      const place = d.wishSend;
-      const text = (document.getElementById("wish-text").value || "").trim();
-      const pub = document.getElementById("wish-public").checked;
+      const place = d.wishSend, kind = d.kind || "lantern";
+      const val = id => ((document.getElementById(id) || {}).value || "").trim();
+      let text = val("wish-text");
+      // Замочек: «Имя ♥ Имя» и, если есть, короткая надпись
+      if (kind === "lock") {
+        const a = val("wish-a"), c = val("wish-b");
+        if (!a || !c) { toast(t("lockNeedNames")); return true; }
+        text = `${a} ♥ ${c}` + (text ? " · " + text : "");
+      }
+      const pubBox = document.getElementById("wish-public");
+      const pub = kind !== "coin" && !!(pubBox && pubBox.checked);
       if (!text) { toast(t("wishEmptyText")); return true; }
       ui.busy = true; b.disabled = true;
       try {
-        const r = await Server.makeWish(place, text, pub);
+        const r = await Server.makeWish(place, text, pub, kind);
         if (!r || !r.ok) { toast((I18N[lang].wishErr || I18N.ko.wishErr)[r && r.reason] || t("wishErrAny"), true); }
         else {
           this.mine = undefined; delete this.walls[place];
-          this.fly = place; setTimeout(() => { this.fly = null; }, 2600);
-          toast(r.status === "approved" ? t("wishOkLit") : r.status === "pending" ? t("wishOkPublic") : t("wishOkPrivate"), true);
+          this.fly = { place, kind }; setTimeout(() => { this.fly = null; }, 2600);
+          toast(kind === "coin" ? t("coinOk") : r.status === "approved" ? t("ok_" + kind) : r.status === "pending" ? t("wishOkPublic") : t("wishOkPrivate"), true);
         }
       } catch (e) { toast(t("wishErrAny"), true); }
       ui.busy = false; render();

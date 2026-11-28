@@ -1,0 +1,9 @@
+// ============================================================
+// Места желаний без легенды (spot:true, wish:true): почему именно здесь,
+// с каких пор и как здесь загадывают. Тексты — своими словами по источникам:
+// сайты городов и провинции, 한국민족문화대백과, новости (ссылки в комментариях).
+// wk — обычай места по умолчанию: lantern | ribbon | lock | coin.
+// ============================================================
+Data.put("legends", [
+{"id": "yi_waujeongsa", "region": "yi", "lat": 37.194035, "lng": 127.278445, "approx": false, "spot": true, "wish": true, "wk": "lantern", "name": {"ko": "와우정사", "ru": "Храм Ваучжонса", "en": "Waujeongsa Temple"}, "place": {"ko": "용인시 처인구 해곡로 25-15", "ru": "Ёнъин, Чхоин-гу, Хэгок-ро 25-15", "en": "Haegok-ro, Cheoin-gu, Yongin"}, "why": {"ko": "높이 8m의 황금 불두와 길이 12m의 목조 와불이 있는 절입니다. 민족의 화합과 통일을 빌기 위해 세워졌습니다.", "ru": "Храм с огромной золотой головой Будды (8 м) и деревянным лежащим Буддой длиной 12 метров. Его построили, чтобы молиться о примирении и объединении народа.", "en": "A temple with an 8-metre golden Buddha head and a 12-metre wooden reclining Buddha, built to pray for national harmony and reunification."}, "since": {"ko": "1970년 북에서 내려온 실향민 해곡 김해근 스님이 세웠습니다.", "ru": "Основан в 1970 году монахом Хэгоком (Ким Хэгын) — беженцем с Севера.", "en": "Founded in 1970 by the monk Haegok (Kim Hae-geun), a refugee from the North."}, "how": {"ko": "연등 모양 소원지(10,000원)를 골라 소원을 적고 대웅전 가는 길에 답니다. 소원지는 1년 동안 걸려 있습니다. 십이지신 석상 앞에는 동전을 올려놓기도 합니다.", "ru": "Фонарик-желание (10 000 вон) выбирают по цвету, пишут желание и вешают вдоль дорожки к главному залу — он висит целый год. У статуй двенадцати зодиакальных животных оставляют монетки.", "en": "Choose a lantern-shaped wish paper (10,000 won), write your wish and hang it along the path to the main hall — it stays for a year. Coins are left at the twelve zodiac statues."}},
+]);

@@ -341,7 +341,11 @@ function detailView(l) {
   const kakao = p ? `https://map.kakao.com/link/map/${encodeURIComponent(tr(l.name))},${p.lat},${p.lng}` : null;
   const diff = difficulty(l);
   const pending = l.status === "pending";
-  const body = l.legend
+  const body = l.spot
+    ? `<section class="part"><h3>${t("hWhy")}</h3>${paras(tr(l.why))}</section>
+       <section class="part fact"><h3>${t("hSince")}</h3>${paras(tr(l.since))}</section>
+       <section class="part find"><h3>${t("hHow")}</h3>${paras(tr(l.how))}</section>`
+    : l.legend
     ? `<section class="part"><h3>${t("hLegend")}</h3>${paras(tr(l.legend))}</section>
        ${l.fact ? `<section class="part fact"><h3>${t("hFact")}</h3>${paras(tr(l.fact))}</section>` : ""}
        ${l.find ? `<section class="part find"><h3>${t("hFind")}</h3>${paras(tr(l.find))}</section>` : ""}`
