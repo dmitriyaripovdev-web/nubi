@@ -169,6 +169,12 @@ Object.assign(I18N.en, {
   wellH:"Wishing well",
   coinsN:"Coins tossed: {n}",
   wellEmpty:"No coins yet — toss the first one.",
+  // Выбор города (панель снизу)
+  cityNear:"Near me",
+  cityPick:"Choose a city",
+  citySearch:"City: Suwon, 수원…",
+  cityRecent:"Recent",
+  cityNone:"This city isn't in 누비 yet",
   kakaoOk:"Kakao connected",
   kakaoTaken:"This Kakao account is already connected to another Nubi profile. You can sign in to that profile, but the temporary records on this phone won't move over.",
   kakaoSwitch:"Sign in to that profile", kakaoErr:"Kakao login failed: {e}"

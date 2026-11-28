@@ -84,6 +84,57 @@ function areaPicker(kind) {
     ${list.map(a => `<option value="${a}">${esc(regionName(a))} · ${Data.index.areas[a].n[kind]}</option>`).join("")}
   </select></label>`;
 }
+// ===== Выбор города: одна кнопка и панель снизу (поиск, недавние, по провинциям) =====
+// Вместо длинной полоски районов — работает одинаково и для 2 городов, и для 300.
+// field: "region" — легенды, "area" — спорт/рыбалка/кемпинг; kind — что считать в скобках.
+const PROVINCES = [
+  [GG_CITIES, { ko: "경기도", ru: "Кёнгидо", en: "Gyeonggi" }],
+  [["se", "ic", "gw", "cc", "jl", "gb", "gn", "jj", "gg"], { ko: "다른 지역", ru: "Другие регионы", en: "Other regions" }]
+];
+function cityButton(kind, field) {
+  const cur = ui[field];
+  const label = cur && cur !== "all" && cur !== "wish" ? regionName(cur) : t("cityNear");
+  return `<button class="chip city-btn ${cur && cur !== "all" && cur !== "wish" ? "on" : ""}" data-city-open="${kind}" data-field="${field}">📍 ${esc(label)} <span aria-hidden="true">▾</span></button>`;
+}
+function citySheet() {
+  const s = ui.citySheet;
+  if (!s || !Data.index) return "";
+  const { kind, field } = s;
+  const n = a => (Data.index.areas[a] && Data.index.areas[a].n[kind]) || 0;
+  const have = Data.areas().filter(a => n(a) > 0);
+  const names = a => REGIONS[a] ? [REGIONS[a].ko, REGIONS[a].ru, REGIONS[a].en, a].join(" ").toLowerCase() : a;
+  const item = a => `<button class="city-item" data-city="${a}" data-names="${esc(names(a))}" aria-pressed="${ui[field] === a}">
+      <span>${esc(regionName(a))}${lang !== "ko" && REGIONS[a] ? ` <small>${esc(REGIONS[a].ko)}</small>` : ""}</span><em>${n(a)}</em></button>`;
+  const recent = store.get("areas", []).filter(a => have.includes(a)).slice(0, 5);
+  const groups = PROVINCES.map(([codes, nm]) => {
+    const l = codes.filter(a => have.includes(a));
+    return l.length ? `<h4>${esc(nm[lang] || nm.ko)}</h4>${l.map(item).join("")}` : "";
+  }).join("") + have.filter(a => !PROVINCES.some(([c]) => c.includes(a))).map(item).join("");
+  return `<button class="sheet-bg" data-city-close aria-label="${esc(t("closeBtn"))}"></button>
+  <div class="sheet" role="dialog" aria-modal="true" aria-label="${esc(t("cityPick"))}">
+    <div class="sheet-h"><b>${t("cityPick")}</b><button class="link" data-city-close>${t("closeBtn")}</button></div>
+    <input id="city-q" type="search" placeholder="${esc(t("citySearch"))}" autocomplete="off">
+    <button class="city-item near" data-city="all" aria-pressed="${ui[field] === "all" || ui[field] === "wish"}"><span>📍 ${t("cityNear")}</span></button>
+    ${recent.length ? `<div class="city-recent"><h4>${t("cityRecent")}</h4>${recent.map(item).join("")}</div>` : ""}
+    <div class="city-groups">${groups}</div>
+    <p class="meta city-none" hidden>${t("cityNone")}</p>
+  </div>`;
+}
+// Поиск в панели городов — без перерисовки, просто прячем лишнее
+document.addEventListener("input", e => {
+  if (e.target.id !== "city-q") return;
+  const q = e.target.value.trim().toLowerCase();
+  let shown = 0;
+  document.querySelectorAll(".sheet .city-item[data-names]").forEach(b => { const ok = !q || b.dataset.names.includes(q); b.hidden = !ok; if (ok) shown++; });
+  document.querySelectorAll(".sheet h4").forEach(h => {
+    let el = h.nextElementSibling, any = false;
+    while (el && el.tagName !== "H4") { if (!el.hidden) any = true; el = el.nextElementSibling; }
+    h.hidden = !any;
+  });
+  const r = document.querySelector(".city-recent"); if (r) r.hidden = !!q;
+  document.querySelector(".city-none").hidden = shown > 0;
+});
+
 // Районы, которые человек выбирал сам, — загружаем их и при следующем запуске
 function rememberArea(a) {
   const keep = [a, ...store.get("areas", []).filter(x => x !== a)].slice(0, 5);
@@ -303,8 +354,6 @@ function walkView() {
   if (ui.finding) return findView();
   if (ui.adding) return addView();
   if (ui.openId) return detailView(byId(ui.openId));
-  const codes = ["all", ...new Set(all().map(l => l.region).filter(Boolean))];
-  if (ui.region !== "all" && ui.region !== "wish" && !codes.includes(ui.region)) codes.push(ui.region);
   let list = all().filter(l => ui.region === "all" || (ui.region === "wish" ? Wish.is(l.id) : l.region === ui.region));
   if (Geo.last) list = list.slice().sort((a, b) => (distTo(a) ?? 1e9) - (distTo(b) ?? 1e9));
   const next = CHALLENGES.filter(c => !progress(c).done)
@@ -314,9 +363,8 @@ function walkView() {
     <div class="stampcount">${t("stamps")} <b>${count()}</b> / ${totalLegends()}</div></div>
   ${!srv.ready ? `<div class="msg">${t("offlineBanner")}</div>` : ""}
   ${next ? `<div class="mini">${chCard(next)}<button class="link" data-tab="chal">${t("seeAll")}</button></div>` : ""}
-  <div class="filters">${codes.map(r => `<button class="chip" data-region="${r}" aria-pressed="${r === ui.region}">${r === "all" ? t("all") : esc(regionName(r))}</button>`).join("")}
-    <button class="chip lantern-chip" data-region="wish" aria-pressed="${ui.region === "wish"}">🏮 ${t("wishChip")}</button>
-    ${areaPicker("legends")}</div>
+  <div class="filters">${cityButton("legends", "region")}
+    <button class="chip lantern-chip" data-region="${ui.region === "wish" ? "all" : "wish"}" aria-pressed="${ui.region === "wish"}">🏮 ${t("wishChip")}</button></div>
   <div class="addrow"><button class="link" data-find>📋 ${t("findBtn")}</button><button class="link" data-add>${t("addBtn")}</button></div>
   <div class="list">${list.map(l => {
     const d = distTo(l);
@@ -676,7 +724,7 @@ function render() {
   nav.querySelector(".in").innerHTML = navHtml();
   const views = { walk: walkView, map: mapView, chal: chalView, me: meView, more: moreView,
                   plist: placesView, pmap: placesMapView, talk: talkView };
-  app.innerHTML = (views[ui.tab] || views.more)();
+  app.innerHTML = (views[ui.tab] || views.more)() + citySheet();
   document.querySelectorAll("[data-i]").forEach(el => el.textContent = t(el.dataset.i));
   if (ui.tab === "map") initMap();
   if (ui.tab === "pmap") initPlacesMap();
@@ -725,6 +773,21 @@ document.addEventListener("click", async e => {
     render();
   }
   else if (d.region) { ui.region = d.region; render(); }
+  // --- Выбор города ---
+  else if (d.cityOpen) { ui.citySheet = { kind: d.cityOpen, field: d.field }; render(); const q = document.getElementById("city-q"); if (q && matchMedia("(pointer:fine)").matches) q.focus(); }
+  else if (b.hasAttribute("data-city-close")) { ui.citySheet = null; render(); }
+  else if (d.city) {
+    const { field } = ui.citySheet || { field: sec === "walk" ? "region" : "area" };
+    const a = d.city; ui.citySheet = null;
+    if (a === "all") {
+      ui[field] = "all"; render();
+      // «Рядом со мной»: находим себя и подгружаем ближние районы
+      Geo.locate().then(() => loadAreas(Data.areasAt(Geo.last))).catch(() => {});
+    } else {
+      rememberArea(a);
+      Data.load(a).then(() => { ui[field] = a; render(); window.scrollTo(0, 0); });
+    }
+  }
   else if (d.parea) { ui.area = d.parea; render(); }
   else if (d.board) { srv.boardKey = d.board; srv.board = null; render(); }
   else if (d.open) openLegend(d.open);

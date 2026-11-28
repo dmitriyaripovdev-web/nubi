@@ -169,6 +169,12 @@ Object.assign(I18N.ko, {
   wellH:"소원 우물",
   coinsN:"던진 동전: {n}개",
   wellEmpty:"아직 동전이 없어요. 첫 동전을 던져 보세요.",
+  // Выбор города (панель снизу)
+  cityNear:"내 주변",
+  cityPick:"도시 선택",
+  citySearch:"도시 검색: 수원, Suwon…",
+  cityRecent:"최근 본 곳",
+  cityNone:"아직 누비에 없는 도시예요",
   kakaoOk:"카카오 계정이 연결되었습니다",
   kakaoTaken:"이 카카오 계정은 이미 다른 누비 프로필과 연결되어 있습니다. 그 프로필로 로그인할 수 있지만, 이 휴대폰의 임시 기록은 옮겨지지 않습니다.",
   kakaoSwitch:"그 프로필로 로그인", kakaoErr:"카카오 로그인에 실패했습니다: {e}"

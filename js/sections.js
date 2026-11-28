@@ -45,13 +45,10 @@ function placesView() {
   let list = secPlaces(s).slice();
   // Районы: загруженные + выбор другого
   const areas = [...new Set(list.map(placeArea).filter(Boolean))];
-  if (ui.area !== "all" && !areas.includes(ui.area)) ui.area = "all";
+  if (ui.area !== "all" && !areas.includes(ui.area) && !Data.loaded.has(ui.area)) ui.area = "all";
   if (ui.area !== "all") list = list.filter(p => placeArea(p) === ui.area);
-  const pick = areaPicker(s);
-  const areaChips = areas.length < 2 && !pick ? "" : `<div class="filters">
-    <button class="chip" data-parea="all" aria-pressed="${ui.area === "all"}">${t("all")}</button>
-    ${areas.length > 1 ? areas.map(a => `<button class="chip" data-parea="${a}" aria-pressed="${ui.area === a}">${esc(regionName(a))}</button>`).join("") : ""}
-    ${pick}</div>`;
+  // Город: одна кнопка, список — в панели снизу
+  const areaChips = `<div class="filters">${cityButton(s, "area")}</div>`;
   let chips = "";
   if (s === "sport") {
     const kinds = KIND_ORDER.filter(k => list.some(p => p.kinds[k]));
