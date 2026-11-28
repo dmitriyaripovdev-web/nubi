@@ -436,6 +436,7 @@ function detailView(l) {
        <p class="note">${t("shareHint")}</p>` : ""}
     ${checkBtn}
     ${ui.checkMsg ? `<div class="msg ${ui.checkMsg.err ? "err" : ""}">${ui.checkMsg.text}</div>` : ""}
+    ${!pending && !l.user ? Album.placeBlock(l) : ""}
     ${!pending && !visitedToday(l.id) ? `<p class="note">${testMode ? t("testHint") : t("checkinHint", { r: radius(l) })}</p>` : ""}
     ${canAscent ? `<div class="card ascent">
         ${ascentHere ? `<b>🥾 ${t("ascentOn", { t: timeFmt(ascent.at) })}</b><span class="meta">${t("ascentGo")}</span>`
@@ -687,6 +688,8 @@ function meView() {
     ? visited.map(l => `<button data-open-from-me="${esc(l.id)}">${l.user || Art.has(l.id) ? thumbHtml(l, "stamp-art") : ""}<span>${esc(tr(l.name))}</span></button>`).join("")
     : `<button class="empty" disabled>${t("bookEmpty")}</button>`}</div>
 
+  ${Album.profileBlock()}
+
   ${Wish.profileBlock()}
 
   <h3 class="sub-h">${t("settingsH")}</h3>
@@ -739,6 +742,7 @@ function render() {
   if (img && ui.openId) Photos.get(ui.openId).then(src => { if (src) img.src = src; else img.remove(); });
   // Стена фонариков и мои желания подгружаются отдельно
   Wish.load();
+  Album.load();
   Owner.load();
   // Хранитель места подгружается отдельно
   if (ui.openId && srv.ready && srv.keeper[ui.openId] === undefined) {
@@ -853,6 +857,7 @@ document.addEventListener("click", async e => {
   else if (b.hasAttribute("data-edit")) { ui.editing = true; render(); }
   else if (b.hasAttribute("data-cancel")) { ui.editing = false; render(); }
   // --- Желания и стена фонариков ---
+  else if (Album.handles(d)) Album.click(b);
   else if (Wish.handles(d)) await Wish.click(b);
   // --- Владельцы мест ---
   else if (Owner.handles(d)) await Owner.click(b);
@@ -886,7 +891,7 @@ document.addEventListener("click", async e => {
   else if (b.hasAttribute("data-logout")) { ui.confirmLogout = true; render(); }
   else if (b.hasAttribute("data-logout-no")) { ui.confirmLogout = false; render(); }
   else if (b.hasAttribute("data-logout-yes")) {
-    ["visits", "mine", "profile", "seenTitles", "testMode", "markMode", "finds", "ascent"].forEach(store.del);
+    ["visits", "mine", "profile", "seenTitles", "testMode", "markMode", "finds", "ascent", "album"].forEach(store.del); Album.list = []; Album.remote = null;
     Photos.clear().catch(() => {});
     if (Server.db) await Server.db.auth.signOut({ scope: "local" }).catch(() => {});
     Server.user = null; srv = { ...srv, ready: false, others: [], totals: null, board: null, keeper: {} };
@@ -898,7 +903,7 @@ document.addEventListener("click", async e => {
   else if (b.hasAttribute("data-reset")) { ui.confirmReset = true; render(); }
   else if (b.hasAttribute("data-reset-no")) { ui.confirmReset = false; render(); }
   else if (b.hasAttribute("data-reset-yes")) {
-    ["visits", "mine", "profile", "seenTitles", "testMode", "markMode", "finds", "ascent"].forEach(store.del);
+    ["visits", "mine", "profile", "seenTitles", "testMode", "markMode", "finds", "ascent", "album"].forEach(store.del); Album.list = []; Album.remote = null;
     Photos.clear().catch(() => {});
     if (Server.db) await Server.db.auth.signOut().catch(() => {});
     Server.user = null; srv = { ...srv, ready: false, others: [], totals: null, board: null, keeper: {} };
@@ -1051,6 +1056,7 @@ function readAuthError() {
 }
 
 async function boot() {
+  Album.init();
   // Сначала данные мест: оглавление и нужные районы (мои печати, выбранные раньше, ссылка ?l=)
   const deepId = new URLSearchParams(location.search).get("l");
   await Data.init(store.get("areas", []))
