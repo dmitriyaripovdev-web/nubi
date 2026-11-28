@@ -126,7 +126,14 @@ window.Share = {
 
     // значок (фонарик, ленточка…) или печать поверх картинки
     if (o.seal) this.seal(ctx, W - 220, artH - 150, 330, o.seal.name, o.seal.date, o.seal.foot);
-    if (o.badge) {
+    if (o.badgeImg) {
+      // значок в стиле минхва — круглый медальон
+      ctx.save();
+      ctx.beginPath(); ctx.arc(W - 190, artH - 130, 120, 0, Math.PI * 2); ctx.closePath();
+      ctx.save(); ctx.clip(); ctx.drawImage(o.badgeImg, W - 190 - 140, artH - 130 - 140, 280, 280); ctx.restore();
+      ctx.lineWidth = 8; ctx.strokeStyle = "#C0392B"; ctx.stroke();
+      ctx.restore();
+    } else if (o.badge) {
       ctx.save();
       ctx.beginPath(); ctx.arc(W - 190, artH - 130, 120, 0, Math.PI * 2);
       ctx.fillStyle = "rgba(255,248,240,.94)"; ctx.fill();
@@ -314,7 +321,7 @@ window.Share = {
       art: await this.artOf(l), eyebrow: t("cardWish_" + kind), title: name, quote,
       lines: [quote ? `📍 ${regionName(l.region)} · ${this.dateStr(w.created_at)}` : t("cardWishSecret"),
               ...(quote ? [] : [`📍 ${regionName(l.region)} · ${this.dateStr(w.created_at)}`]), t("cardWishJoin")],
-      badge: WISH_ICON[kind] || "🏮", name: "wish-" + l.id
+      badgeImg: await this.img(`img/ui/wish-${kind}.webp`).catch(() => null), badge: WISH_ICON[kind] || "🏮", name: "wish-" + l.id
     }), t("wishShareText_" + kind, { n: name }) + "\n" + this.link(l.id));
   },
 

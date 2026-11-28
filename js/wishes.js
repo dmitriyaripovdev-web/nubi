@@ -11,7 +11,9 @@
 // ============================================================
 
 const WISH_KINDS = ["lantern", "ribbon", "lock", "coin"];
-const WISH_ICON = { lantern: "🏮", ribbon: "🎀", lock: "🔒", coin: "🪙" };
+const WISH_ICON = { lantern: "🏮", ribbon: "🎀", lock: "🔒", coin: "🪙" };   // для текста (подписи, сообщения)
+// Значки в стиле минхва (Leonardo AI): img/ui/wish-<вид>.webp
+const wishIco = (k, cls = "") => `<img class="wico ${cls}" src="img/ui/wish-${WISH_ICON[k] ? k : "lantern"}.webp" alt="" aria-hidden="true">`;
 // Цвета ленточек и замочков — из нашей палитры (киноварь, индиго, сосна, охра, слива, небелёный холст)
 const RIBBON_COLORS = ["#C8402F", "#2B4C86", "#2D7A66", "#D9962B", "#7E4A8E", "#E9DFC8"];
 const LOCK_COLORS = ["#C9A24A", "#B8B8B8", "#C8402F", "#2B4C86", "#2D7A66"];
@@ -113,7 +115,7 @@ window.Wish = {
   tag(id) {
     if (!this.is(id)) return "";
     const l = LEGENDS.find(x => x.id === id);
-    return `<span class="lantern-tag" title="${esc(t("wishPlace"))}">${WISH_ICON[l && l.wk] || "🏮"}</span>`;
+    return `<span class="lantern-tag" title="${esc(t("wishPlace"))}">${wishIco(l && l.wk)}</span>`;
   },
   // Выбранный способ: сначала выбор человека, потом обычай места
   kindOf(l) { return this.kindSel[l.id] || (WISH_KINDS.includes(l.wk) ? l.wk : "lantern"); },
@@ -124,7 +126,7 @@ window.Wish = {
     const v = visits[l.id], k = this.kindOf(l), id = esc(l.id);
     // Выбор способа: фонарик · ленточка · замочек · монетка
     const kinds = `<div class="wkinds">${WISH_KINDS.map(x => `<button class="wkind" data-wkind="${x}" data-place="${id}" aria-pressed="${x === k}">
-        <span aria-hidden="true">${WISH_ICON[x]}</span>${t("k_" + x)}</button>`).join("")}</div>`;
+        ${wishIco(x)}${t("k_" + x)}</button>`).join("")}</div>`;
     let form;
     if (!srv.ready) form = `<p class="meta">${t("offlineBanner")}</p>`;
     else if (!v || v.test || v.offline) form = `<ol class="wsteps">
@@ -139,17 +141,17 @@ window.Wish = {
       const pub = k === "coin" ? `<p class="note">🤫 ${t("coinPrivate")}</p>`
         : `<label class="wcheck"><input type="checkbox" id="wish-public"> <span>${t(k === "lantern" ? "wishPublic" : k === "ribbon" ? "ribbonPublic" : "lockPublic")}</span></label>`;
       form = `${fields}${pub}
-      <button class="btn lantern-btn k-${k}" data-wish-send="${id}" data-wsk="${k}" ${ui.busy ? "disabled" : ""}>${WISH_ICON[k]} ${t("send_" + k)}</button>
+      <button class="btn lantern-btn k-${k}" data-wish-send="${id}" data-wsk="${k}" ${ui.busy ? "disabled" : ""}>${wishIco(k, "sm")} ${t("send_" + k)}</button>
       <p class="note">${t("wishRules")}</p>`;
     }
     const wall = this.walls[l.id];
     const fly = this.fly && this.fly.place === l.id ? this.fly.kind : null;
     return `<section class="wishbox">
-      ${fly && fly !== "coin" ? `<div class="fly fly-${fly}">${WISH_ICON[fly]}</div>` : ""}
-      <h3>✨ ${t("wishH")}</h3>
+      ${fly && fly !== "coin" ? `<div class="fly fly-${fly}">${wishIco(fly)}</div>` : ""}
+      <h3>${wishIco(k, "h")} ${t("wishH")}</h3>
       <p class="meta" style="margin:0 0 10px">${t("hint_" + k)}</p>
       ${this.last && this.last.place_id === l.id ? `<div class="wish-shared">
-        <span>${WISH_ICON[this.last.kind] || "🏮"} ${t("wishShareAsk")}</span>
+        <span>${wishIco(this.last.kind, "sm")} ${t("wishShareAsk")}</span>
         <button class="btn share-btn" data-wshare-last="1">📤 ${t("shareMini")}</button></div>` : ""}
       ${kinds}
       ${form}
@@ -165,14 +167,14 @@ window.Wish = {
     const coins = (this.stats[place] || {}).coins || 0;
     const blocks = {};
     if (lan.length || k === "lantern" || !(rib.length || loc.length || coins))
-      blocks.lantern = `<h3 class="wall-h">${t("skyH")}</h3>` + this.skyBlock(place, lan, rib.length + loc.length);
+      blocks.lantern = `<h3 class="wall-h">${wishIco("lantern", "sm")} ${t("skyH")}</h3>` + this.skyBlock(place, lan, rib.length + loc.length);
     if (rib.length || k === "ribbon")
-      blocks.ribbon = `<h3 class="wall-h">🎀 ${t("ropeH")}</h3>` + (rib.length ? this.rope(place, rib) : `<p class="meta">${t("ropeEmpty")}</p>`) + this.openedHere(place, "ribbon");
+      blocks.ribbon = `<h3 class="wall-h">${wishIco("ribbon", "sm")} ${t("ropeH")}</h3>` + (rib.length ? this.rope(place, rib) : `<p class="meta">${t("ropeEmpty")}</p>`) + this.openedHere(place, "ribbon");
     if (loc.length || k === "lock")
-      blocks.lock = `<h3 class="wall-h">🔒 ${t("fenceH")}</h3>` + (loc.length ? this.fence(place, loc) : `<p class="meta">${t("fenceEmpty")}</p>`) + this.openedHere(place, "lock");
+      blocks.lock = `<h3 class="wall-h">${wishIco("lock", "sm")} ${t("fenceH")}</h3>` + (loc.length ? this.fence(place, loc) : `<p class="meta">${t("fenceEmpty")}</p>`) + this.openedHere(place, "lock");
     if (coins || k === "coin" || coinFly)
-      blocks.coin = `<h3 class="wall-h">🪙 ${t("wellH")}</h3>
-        <div class="well ${coinFly ? "splash" : ""}"><div class="water" aria-hidden="true">${coinFly ? `<span class="coin-drop">🪙</span><i></i><i></i>` : ""}</div>
+      blocks.coin = `<h3 class="wall-h">${wishIco("coin", "sm")} ${t("wellH")}</h3>
+        <div class="well ${coinFly ? "splash" : ""}"><div class="wellpic"><div class="water" aria-hidden="true">${coinFly ? `<span class="coin-drop">${wishIco("coin")}</span><i></i><i></i>` : ""}</div></div>
         <p class="meta">${coins ? t("coinsN", { n: coins }) : t("wellEmpty")}</p></div>`;
     // сначала то, что выбрано сейчас, потом остальное
     return [k, ...WISH_KINDS.filter(x => x !== k)].map(x => blocks[x] || "").join("");
@@ -287,7 +289,7 @@ window.Wish = {
     const k = w.kind || "lantern";
     return `<div class="lantern k-${k} ${big ? "big" : ""} ${w.fulfilled ? "done" : ""} ${w.mine ? "mine" : ""}">
       <span class="lglow" aria-hidden="true"></span>
-      <p>${k !== "lantern" ? `<span class="lkind" aria-hidden="true">${WISH_ICON[k]}</span> ` : ""}${esc(w.text)}</p>
+      <p>${k !== "lantern" ? `${wishIco(k, "lkind")} ` : ""}${esc(w.text)}</p>
       <div class="lfoot">
         ${w.fulfilled ? `<span class="ldone">${t("fulfilledTag")}</span>` : w.mine ? `<span class="meta">${t("mineTag")}</span>` : ""}
         ${w.mine || countOnly ? `<span class="meta">🙏 ${w.cheers}</span>`
@@ -307,7 +309,7 @@ window.Wish = {
       const l = byId(w.place_id);
       const ask = !w.fulfilled_at && new Date(w.created_at).getTime() < old;
       return `<div class="mywish ${w.fulfilled_at ? "done" : ""}">
-        <div><b>${WISH_ICON[w.kind] || "🏮"} ${esc(w.text)}</b>
+        <div><b>${wishIco(w.kind, "sm")} ${esc(w.text)}</b>
           <span class="meta">${l ? esc(tr(l.name)) : esc(w.place_id)} · ${dateFmt(w.created_at)} · ${esc(st[w.status] || w.status)}${w.status === "approved" ? " · 🙏 " + w.cheers : ""}</span>
           ${ask ? `<span class="dist">${t("fulfillAsk")}</span>` : ""}</div>
         <div class="tbtns">${w.fulfilled_at ? `<span class="ldone">${t("fulfilledTag")}</span>` : `<button class="wear" data-fulfill="${w.id}">${t("fulfillBtn")}</button>`}
