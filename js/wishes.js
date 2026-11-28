@@ -139,7 +139,7 @@ window.Wish = {
       const pub = k === "coin" ? `<p class="note">🤫 ${t("coinPrivate")}</p>`
         : `<label class="wcheck"><input type="checkbox" id="wish-public"> <span>${t(k === "lantern" ? "wishPublic" : k === "ribbon" ? "ribbonPublic" : "lockPublic")}</span></label>`;
       form = `${fields}${pub}
-      <button class="btn lantern-btn k-${k}" data-wish-send="${id}" data-kind="${k}" ${ui.busy ? "disabled" : ""}>${WISH_ICON[k]} ${t("send_" + k)}</button>
+      <button class="btn lantern-btn k-${k}" data-wish-send="${id}" data-wsk="${k}" ${ui.busy ? "disabled" : ""}>${WISH_ICON[k]} ${t("send_" + k)}</button>
       <p class="note">${t("wishRules")}</p>`;
     }
     const wall = this.walls[l.id];
@@ -363,7 +363,7 @@ window.Wish = {
     if (d.wshare) { const w = (this.mine || []).find(x => String(x.id) === d.wshare); if (w) Share.wish(w); return true; }
     if (d.wkind) { this.kindSel[d.place] = d.wkind; this.open = null; render(); return true; }
     if (d.wishSend) {
-      const place = d.wishSend, kind = d.kind || "lantern";
+      const place = d.wishSend, kind = d.wsk || "lantern";   // data-wsk (не data-kind — тот занят фильтром спорта)
       const val = id => ((document.getElementById(id) || {}).value || "").trim();
       let text = val("wish-text");
       // Замочек: «Имя ♥ Имя» и, если есть, короткая надпись
