@@ -237,6 +237,9 @@ window.Share = {
         return;
       }
       if (a === "go") {
+        // KakaoTalk и некоторые другие приложения берут из меню только картинку —
+        // поэтому ссылку на всякий случай кладём в буфер обмена
+        if (navigator.clipboard) navigator.clipboard.writeText(meta.link).then(() => toast(t("shareLinkCopied"), true)).catch(() => {});
         try {
           if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], text, title: "누비" }); done(); return; }
         } catch (err) { if (err && err.name === "AbortError") return; }
