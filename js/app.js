@@ -768,6 +768,8 @@ function openLegend(id) { ui = { ...ui, tab: "walk", openId: id, adding: false, 
 document.addEventListener("click", async e => {
   const b = e.target.closest("button"); if (!b) return;
   const d = b.dataset;
+  // Желания разбираем первыми: у их кнопок есть data-place, который иначе перехватит «Спорт»
+  if (Wish.handles(d)) { await Wish.click(b); return; }
   if (d.lang) { lang = d.lang; store.set("lang", lang); if (profile) saveProfile(); render(); }
   else if (d.tab) go(d.tab);
   // --- Разделы спорт / рыбалка / кемпинг ---
