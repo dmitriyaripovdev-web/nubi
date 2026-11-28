@@ -98,6 +98,12 @@ window.Share = {
   },
   // На печати — короткое корейское имя места (как на настоящем штампе)
   sealName(l) { return String((l.name && l.name.ko) || tr(l.name)).split(/\s+[—–-]\s+/)[0]; },
+  fileFromDataUrl(url, name) {
+    const [head, b64] = url.split(",");
+    const bin = atob(b64), arr = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+    return new File([arr], name, { type: (head.match(/data:([^;]+)/) || [])[1] || "image/jpeg" });
+  },
   dateStr(d) { return new Date(d || Date.now()).toLocaleDateString(t("locale")); },
 
   // ── Карточка без своего фото: сверху картинка места, снизу «бумага» с текстом ──
@@ -161,12 +167,39 @@ window.Share = {
         await navigator.share({ files: [file], text, title: "누비" });
         return;
       }
-    } catch (e) { if (e && e.name === "AbortError") return; }
+    } catch (e) {
+      if (e && e.name === "AbortError") return;
+      // Телефон не дал открыть меню: картинка готовилась слишком долго и «нажатие» устарело.
+      // Показываем готовую карточку с кнопкой — новое нажатие откроет меню сразу.
+      if (e && e.name === "NotAllowedError") return this.sheet(file, text);
+    }
+    this.fallback(file, text);
+  },
+  fallback(file, text) {
     const a = document.createElement("a");
     a.href = URL.createObjectURL(file); a.download = file.name; document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 4000);
     if (navigator.clipboard) navigator.clipboard.writeText(text).catch(() => {});
     toast(t("shareSaved"), true);
+  },
+  // Готовая карточка и большая кнопка «Поделиться»
+  sheet(file, text) {
+    const url = URL.createObjectURL(file);
+    const box = document.createElement("div");
+    box.className = "aled";
+    box.innerHTML = `<div class="aled-top"><b>누비</b><button class="aled-x" data-a="close" aria-label="✕">✕</button></div>
+      <div class="aled-pic"><img alt="" src="${url}"></div>
+      <div class="aled-b"><button class="btn" data-a="go">📤 ${t("shareMini")}</button></div>`;
+    document.body.appendChild(box);
+    const done = () => { box.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000); };
+    box.onclick = async e => {
+      const b = e.target.closest("button"); if (!b) return;
+      if (b.dataset.a === "close") return done();
+      if (b.dataset.a === "go") {
+        try { await navigator.share({ files: [file], text, title: "누비" }); done(); }
+        catch (err) { if (!err || err.name !== "AbortError") { done(); this.fallback(file, text); } }
+      }
+    };
   },
   async run(make, text) {
     toast(t("shareMaking"));

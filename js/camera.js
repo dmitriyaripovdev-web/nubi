@@ -47,6 +47,8 @@ window.Camera = {
   shoot(texts) {
     return new Promise(async (resolve, reject) => {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return reject("camErr");
+      // Датчик наклона: узнаём, держат ли телефон горизонтально (экран приложения всегда вертикальный)
+      Camera.tiltStart();
       // Камера: задняя (environment) или передняя для селфи (user)
       let facing = "environment", stream;
       const open = f => navigator.mediaDevices.getUserMedia({
@@ -74,7 +76,7 @@ window.Camera = {
       const status = box.querySelector(".cam-status");
       gps.then(() => status.textContent = "📍 GPS ✓").catch(() => status.textContent = "📍 GPS ✗");
 
-      const close = () => { stream.getTracks().forEach(t => t.stop()); box.remove(); };
+      const close = () => { stream.getTracks().forEach(t => t.stop()); box.remove(); Camera.tiltStop(); };
       // Переворот камеры (селфи). Передняя показывается зеркально — как в обычной камере телефона.
       box.querySelector(".cam-flip").onclick = async () => {
         const next = facing === "environment" ? "user" : "environment";
@@ -91,12 +93,23 @@ window.Camera = {
         const w = video.videoWidth, h = video.videoHeight;
         if (!w) return;
         const k = Math.min(1, 1280 / Math.max(w, h));
+        const fw = Math.round(w * k), fh = Math.round(h * k);
+        // Кадр как на экране (селфи — зеркально)
+        const f = document.createElement("canvas"); f.width = fw; f.height = fh;
+        const fx = f.getContext("2d");
+        if (facing === "user") { fx.translate(fw, 0); fx.scale(-1, 1); }
+        fx.drawImage(video, 0, 0, fw, fh);
+        // Телефон держат горизонтально — поворачиваем снимок, чтобы он лёг ровно.
+        // rot: +1 — верх телефона смотрит влево, -1 — вправо, 0 — вертикально.
+        const rot = Camera.tilt();
         const c = document.createElement("canvas");
-        c.width = Math.round(w * k); c.height = Math.round(h * k);
-        const cx = c.getContext("2d");
-        // селфи сохраняем так же, как его видно на экране (зеркально)
-        if (facing === "user") { cx.translate(c.width, 0); cx.scale(-1, 1); }
-        cx.drawImage(video, 0, 0, c.width, c.height);
+        if (rot) {
+          c.width = fh; c.height = fw;
+          const cx = c.getContext("2d");
+          cx.translate(fh / 2, fw / 2);
+          cx.rotate(rot > 0 ? -Math.PI / 2 : Math.PI / 2);
+          cx.drawImage(f, -fw / 2, -fh / 2);
+        } else { c.width = fw; c.height = fh; c.getContext("2d").drawImage(f, 0, 0); }
         const photo = c.toDataURL("image/jpeg", 0.75);
         const quality = Camera.quality(c);
         const time = Date.now();
@@ -107,6 +120,30 @@ window.Camera = {
         } catch (e) { reject(e); }
       };
     });
+  },
+
+  // ----- Наклон телефона (акселерометр) -----
+  g: null,
+  tiltStart() {
+    this.g = null;
+    const on = () => {
+      this._h = e => { const a = e.accelerationIncludingGravity; if (a && a.x != null) this.g = { x: a.x, y: a.y }; };
+      window.addEventListener("devicemotion", this._h);
+    };
+    // iPhone спрашивает разрешение на датчики (вызов должен быть сразу после нажатия)
+    if (window.DeviceMotionEvent && typeof DeviceMotionEvent.requestPermission === "function") {
+      DeviceMotionEvent.requestPermission().then(r => { if (r === "granted") on(); }).catch(() => {});
+    } else on();
+  },
+  tiltStop() { if (this._h) window.removeEventListener("devicemotion", this._h); this._h = null; },
+  // +1 — повернули против часовой (верх влево), -1 — по часовой (верх вправо), 0 — вертикально
+  tilt() {
+    const g = this.g; if (!g) return 0;
+    // На iPhone знаки у датчика противоположные
+    const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    const x = ios ? -g.x : g.x, y = ios ? -g.y : g.y;
+    if (Math.abs(x) < 5 || Math.abs(x) < Math.abs(y) * 1.3) return 0;
+    return x > 0 ? 1 : -1;
   },
 
   // Простая проверка качества прямо на телефоне:

@@ -223,9 +223,13 @@ window.Album = {
       </div>`;
     document.body.appendChild(box);
     const big = box.querySelector(".aled-pic img");
+    // Итоговое фото готовим сразу после выбора фильтра — чтобы «Поделиться» открывалось мгновенно
+    let ready = null;
     const show = async () => {
       box.querySelectorAll("[data-f]").forEach(b => b.classList.toggle("on", b.dataset.f === filter));
-      big.src = (await this.compose(img, l, filter, 0.5, date)).toDataURL("image/jpeg", 0.8);
+      const f = filter;
+      ready = (async () => (await this.compose(img, l, f, 1, date)).toDataURL("image/jpeg", 0.85))();
+      big.src = await ready;
     };
     // маленькие образцы фильтров
     for (const f of this.FILTERS) {
@@ -239,23 +243,25 @@ window.Album = {
       const a = b.dataset.a; if (!a) return;
       if (a === "cancel") { box.remove(); return; }
       box.querySelectorAll("button").forEach(x => x.disabled = true);
-      // итоговое фото в полном размере → в альбом
-      const out = (await this.compose(img, l, filter, 1, date)).toDataURL("image/jpeg", 0.85);
+      const out = await ready;
       const item = { id: crypto.randomUUID(), place: l.id, filter, t: shot.time, lat: shot.lat, lng: shot.lng, synced: false };
-      try { await Photos.put(this.key(item.id), out); } catch (err) { toast(t("albErr"), true); box.remove(); return; }
+      // Сначала открываем меню телефона (пока нажатие «свежее»), потом сохраняем в альбом
+      const act = a === "save" ? this.download(item, out) : a === "share" ? this.share(item, out) : null;
+      try { await Photos.put(this.key(item.id), out); }
+      catch (err) { toast(t("albErr"), true); box.remove(); return; }
       this.list.unshift(item); this.saveList();
       box.remove();
-      if (a === "save") await this.download(item, out);
-      if (a === "share") await this.share(item, out);
-      if (a === "done") toast(t("albSaved"), true);
+      if (act) await act; else toast(t("albSaved"), true);
       render();
       this.sync();
     };
   },
 
   async fileOf(item, src) {
+    const name = `nubi-${item.place}-${new Date(item.t).toISOString().slice(0, 10)}.jpg`;
+    if (src.startsWith("data:")) return Share.fileFromDataUrl(src, name);
     const blob = await (await fetch(src)).blob();
-    return new File([blob], `nubi-${item.place}-${new Date(item.t).toISOString().slice(0, 10)}.jpg`, { type: "image/jpeg" });
+    return new File([blob], name, { type: "image/jpeg" });
   },
   // Сохранить в телефон: на Android — в «Загрузки» (видно в галерее), на iPhone — через меню «Сохранить изображение»
   async download(item, src) {
