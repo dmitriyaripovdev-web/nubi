@@ -596,3 +596,10 @@ a.btn{display:block;text-align:center;text-decoration:none;box-sizing:border-box
 .cheer{background:#f3ead6;color:#7a2a1c}
 .cheer.on{background:#7a2a1c;color:#fff3d6}
 .lantern.mine{outline:2px solid #2B4C86;outline-offset:2px}
+/* Бережная подсказка, если в желании тяжёлые слова */
+.wish-care{background:#fffaf0;border:1px solid var(--paper-line);border-left:5px solid #2B4C86;border-radius:12px;padding:12px 14px;margin:0 0 12px}
+.wish-care b{color:#1f2a44;font-family:var(--display);font-size:16px}
+.wish-care p{margin:6px 0}
+.wish-care .row{gap:8px}
+.wish-care .row .btn{flex:1;margin:4px 0;padding:10px}
+.wish-care .btn:not(.ghost){background:#2B4C86;color:#fff;border-color:#2B4C86}

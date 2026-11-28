@@ -13,6 +13,8 @@
 const WISH_KINDS = ["lantern", "ribbon", "lock", "coin"];
 const WISH_ICON = { lantern: "🏮", ribbon: "🎀", lock: "🔒", coin: "🪙" };   // для текста (подписи, сообщения)
 // Значки в стиле минхва (Leonardo AI): img/ui/wish-<вид>.webp
+// Слова о желании умереть / навредить себе (на ru/ko/en)
+const WISH_CARE_RE = /(умер|умир|сдох|смерт|самоубий|суицид|повеш|повеситься|покончить|не хочу жить|жить не хочу|не могу больше|죽고|죽을래|자살|극단적|살기 싫|살고 싶지 않|want to die|wanna die|kill myself|suicide|end my life)/i;
 const wishIco = (k, cls = "") => `<img class="wico ${cls}" src="img/ui/wish-${WISH_ICON[k] ? k : "lantern"}.webp" alt="" aria-hidden="true">`;
 // Цвета ленточек и замочков — из нашей палитры (киноварь, индиго, сосна, охра, слива, небелёный холст)
 const RIBBON_COLORS = ["#C8402F", "#2B4C86", "#2D7A66", "#D9962B", "#7E4A8E", "#E9DFC8"];
@@ -104,7 +106,7 @@ window.Wish = {
 
   // Обрабатывает ли Wish это нажатие
   handles(d) {
-    return !!(d.wishSend || d.wkind || d.cheer || d.fulfill || d.lopen || d.lcatch || d.lbrowse || d.lstars || d.lreport || d.wshare || d.wshareLast)
+    return !!(d.wishSend || d.wkind || d.cheer || d.fulfill || d.lopen || d.lcatch || d.lbrowse || d.lstars || d.lreport || d.wshare || d.wshareLast || d.wcareClose)
       || ["wishGoto", "lclose", "lnext", "lstop", "lstarsOff"].some(k => d[k] !== undefined);
   },
 
@@ -153,6 +155,9 @@ window.Wish = {
       ${this.last && this.last.place_id === l.id ? `<div class="wish-shared">
         <span>${wishIco(this.last.kind, "sm")} ${t("wishShareAsk")}</span>
         <button class="btn share-btn" data-wshare-last="1">📤 ${t("shareMini")}</button></div>` : ""}
+      ${this.care === l.id ? `<div class="wish-care"><b>${t("careH")}</b><p>${t("careText")}</p>
+        <div class="row"><a class="btn" href="tel:109">📞 109</a><a class="btn ghost" href="tel:1577-0199">📞 1577-0199</a></div>
+        <p class="note">${t("careNote")}</p><button class="link" data-wcare-close>${t("closeBtn")}</button></div>` : ""}
       ${kinds}
       ${form}
       ${wall == null ? `<h3 class="wall-h">${t("skyH")}</h3><p class="meta">…</p>` : this.places(l.id, wall, k, fly === "coin")}
@@ -361,6 +366,7 @@ window.Wish = {
       return true;
     }
     // Поделиться желанием: только что загаданным или из «Моих желаний»
+    if (d.wcareClose) { this.care = null; render(); return true; }
     if (d.wshareLast) { if (this.last) Share.wish(this.last); return true; }
     if (d.wshare) { const w = (this.mine || []).find(x => String(x.id) === d.wshare); if (w) Share.wish(w); return true; }
     if (d.wkind) { this.kindSel[d.place] = d.wkind; this.open = null; render(); return true; }
@@ -385,6 +391,8 @@ window.Wish = {
           this.mine = undefined; delete this.walls[place];
           this.fly = { place, kind }; setTimeout(() => { this.fly = null; }, 2600);
           this.last = { place_id: place, kind, text, is_public: pub, created_at: new Date().toISOString() };
+          // Тяжёлые слова (хочу умереть, не хочу жить…) — бережно показываем, куда можно обратиться
+          this.care = WISH_CARE_RE.test(text) ? place : null;
           toast(kind === "coin" ? t("coinOk") : r.status === "approved" ? t("ok_" + kind) : r.status === "pending" ? t("wishOkPublic") : t("wishOkPrivate"), true);
         }
       } catch (e) { toast(t("wishErrAny"), true); }
